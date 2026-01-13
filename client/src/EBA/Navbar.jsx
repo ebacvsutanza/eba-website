@@ -84,7 +84,7 @@ const Navbar = () => {
               Home
             </Link>
             <Link to="/userlogin">Store</Link>
-            <button onClick={toggleAbout}>About</button>
+            <button onClick={toggleAbout} style={{fontSize: '14px'}}>About</button>
             {isAbout && (
               <div className="about-dropdown">
                 <Link to="/abouteba">Mission and Vision</Link>
@@ -94,7 +94,7 @@ const Navbar = () => {
             <button onClick={toggleDropdown} className="toggle-btn">
               <FontAwesomeIcon icon={faBars} />
             </button>
-            <button onClick={toggleCheckStatus}>Check Status</button>
+            <button onClick={toggleCheckStatus} style={{fontSize: '14px'}}>Check Status</button>
           </ul>
         </div>
 
