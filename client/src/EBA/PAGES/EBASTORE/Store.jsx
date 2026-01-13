@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 import './CSS/Store.css'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faLocationDot, faChevronRight, faMagnifyingGlass, faMicrophone, faPlus, faCartShopping, faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faMagnifyingGlass, faMicrophone, faPlus } from '@fortawesome/free-solid-svg-icons';
+import StoreNavbar from "./StoreNavbar";
 
 const Store = () => {
+
 	const [message, setMessage] = useState('');
 	const [formMessage, setFormMessage] = useState('');
 
@@ -16,7 +17,6 @@ const Store = () => {
 	
 	const [carts, setCart] = useState([]);
 	const token = localStorage.getItem('token');
-	const navigateTo = useNavigate();
 
 	const [query, setQuery] = useState('');
 	const [results, setResults] = useState([]);
@@ -77,11 +77,6 @@ const Store = () => {
         });
 	}
 
-	const handleLogout = () => {
-		localStorage.removeItem('token');
-		
-		navigateTo('/userlogin');
-	};	
 
 	useEffect(() => {
 		fetchExclusive();
@@ -291,256 +286,263 @@ const Store = () => {
 	};
 	
 	return (
-		<div className="store-container">
-			{message && <div className='message'>{message}</div>}
+    <div className="store-container">
+      {message && <div className="message">{message}</div>}
 
-			{openModal && (
-				<div className="order-container">
-					<div className="order-modal">
-						<div className="title">
-							<FontAwesomeIcon icon={faChevronLeft} className='icon' onClick={handleBack} />
-							<h3>Order Form</h3>
-						</div>
-					
-						<form onSubmit={(e) => e.preventDefault()}>
-							<div className="input-container">
-								<h4>Order Information</h4>
-						
-								<div className="input-block">
-									<label>Item: </label>
-									<input
-										type="text"
-										value={itemName}
-										onChange={(e) => setItemName(e.target.value)}
-										placeholder='Enter item name'
-										readOnly
-									/>
-								</div>
-						
-						
-								{formHide && (
-									<>
-										<div className="input-block">
-											<label>Item Variant: </label>
-											<input
-											type="text"
-											value={variantName}
-											onChange={(e) => setVariantName(e.target.value)}
-											placeholder='Enter variant'
-											readOnly
-											/>
-										</div>
+      {openModal && (
+        <div className="order-container">
+          <div className="order-modal">
+            <div className="title">
+              <FontAwesomeIcon
+                icon={faChevronLeft}
+                className="icon"
+                onClick={handleBack}
+              />
+              <h3>Order Form</h3>
+            </div>
 
-										<div className="input-block">
-											<label>Item Size: </label>
-											<select 
-												name="" 
-												id=""
-												value={size}
-												onChange={(e) => setSize(e.target.value)}
-												required
-											>
-												<option value="" selected disabled>Select size</option>
-												<option value="Small">Small</option>
-												<option value="Medium">Medium</option>
-												<option value="Large">Large</option>
-												<option value="Xtra Large">Xtra Large</option>
-											</select>
-										</div>
-								
-									</>
-								)}
-								<div className="input-block">
-									<label>Item Quantity: </label>
-									<input
-									type="number"
-									value={quantity}
-									onChange={(e) => setQuantity(e.target.value)}
-									placeholder='Enter quantity'
-									required
-									/>
-								</div>
-							</div>
-					
-							<div className="input-container">
-								<h4>Customer Information</h4>
-						
-								<div className="input-block">
-									<label>Name: </label>
-									<input
-										type="text"
-										value={fullName}
-										onChange={(e) => setFullName(e.target.value)}
-										placeholder='Enter your full name'
-										readOnly
-									/>
-								</div>
-						
-								<div className="input-block">
-									<label>Email Address: </label>
-									<input
-										type="email"
-										value={emailAddress}
-										onChange={(e) => setEmailAddress(e.target.value)}
-										placeholder='Enter your address'
-										readOnly
-									/>
-								</div>
-						
-								<div className="input-block">
-									<label>Amount: </label>
-									<input
-										type="number"
-										value={amount}
-										onChange={(e) => setAmount(e.target.value)}
-										placeholder='Enter your amount'
-										readOnly
-									/>
-								</div>
-							</div>
-					
-							{formMessage && <div className='form-message'>{formMessage}</div>}
-					
-							<button	type="button" onClick={formHide ? uniformFormValidation : itemFormValidation}>
-								Place Order
-							</button>
-						</form>
-					</div>
-				</div>
-			)}
-			
-			<div className="store">
-				<header>
-					<nav>
-						<a href="/ebastore"><FontAwesomeIcon icon={faChevronLeft} className='icon'/> <h3>EBA Store</h3></a>
+            <form onSubmit={(e) => e.preventDefault()}>
+              <div className="input-container">
+                <h4>Order Information</h4>
 
-						<div className="group">
-							<a href="/ebacart" className='cart'>
-								<FontAwesomeIcon icon={faCartShopping} />
-								<span>{carts.length}</span>
-							</a>
-							<button onClick={handleLogout}><FontAwesomeIcon icon={faArrowRightFromBracket} /></button>
-						</div>
-					</nav>
-					
-					<div className="university">
-						<div className="group">
-							<div className="location">
-								<FontAwesomeIcon icon={faLocationDot} className='icon' />
-							</div>
-							<div className="campus">
-								<p>Cavite State University</p>
-								<h4>Tanza Campus</h4>
-							</div>
-						</div>
-						<a href=""><FontAwesomeIcon icon={faChevronRight} className='icon'/></a>
-					</div>
-				</header>
+                <div className="input-block">
+                  <label>Item: </label>
+                  <input
+                    type="text"
+                    value={itemName}
+                    onChange={(e) => setItemName(e.target.value)}
+                    placeholder="Enter item name"
+                    readOnly
+                  />
+                </div>
 
-				<section className="first-section">
-					<FontAwesomeIcon icon={faMagnifyingGlass} className='search' />
-					<input 
-						type="text" 
-						name="search" 
-						id="search" 
-						placeholder='Search product' 
-						value={query}
-						onChange={handleSearch}
-						required />
-					<FontAwesomeIcon icon={faMicrophone} className='mic' />
-				</section>
+                {formHide && (
+                  <>
+                    <div className="input-block">
+                      <label>Item Variant: </label>
+                      <input
+                        type="text"
+                        value={variantName}
+                        onChange={(e) => setVariantName(e.target.value)}
+                        placeholder="Enter variant"
+                        readOnly
+                      />
+                    </div>
 
-				{showSection && (
-					<>
-						<section className="second-section">
-							<div className="top">
-								<h1>Exclusive Offer</h1>
-							</div>
+                    <div className="input-block">
+                      <label>Item Size: </label>
+                      <select
+                        name=""
+                        id=""
+                        value={size}
+                        onChange={(e) => setSize(e.target.value)}
+                        required
+                      >
+                        <option value="" selected disabled>
+                          Select size
+                        </option>
+                        <option value="Small">Small</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Large">Large</option>
+                        <option value="Xtra Large">Xtra Large</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+                <div className="input-block">
+                  <label>Item Quantity: </label>
+                  <input
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    placeholder="Enter quantity"
+                    required
+                  />
+                </div>
+              </div>
 
-							<div className="card-block">
-								{exclusive.map((exclusives, index) => (
-									<div className="card" key={index}>
-										<div className="group">
-											<div className="img-block">
-												<img src={`http://localhost:3000/ITEMS/${exclusives.Image}`} alt="" />
-											</div>
-											<div className="info">
-												<h3>{exclusives.Item_Name}</h3>
-												<p>S, M, L, XL</p>
-											</div>
-										</div>
+              <div className="input-container">
+                <h4>Customer Information</h4>
 
-										<div className="buttons">
-											<p>Price may vary</p>
-											<button onClick={() => handleCategory(exclusives.Category)}>
-												<FontAwesomeIcon icon={faPlus} />
-											</button>
-										</div>
-									</div>
-								))}
-							</div>
-						</section>
+                <div className="input-block">
+                  <label>Name: </label>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Enter your full name"
+                    readOnly
+                  />
+                </div>
 
-						<section className="third-section">
-							<h1>Categories</h1>
-							<div className="card-block">
-								{categories.map(categories => (
-									<div className="card">
-										<button 
-										onClick={() => handleCategory(categories.Category)}
-										>
-											<img src={`http://localhost:3000/ITEMS/${categories.Image}`} alt="" />
-										</button>
-										<p>{categories.Category}</p>
-									</div>
-								))}
-							</div>
-						</section>
-					</>
-				)}
+                <div className="input-block">
+                  <label>Email Address: </label>
+                  <input
+                    type="email"
+                    value={emailAddress}
+                    onChange={(e) => setEmailAddress(e.target.value)}
+                    placeholder="Enter your address"
+                    readOnly
+                  />
+                </div>
 
-				{showCategorySection && (
-					<section className="fourth-section 1">
-						{filteredItems.map(item => (
-							<div className="card" key={item.ID} onClick={() => handleVariant(item)}>
-								<img src={`http://localhost:3000/ITEMS/${item.Image}`} alt="" />
+                <div className="input-block">
+                  <label>Amount: </label>
+                  <input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="Enter your amount"
+                    readOnly
+                  />
+                </div>
+              </div>
 
-								<div className="name">
-									<h3>{item.Item_Name}</h3>
-								</div>
-							</div>
-						))}
-					</section>
-				)}
-				{showVariant && (
-					<section className="fourth-section 2">
-						{variant.map((variants, index) => (
-						<div className="card" key={index} onClick={() => handleForm(variants)}>
-							<img src={`http://localhost:3000/ITEMS/${variants.Image}`} alt="" />
-							<div className="name">
-								<h3>{variants.Variant}</h3>
-							</div>
-						</div>
-						))}
-					</section>
-				)}
+              {formMessage && <div className="form-message">{formMessage}</div>}
 
-				{showResult && (
-					<div className="fourth-section 3">
-						{results.map((result, index) => (
-							<div className="card" key={index} onClick={() => handleVariant(result)}>
-								<img src={`http://localhost:3000/ITEMS/${result.Image}`} alt="" />
+              <button
+                type="button"
+                onClick={formHide ? uniformFormValidation : itemFormValidation}
+              >
+                Place Order
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
-								<div className="name">
-									<h3>{result.Item_Name}</h3>
-								</div>
-							</div>
-						))}
-					</div>
-				)}
-			</div>
-		</div>
-	)
+      <div className="store">
+        <StoreNavbar carts={carts} />
+
+        <section className="first-section">
+          <FontAwesomeIcon icon={faMagnifyingGlass} className="search" />
+          <input
+            type="text"
+            name="search"
+            id="search"
+            placeholder="Search product"
+            value={query}
+            onChange={handleSearch}
+            required
+          />
+          <FontAwesomeIcon icon={faMicrophone} className="mic" />
+        </section>
+
+        {showSection && (
+          <>
+            <section className="second-section">
+              <div className="top">
+                <h1>Exclusive Offer</h1>
+              </div>
+
+              <div className="card-block">
+                {exclusive.map((exclusives, index) => (
+                  <div className="card" key={index}>
+                    <div className="group">
+                      <div className="img-block">
+                        <img
+                          src={`http://localhost:3000/ITEMS/${exclusives.Image}`}
+                          alt=""
+                        />
+                      </div>
+                      <div className="info">
+                        <h3>{exclusives.Item_Name}</h3>
+                        <p>S, M, L, XL</p>
+                      </div>
+                    </div>
+
+                    <div className="buttons">
+                      <p>Price may vary</p>
+                      <button
+                        onClick={() => handleCategory(exclusives.Category)}
+                      >
+                        <FontAwesomeIcon icon={faPlus} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="third-section">
+              <h1>Categories</h1>
+              <div className="card-block">
+                {categories.map((categories) => (
+                  <div className="card">
+                    <button onClick={() => handleCategory(categories.Category)}>
+                      <img
+                        src={`http://localhost:3000/ITEMS/${categories.Image}`}
+                        alt=""
+                      />
+                    </button>
+                    <p>{categories.Category}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </>
+        )}
+
+        {showCategorySection && (
+          <section className="fourth-section 1">
+            {filteredItems.map((item) => (
+              <div
+                className="card"
+                key={item.ID}
+                onClick={() => handleVariant(item)}
+              >
+                <img src={`http://localhost:3000/ITEMS/${item.Image}`} alt="" />
+
+                <div className="name">
+                  <h3>{item.Item_Name}</h3>
+                </div>
+              </div>
+            ))}
+          </section>
+        )}
+        {showVariant && (
+          <section className="fourth-section 2">
+            {variant.map((variants, index) => (
+              <div
+                className="card"
+                key={index}
+                onClick={() => handleForm(variants)}
+              >
+                <img
+                  src={`http://localhost:3000/ITEMS/${variants.Image}`}
+                  alt=""
+                />
+                <div className="name">
+                  <h3>{variants.Variant}</h3>
+                </div>
+              </div>
+            ))}
+          </section>
+        )}
+
+        {showResult && (
+          <div className="fourth-section 3">
+            {results.map((result, index) => (
+              <div
+                className="card"
+                key={index}
+                onClick={() => handleVariant(result)}
+              >
+                <img
+                  src={`http://localhost:3000/ITEMS/${result.Image}`}
+                  alt=""
+                />
+
+                <div className="name">
+                  <h3>{result.Item_Name}</h3>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default Store

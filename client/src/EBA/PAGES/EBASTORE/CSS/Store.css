@@ -162,7 +162,7 @@
         span {
             width: 15px;
             height: 15px;
-            padding: 5px;
+            padding: 10px;
             font-size: 0.8rem;
             display: flex;
             justify-content: center;
@@ -171,8 +171,8 @@
             border-radius: 50%;
             color: white;
             position: absolute;
-            bottom: 40%;
-            left: 60%;
+            top: -5px;
+            right: -5px;
         }
     }
     
@@ -185,25 +185,42 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-        
-            a {
-                color: #34BB42;
-                text-decoration: none;
+
+            button {
                 display: flex;
                 align-items: center;
                 gap: 10px;
+                border: none;
+                cursor: pointer;
             }
+            .logo {
+                width: 50px;
+                height: 50px;
+                object-fit: contain;
+            }
+            div {
+                text-align: left;
+                font-weight: bold;
 
+                p {
+                    color: var(--secondary-text);
+                }
+            }
+            
             .group {
                 display: flex;
                 align-items: center;
-                gap: 30px;
-                
+                gap: 5px;
+                *{color: #fff;}
+
                 button {
-                    background: none;
-                    border: none;
-                    font-size: 1rem;
-                    cursor: pointer;
+                    width: 150px;
+                    padding: 10px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: var(--primary-btn);
+                    border-radius: 20px;
                 }
             }
         }

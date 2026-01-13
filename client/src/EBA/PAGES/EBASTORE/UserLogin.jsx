@@ -7,7 +7,7 @@ import { jwtDecode } from 'jwt-decode';
 import './CSS/LandingStore.css';
 import './CSS/Preloader.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 const UserLogin = () => {
 	const navigateTo = useNavigate();
@@ -75,23 +75,26 @@ const UserLogin = () => {
             onClick={() => navigateTo("/eba")}
             style={{ cursor: "pointer" }}
           >
-            <img src="/logo.png" alt="CvSU Logo" className="logo-diamond" />
-			<FontAwesomeIcon icon={faTimes} className='icon' />
+            <FontAwesomeIcon icon={faArrowLeft} className="icon" />
+            <h1>SIGN IN</h1>
           </div>
 
           <div className="cvsu-title">
+            <img src="/logo.png" alt="CvSU Logo" className="logo-diamond" />
             <h1>CAVITE STATE UNIVERSITY</h1>
-            <h2>TANZA CAMPUS</h2>
-            <h3>EBA SHOP PORTAL</h3>
           </div>
         </div>
 
         <div className="cvsu-form-content">
           <div className="google-signin-description">
-            <p>Sign in with your CvSU Google Account</p>
-            <span>Only @cvsu.edu.ph accounts are allowed</span>
-			<br /><br />
-			<small>Don't have account? <a href="/usersignup">Click here</a> to register.</small>
+            <p>
+              To continue, sign in using the Google Account that the campus
+              provided.
+            </p>
+            <small>
+              Don't have account? <a href="/usersignup">Click here</a> to
+              register.
+            </small>
           </div>
 
           <div className="custom-google-login">
