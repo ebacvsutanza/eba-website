@@ -1,8 +1,35 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
 
-export default function StoreNavbar({ carts = [] }) {
+export default function StoreNavbar() {
+  const [carts, setCart] = useState([]);
+	const token = localStorage.getItem("token");
+  useEffect(() => {
+    if (!token) {
+      window.location.href = '/userlogin';
+      return;
+    }
+    fetchCart();
+  }, [token]);
+  const fetchCart = () => {
+    axios
+      .get("http://localhost:3000/cartItem", {
+        headers: {
+          Authorization: token,
+        },
+      })
+      .then((response) => {
+        const cartItems = response.data.cartItems || [];
+        setCart(cartItems);
+      })
+      .catch((err) => {
+        alert(err.response ? err.response.data.message : "An error occurred");
+        window.location.href = "/userlogin";
+      });
+  };
+
   const handleNavigation = () => {
     if (window.location.pathname === "/ebastore") {
       window.location.href = "/eba";
