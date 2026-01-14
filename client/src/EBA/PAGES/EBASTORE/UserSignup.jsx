@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 
@@ -63,39 +61,30 @@ const UserSignin = () => {
 	}
 
 	return (
-    <div className="cvsu-login-container">
-      <div className="cvsu-login-form">
-        <div className="cvsu-header">
-          <div
-            className="cvsu-logo"
-            onClick={() => navigateTo("/eba")}
-            style={{ cursor: "pointer" }}
-          >
-            <img src="/logo.png" alt="CvSU Logo" className="logo-diamond" />
-            <FontAwesomeIcon icon={faTimes} className="icon" />
+    <div className="h-screen p-3 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.6),rgba(0,0,0,0.6)),url('/cvsuback.jpg')] bg-cover bg-center center-flex">
+      <div className="lg:w-3/4 xl:w-3/5 h-3/4 bg-(--primary-bg) rounded-xl flex overflow-hidden relative">
+        <div class="md:w-1/2 px-5 py-10 text-center flex justify-around flex-col">
+          <div className="center-flex flex-col gap-3">
+            <img
+              src="/logo.png"
+              alt="CvSU Logo"
+              className="w-20 object-contain"
+              onClick={() => navigateTo("/eba")}
+            />
+            <h1 className="text-3xl text-(--secondary-text) font-heading font-bold">
+              Sign Up
+            </h1>
+            <p className="font-heading text-lg">Let’s create your account for EBA</p>
           </div>
 
-          <div className="cvsu-title">
-            <h1>CAVITE STATE UNIVERSITY</h1>
-            <h2>TANZA CAMPUS</h2>
-            <h3>EBA SHOP PORTAL</h3>
-          </div>
-        </div>
+          <p className="my-10 font-heading">
+            Sign-up using your Google Account from CvSU, this will use details
+            such as your name and profile photo to set-up your EBA Profile.{" "}
+          </p>
 
-        <div className="cvsu-form-content">
-          <div className="google-signin-description">
-            <p>Sign up with your CvSU Google Account</p>
-            <span>Only @cvsu.edu.ph accounts are allowed</span>
-            <br />
-            <br />
-            <small>
-              Already have account? <a href="/userlogin">Click here</a> to
-              register.
-            </small>
-          </div>
-          {message && <div className="error-message">{message}</div>}
+          <div>
+            {message && <div className="mb-5 text-(--error)">{message}</div>}
 
-          <div style={{ textAlign: "center" }}>
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={() => {
@@ -103,8 +92,14 @@ const UserSignin = () => {
                 setTimeout(() => setMessage(""), 3000);
               }}
             />
+
+						<a href="/userlogin" className="underline text-(--secondary-text)">
+							Sign in instead
+						</a>
           </div>
         </div>
+
+  a     <img src="cvsuback.jpg" alt="" className="w-1/2 h-full object-cover hidden md:block" />
       </div>
     </div>
   );

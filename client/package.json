@@ -16,6 +16,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@react-oauth/google": "^0.7.3",
+    "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.9.0",
     "chart.js": "^4.4.9",
     "jwt-decode": "^4.0.0",
@@ -25,7 +26,8 @@
     "react-datepicker": "^8.3.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.0",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

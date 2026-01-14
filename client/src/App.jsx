@@ -23,30 +23,32 @@ import './App.css';
 
 function App() {
 	return (
-		<BrowserRouter>
-			<Routes>
-				{/* BULLETIN PAGE */}
-				<Route path='/' element={<Bulletin />}></Route>
+		<div class="text-(--primary-text) font-family text-sm">
+			<BrowserRouter>
+				<Routes>
+					{/* BULLETIN PAGE */}
+					<Route path='/' element={<Bulletin />}></Route>
 
-				{/* EBA PAGE */}
-				<Route path='/eba' element={<EBA />}></Route>
-				<Route path='/abouteba' element={<AboutEBA />}></Route>
-				<Route path='/aboutdeveloper' element={<AboutDeveloper />}></Route>
+					{/* EBA PAGE */}
+					<Route path='/eba' element={<EBA />}></Route>
+					<Route path='/abouteba' element={<AboutEBA />}></Route>
+					<Route path='/aboutdeveloper' element={<AboutDeveloper />}></Route>
 
-				{/* EBA STORE PAGE */}
-				<Route path='/userlogin' element={<EBAUserLogin />}></Route>
-				<Route path='/usersignup' element={<EBAUserSignup />}></Route>
-				<Route path='/ebalandingstore' element={<EBALandingStore />}></Route>
-				<Route path='/ebastore' element={<EBAStore />}></Route>
-				<Route path='/ebacart' element={<EBACart />}></Route>
-				<Route path='/set-password' element={<SetPassword />}></Route>
+					{/* EBA STORE PAGE */}
+					<Route path='/userlogin' element={<EBAUserLogin />}></Route>
+					<Route path='/usersignup' element={<EBAUserSignup />}></Route>
+					<Route path='/ebalandingstore' element={<EBALandingStore />}></Route>
+					<Route path='/ebastore' element={<EBAStore />}></Route>
+					<Route path='/ebacart' element={<EBACart />}></Route>
+					<Route path='/set-password' element={<SetPassword />}></Route>
 
-				{/* ADMIN PAGE */}
-				<Route path='/adminlogin' element={<AdminLogin />}></Route>
-				<Route path='/adminpanel' element={<Adminpanel />}></Route>
-				<Route path='/staffadminpanel' element={<StaffAdminpanel />}></Route>
-			</Routes>
-		</BrowserRouter>
+					{/* ADMIN PAGE */}
+					<Route path='/adminlogin' element={<AdminLogin />}></Route>
+					<Route path='/adminpanel' element={<Adminpanel />}></Route>
+					<Route path='/staffadminpanel' element={<StaffAdminpanel />}></Route>
+				</Routes>
+			</BrowserRouter>
+		</div>
 	);
 }
 
