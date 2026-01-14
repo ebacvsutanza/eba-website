@@ -1,14 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
-import './CSS/Store.css'
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faMagnifyingGlass, faMicrophone, faPlus } from '@fortawesome/free-solid-svg-icons';
+
+
+import './CSS/Store.css'
 import StoreNavbar from "./StoreNavbar";
 
-const Store = () => {
+const slides = [
+  {
+    id: 1,
+    image: "https://via.placeholder.com/800x400/1e40af/ffffff?text=Slide+1",
+  },
+  {
+    id: 2,
+    image: "https://via.placeholder.com/800x400/047857/ffffff?text=Slide+2",
+  },
+  {
+    id: 3,
+    image: "https://via.placeholder.com/800x400/7c2d12/ffffff?text=Slide+3",
+  },
+];
 
+const Store = () => {
+  // Carousel
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  
 	const [message, setMessage] = useState('');
 	const [formMessage, setFormMessage] = useState('');
 

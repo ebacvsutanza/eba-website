@@ -13,6 +13,7 @@ import EBAUserLogin from './EBA/PAGES/EBASTORE/UserLogin';
 import EBAUserSignup from './EBA/PAGES/EBASTORE/UserSignup';
 import EBAStore from './EBA/PAGES/EBASTORE/Store';
 import EBACart from './EBA/PAGES/EBASTORE/Cart';
+import Catalog from './EBA/PAGES/EBASTORE/Catalog';
 import SetPassword from './EBA/PAGES/EBASTORE/SetPassword';
 
 import AdminLogin from './EBA/PAGES/ADMIN/AdminLogin';
@@ -39,6 +40,7 @@ function App() {
 					<Route path='/usersignup' element={<EBAUserSignup />}></Route>
 					<Route path='/ebalandingstore' element={<EBALandingStore />}></Route>
 					<Route path='/ebastore' element={<EBAStore />}></Route>
+					<Route path='/catalog' element={<Catalog />}></Route>
 					<Route path='/ebacart' element={<EBACart />}></Route>
 					<Route path='/set-password' element={<SetPassword />}></Route>
 
