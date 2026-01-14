@@ -7,32 +7,41 @@ import { faChevronLeft, faMagnifyingGlass, faMicrophone, faPlus } from '@fortawe
 import './CSS/Store.css'
 import StoreNavbar from "./StoreNavbar";
 
-const slides = [
-  {
-    id: 1,
-    image: "https://via.placeholder.com/800x400/1e40af/ffffff?text=Slide+1",
-  },
-  {
-    id: 2,
-    image: "https://via.placeholder.com/800x400/047857/ffffff?text=Slide+2",
-  },
-  {
-    id: 3,
-    image: "https://via.placeholder.com/800x400/7c2d12/ffffff?text=Slide+3",
-  },
-];
 
 const Store = () => {
   // Carousel
-  const [current, setCurrent] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = [
+    {
+      id: 1,
+      image: 'developers/mykel.png'
+    },
+    {
+      id: 2,
+      image: 'developers/wendell.png'
+    },
+    {
+      id: 3,
+      image: 'developers/paulo.png'
+    },
+    {
+      id: 4,
+      image: 'developers/lee.png'
+    },
+  ];
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5000);
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
 
   
 	const [message, setMessage] = useState('');
@@ -440,7 +449,80 @@ const Store = () => {
       <div className="store">
         <StoreNavbar carts={carts} />
 
-        <section className="first-section">
+        <div className="w-full h-[450px] mt-5 rounded-lg border border-gray-400 bg-gray-100">
+          {/* Carousel Container */}
+          <div className="relative w-full h-96 md:h-full mx-auto">
+            {/* Slides */}
+            <div className="relative w-full h-full overflow-hidden rounded-lg shadow-2xl">
+              {slides.map((slide, index) => (
+                <div
+                  key={slide.id}
+                  className={`absolute w-full h-full transition-opacity duration-1000 ${
+                    index === currentSlide ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <div
+                    className={`w-full h-full bg-gray-300 flex flex-col items-center justify-center text-white`}
+                  >
+                    <img
+                      src={slide.image}
+                      alt="Carousel Image"
+                      className="w-full object-cover"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Dots Indicator */}
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10 flex gap-3">
+              {slides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`h-3 rounded-full transition-all duration-300 ${
+                    index === currentSlide
+                      ? "bg-white w-8"
+                      : "bg-white bg-opacity-50 w-3 hover:bg-opacity-75"
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <section className="mt-20">
+          <div class="flex items-center justify-between">
+            <h1 className="font-heading text-3xl font-bold">Featured Items</h1>
+            <a href="/catalog" className="text-(--secondary-text) font-bold">
+              View All
+            </a>
+          </div>
+
+          <div className="mb-10 mt-3 grid grid-cols-5 gap-5">
+            {exclusive.map((exclusives, index) => (
+              <div className="p-3 rounded-lg border-2 border-transparent hover:border-(--primary-btn) transition-all" key={index}>
+                <div className="img-block">
+                  <img
+                    src={`http://localhost:3000/ITEMS/${exclusives.Image}`}
+                    alt="Item Image"
+                    className='aspect-square p-5 border border-gray-400 rounded-lg'
+                  />
+                </div>
+                <div className="h-[120px] p-3 flex flex-col justify-between">
+                  <h3 className='text-lg font-semibold'>{exclusives.Item_Name}</h3>
+                  <p>Starts at PHP 250</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+
+
+
+        {/* <section className="first-section mt-30">
           <FontAwesomeIcon icon={faMagnifyingGlass} className="search" />
           <input
             type="text"
@@ -565,7 +647,7 @@ const Store = () => {
               </div>
             ))}
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

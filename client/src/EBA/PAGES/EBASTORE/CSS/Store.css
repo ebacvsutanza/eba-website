@@ -1,3 +1,76 @@
+
+.card-blocks {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  overflow-x: auto;
+
+  .card {
+    max-width: 250px;
+    width: 250px;
+    height: 350px;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #e2e2e2;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+
+    .group {
+      width: 100%;
+      height: 70%;
+
+      .img-block {
+        width: 100%;
+        height: 70%;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+      }
+      .info {
+        width: 100%;
+        padding: 10px 0;
+
+        h3 {
+          word-wrap: break-word;
+        }
+      }
+    }
+
+    .buttons {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      p {
+        font-size: 0.8rem;
+      }
+
+      button {
+        width: 40px;
+        height: 40px;
+        background: #53b175;
+        border: none;
+        color: white;
+        font-size: 1rem;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+
+
 .message {
   padding: 10px 20px;
   background: var(--bg-color);
@@ -153,7 +226,7 @@
 
 .store {
   width: 100%;
-  padding: 0 30px;
+  padding: 0 1.3in;
   margin: auto;
 
   .cart {
@@ -300,76 +373,7 @@
     .top {
       padding: 10px 0;
     }
-    .card-block {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      overflow-x: auto;
-
-      .card {
-        max-width: 250px;
-        width: 250px;
-        height: 350px;
-        padding: 10px;
-        border-radius: 20px;
-        border: 1px solid #e2e2e2;
-        display: flex;
-        justify-content: space-between;
-        flex-direction: column;
-
-        .group {
-          width: 100%;
-          height: 70%;
-
-          .img-block {
-            width: 100%;
-            height: 70%;
-
-            img {
-              width: 100%;
-              height: 100%;
-              object-fit: contain;
-            }
-          }
-          .info {
-            width: 100%;
-            padding: 10px 0;
-
-            h3 {
-              word-wrap: break-word;
-            }
-          }
-        }
-
-        .buttons {
-          width: 100%;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-
-          p {
-            font-size: 0.8rem;
-          }
-
-          button {
-            width: 40px;
-            height: 40px;
-            background: #53b175;
-            border: none;
-            color: white;
-            font-size: 1rem;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-          }
-        }
-      }
-    }
-  }
+}
 
   .third-section {
     width: 100%;
