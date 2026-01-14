@@ -40,7 +40,7 @@ export default function StoreNavbar() {
   };
 
   return (
-    <header>
+    <header className="px-[1.3in]">
       <nav className="w-full py-3 flex justify-between items-center">
         <button
           onClick={handleNavigation}

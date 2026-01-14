@@ -446,7 +446,7 @@ const Store = () => {
         </div>
       )}
 
-      <div className="store">
+      <div className="store px-[1.3in]">
         <StoreNavbar carts={carts} />
 
         <div className="w-full h-[450px] mt-5 rounded-lg border border-gray-400 bg-gray-100">
@@ -502,25 +502,27 @@ const Store = () => {
 
           <div className="mb-10 mt-3 grid grid-cols-5 gap-5">
             {exclusive.map((exclusives, index) => (
-              <div className="p-3 rounded-lg border-2 border-transparent hover:border-(--primary-btn) transition-all" key={index}>
+              <div
+                className="p-3 rounded-lg border-2 border-transparent hover:border-(--primary-btn) transition-all"
+                key={index}
+              >
                 <div className="img-block">
                   <img
                     src={`http://localhost:3000/ITEMS/${exclusives.Image}`}
                     alt="Item Image"
-                    className='aspect-square p-5 border border-gray-400 rounded-lg'
+                    className="aspect-square p-5 border border-gray-400 rounded-lg"
                   />
                 </div>
                 <div className="h-[150px] p-3 flex flex-col justify-between">
-                  <h3 className='text-lg font-semibold'>{exclusives.Item_Name}</h3>
+                  <h3 className="text-lg font-semibold">
+                    {exclusives.Item_Name}
+                  </h3>
                   <p>Starts at PHP 250</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
-
-
-
 
         {/* <section className="first-section mt-30">
           <FontAwesomeIcon icon={faMagnifyingGlass} className="search" />
