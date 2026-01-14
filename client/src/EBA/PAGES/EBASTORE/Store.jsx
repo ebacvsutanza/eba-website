@@ -510,7 +510,7 @@ const Store = () => {
                     className='aspect-square p-5 border border-gray-400 rounded-lg'
                   />
                 </div>
-                <div className="h-[120px] p-3 flex flex-col justify-between">
+                <div className="h-[150px] p-3 flex flex-col justify-between">
                   <h3 className='text-lg font-semibold'>{exclusives.Item_Name}</h3>
                   <p>Starts at PHP 250</p>
                 </div>
