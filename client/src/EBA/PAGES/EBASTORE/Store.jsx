@@ -447,7 +447,7 @@ const Store = () => {
       )}
 
       <div className="store px-[1.3in]">
-        <StoreNavbar carts={carts} />
+        <StoreNavbar carts={carts} fetchCart={fetchCart} />
 
         <div className="w-full h-[450px] mt-5 rounded-lg border border-gray-400 bg-gray-100">
           {/* Carousel Container */}

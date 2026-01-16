@@ -1,32 +1,63 @@
 import React, { useEffect, useState } from 'react'
+import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faChevronLeft, faChevronRight, faSearch, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 
 import StoreNavbar from './StoreNavbar'
-import axios from 'axios';
+import CatalogSidebar from './CatalogSidebar';
 
 
 export default function Catalog() {
-  const [open, setOpen] = useState(true);  
-  const [opens, setOpens] = useState(false);
   const [rotate, setRotate] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [openToast, setOpenToast] = useState(false);
   const [activeIndex, setActiveIndex] = useState(null);
 
+  const [carts, setCart] = useState([]);
+  const fetchCart = () => {
+    axios
+      .get("http://localhost:3000/cartItem", {
+        headers: {
+          Authorization: token,
+        },
+      })
+      .then((response) => {
+        const cartItems = response.data.cartItems || [];
+        setCart(cartItems);
+      })
+      .catch((err) => {
+        alert(err.response ? err.response.data.message : "An error occurred");
+        window.location.href = "/userlogin";
+      });
+  };
+
+	const token = localStorage.getItem("token");
+  const [userId, setUserId] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [emailAddress, setEmailAddress] = useState('');
   useEffect(() => {
+    if (!token) {
+      window.location.href = '/userlogin';
+      return;
+    }
+  
+    const decodedToken = JSON.parse(atob(token.split('.')[1]));
+    setFullName(decodedToken.fullname);
+    setEmailAddress(decodedToken.email);
+    setUserId(decodedToken.id);
+
     fetchProduct();
-  }, []);  
+  }, [token]);
+  
   
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const fetchProduct = async () => {
-    const res1 = await axios.get("http://localhost:3000/inventory");
+    const res1 = await axios.get("http://localhost:3000/storeinventory");
     setProducts(res1.data);
     const res2 = await axios.get("http://localhost:3000/categories");
     setCategories(res2.data);
   }
-
 
   const [selectedCategory, setSelectedCategory] = useState("Student Uniform");
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,13 +74,6 @@ export default function Catalog() {
       return 0;
     });
 
-  const clothingCategories = categories.filter(
-    (item) => !["Capstone Manual", "Module"].includes(item.Category)
-  );
-  const bookCategories = categories.filter((item) =>
-    ["Capstone Manual", "Module"].includes(item.Category)
-  );
-
   const [selectedProduct, setSelectedProduct] = useState(null);
   const handleOpenModal = (e, product) => {
     e.stopPropagation();
@@ -59,108 +83,16 @@ export default function Catalog() {
   
   return (
     <div className="h-screen">
-      <StoreNavbar />
+      <StoreNavbar carts={carts} fetchCart={fetchCart} />
 
       <div className="p-5 h-[90vh] flex">
-        <div className="w-1/4 p-3">
-          <h1 className="mb-10 text-2xl font-semibold">Category</h1>
+        <CatalogSidebar
+          categories={categories}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+        />
 
-          <div>
-            <button
-              onClick={() => setOpen(!open)}
-              className={`flex w-full items-center justify-between rounded-lg px-4 py-3 ${
-                open && "bg-(--accent)/65 hover:bg-(--accent)/65 text-white"
-              } hover:bg-(--accent)/25 transition-all`}
-            >
-              <span className="font-medium text-lg">Clothing</span>
-
-              <div className="flex items-center gap-2">
-                <svg
-                  className={`h-4 w-4 transition-transform ${
-                    open ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </button>
-            {open && (
-              <ul className="mt-2 space-y-1">
-                {clothingCategories.map((item, index) => (
-                  <button
-                    key={index}
-                    className={`
-                      w-full text-left cursor-pointer rounded-md px-4 py-2 hover:bg-(--accent)/25
-                      ${
-                        selectedCategory === item.Category &&
-                        "bg-(--accent)/65 hover:bg-(--accent)/65 text-white"
-                      }
-                    `}
-                    onClick={() => setSelectedCategory(item.Category)}
-                  >
-                    {item.Category}
-                  </button>
-                ))}
-              </ul>
-            )}
-
-            <button
-              onClick={() => setOpens(!opens)}
-              className={`mt-5 flex w-full items-center justify-between rounded-lg px-4 py-3 ${
-                opens && "bg-(--accent)/65 hover:bg-(--accent)/65 text-white"
-              } hover:bg-(--accent)/25 transition-all`}
-            >
-              <span className="font-medium text-lg">Books</span>
-
-              <div className="flex items-center gap-2">
-                <svg
-                  className={`h-4 w-4 transition-transform ${
-                    opens ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </button>
-            {opens && (
-              <ul className="mt-2 space-y-1">
-                {bookCategories.map((item, index) => (
-                  <button
-                    key={index}
-                    className={`
-                      w-full text-left cursor-pointer rounded-md px-4 py-2 hover:bg-(--accent)/25
-                      ${
-                        selectedCategory === item.Category &&
-                        "bg-(--accent)/65 hover:bg-(--accent)/65 text-white"
-                      }
-                    `}
-                    onClick={() => setSelectedCategory(item.Category)}
-                  >
-                    {item.Category}
-                  </button>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-
-        <div className="w-3/4 p-3">
+        <div className="w-3/4 p-3 overflow-auto">
           <div className="flex item-center gap-5">
             <h1 className="text-2xl font-semibold">Catalog</h1>
 
@@ -277,7 +209,15 @@ export default function Catalog() {
       </div>
 
       {openModal && selectedProduct && (
-        <CartModal setOpenModal={setOpenModal} setOpenToast={setOpenToast} product={selectedProduct} />
+        <CartModal
+          fetchCart={fetchCart}
+          setOpenModal={setOpenModal}
+          setOpenToast={setOpenToast}
+          product={selectedProduct}
+          userId={userId}
+          fullName={fullName}
+          emailAddress={emailAddress}
+        />
       )}
 
       {openToast && (
@@ -295,19 +235,112 @@ export default function Catalog() {
 }
 
 
-const CartModal = ({ setOpenModal, setOpenToast, product }) => {
+const CartModal = ({ 
+  fetchCart,
+  setOpenModal, 
+  setOpenToast, 
+  product,
+  userId, 
+  fullName, 
+  emailAddress, 
+}) => {
+  const [size, setSize] = useState('')
+  const [message, setMessage] = useState('')
+
   const handleAddToCart = () => {
-    setOpenToast(true);
-    setOpenModal(false);
+    if (size.length === 0) {
+      setMessage('Select Size')
+      if (product.Category === 'Capstone Manual' || product.Category === 'Module') {
+        addToCartItem();
+        setOpenToast(true);
+        setTimeout(() => {
+          setOpenToast(false);
+        }, 2000);
+        setOpenModal(false);
+      }
+    } else {
+      addToCart();
+      setOpenToast(true);
+      setTimeout(() => {
+        setOpenToast(false);
+      }, 2000);
+      setOpenModal(false);
+    }
   }
   const handleBuyNow = () => {
-    setOpenModal(false);
-    window.location.href = '/cart'
+    if (size.length === 0) {
+      setMessage("Select Size");
+      if (product.Category === 'Capstone Manual' || product.Category === 'Module') {
+        addToCartItem();
+        window.location.href = '/ebacart'
+      }
+    } else {
+      setOpenModal(false);
+      addToCart();
+      window.location.href = '/ebacart'
+    }
   }
+
+  const addToCart = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/addToCart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transaction: product.Image,
+          UserID: userId,
+          Category: product.Category,
+          ItemName: product.Item_Name,
+          Variant: product.Variant,
+          Size: size,
+          Quantity: 1,
+          CustomerName: fullName,
+          EmailAddress: emailAddress,
+          Amount: product.Price,
+        }),
+      });
+
+      if (response.ok) {
+        setSize("");
+        fetchCart();
+      } else {
+        console.log("failed submit");
+      }
+    } catch (error) {
+      console.log("error submitting", error);
+    }
+  };
+  const addToCartItem = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/addToCart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transaction: product.Image,
+          UserID: userId,
+          Category: product.Category,
+          ItemName: product.Item_Name,
+          Quantity: 1,
+          CustomerName: fullName,
+          EmailAddress: emailAddress,
+          Amount: product.Price,
+        }),
+      });
+
+      if (response.ok) {
+        setSize("");
+        fetchCart();
+      } else {
+        console.log("failed submit");
+      }
+    } catch (error) {
+      console.log("error submitting", error);
+    }
+  };
 
   return (
     <div className="w-full h-full bg-black/20 fixed top-0 left-0 center-flex">
-      <div className="bg-(--primary-bg) w-3/5 h-3/5 rounded-lg p-5">
+      <div className="bg-(--primary-bg) w-3/5 h-3/5 rounded-xl p-5">
         <button
           className="ml-5 bg-transparent hover:bg-transparent hover:text-primary-foreground font-bold cursor-pointer flex items-center gap-1"
           onClick={() => setOpenModal(false)}
@@ -317,7 +350,7 @@ const CartModal = ({ setOpenModal, setOpenToast, product }) => {
         </button>
 
         <div className="h-full p-5 flex gap-5">
-          <aside className="w-[350px] my-auto">
+          <aside className="w-[300px] h-full my-auto bg-gray-200 center-flex rounded-lg">
             <img
               src={`http://localhost:3000/ITEMS/${product.Image}`}
               alt={product.Item_Name}
@@ -327,22 +360,39 @@ const CartModal = ({ setOpenModal, setOpenToast, product }) => {
 
           <main className="p-3 flex-1 flex flex-col justify-between">
             <div>
-              <h1 className="flex justify-between items-center font-bold text-2xl font-heading">
-                {product.Item_Name}
-                <span className="font-family text-2xl">PHP {product.Price}</span>
+              <h1 className="flex justify-between font-bold text-2xl font-heading">
+                <span className="flex-1">{product.Item_Name}</span>
+                <span className="font-family text-2xl">
+                  PHP {product.Price}
+                </span>
               </h1>
               <p className="text-[#7d7d7d]">{product.Variant}</p>
             </div>
 
             <div>
-              <p className="mt-10">Select Size</p>
-              <div className="mt-3 flex gap-2">
-                {["XS", "S", "M", "L", "XL", "2XL"].map((sizes) => (
-                  <button className="px-8 py-2 rounded-lg cursor-pointer bg-transparent hover:bg-(--primary-btn) hover:text-white">
-                    {sizes}
-                  </button>
-                ))}
-              </div>
+              {product.Variant && (
+                <>
+                  <p className="mt-10">Select Size</p>
+                  <div className="mt-3 relative">
+                    <div className="flex gap-2">
+                      {product.Sizes.map(({ Size, Quantity }, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setSize(Size)}
+                          disabled={Quantity === 0}
+                          className={`
+                            px-8 py-2 rounded-lg cursor-pointer hover:bg-(--primary-btn) hover:text-white disabled:opacity-50 transition-all
+                            ${size === Size && 'bg-(--primary-btn) text-white'}
+                          `}
+                        >
+                          {Size}
+                        </button>
+                      ))}
+                    </div>
+                    {message && <span className="text-(--error)">{message}</span>}
+                  </div>
+                </>
+              )}
 
               <div className="my-5 flex gap-3">
                 <button
@@ -365,16 +415,18 @@ const CartModal = ({ setOpenModal, setOpenToast, product }) => {
               </div>
             </div>
 
-            <footer>
-              <h3 className="font-medium text-lg">Don’t know your size?</h3>
-              <p>
-                Check out the AR Try-on application in the campus kiosk to see
-                your estimated size
-              </p>
-              <p className="flex items-center gap-2 text-(--secondary-text)">
-                See how <FontAwesomeIcon icon={faChevronRight} />
-              </p>
-            </footer>
+            {product.Variant && (
+              <footer>
+                <h3 className="font-medium text-lg">Don’t know your size?</h3>
+                <p>
+                  Check out the AR Try-on application in the campus kiosk to see
+                  your estimated size
+                </p>
+                <p className="flex items-center gap-2 text-(--secondary-text)">
+                  See how <FontAwesomeIcon icon={faChevronRight} />
+                </p>
+              </footer>
+            )}
           </main>
         </div>
       </div>

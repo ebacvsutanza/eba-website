@@ -74,7 +74,7 @@ const UserSignin = () => {
             <h1 className="text-3xl text-(--secondary-text) font-heading font-bold">
               Sign Up
             </h1>
-            <p className="font-heading text-lg">Let’s create your account for EBA</p>
+            <p className="font-heading text-[16px]">Let’s create your account for EBA</p>
           </div>
 
           <p className="my-10 font-heading">

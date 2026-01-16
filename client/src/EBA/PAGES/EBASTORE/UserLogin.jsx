@@ -78,7 +78,7 @@ const UserLogin = () => {
             <h1 className="text-3xl text-(--secondary-text) font-heading font-bold">
               Sign In
             </h1>
-            <p className="font-heading text-lg">
+            <p className="font-heading text-[16px]">
               Sign in using an EBA-registered Google Account to continue.
             </p>
           </div>
