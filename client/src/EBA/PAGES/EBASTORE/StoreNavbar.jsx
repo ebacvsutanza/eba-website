@@ -66,7 +66,7 @@ export default function StoreNavbar() {
             className="w-[150px] p-2 text-white center-flex gap-2 bg-(--primary-btn) rounded-lg relative cursor-pointer"
           >
             <FontAwesomeIcon icon={faCartShopping} />
-            Cart
+            My Cart
             <span className="w-5 h-5 bg-red-500 center-flex rounded-full text-white absolute -top-1 -right-1">
               {carts.length}
             </span>
