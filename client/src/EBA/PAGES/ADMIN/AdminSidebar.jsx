@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import './CSS/Sidebar.css';
 
@@ -12,7 +11,7 @@ const Sidebar = ({ onMenuClick, isOpen, handleLogout }) => {
 		onMenuClick(componentName);
 	};
 
-    return (
+	return (
 		<div className="sidebar-container">
 			<div className="sidebar">
 				<div className="block">
@@ -23,7 +22,7 @@ const Sidebar = ({ onMenuClick, isOpen, handleLogout }) => {
 						>
 							<img src='/admin/dashboard.png' /> Dashboard
 						</button>
-						<button
+						<button	
 							onClick={() => handleButtonClick('Transaction')}
 							className={activeButton === 'Transaction' ? 'active' : ''}
 						>
@@ -83,7 +82,7 @@ const Sidebar = ({ onMenuClick, isOpen, handleLogout }) => {
 				</div>
 			</div>
 
-			<div className="responsive-sidebar">
+			{/* <div className="responsive-sidebar">
 				{isOpen && (
 					<div className="block">
 						<div className="group">
@@ -153,7 +152,7 @@ const Sidebar = ({ onMenuClick, isOpen, handleLogout }) => {
 						</div>
 					</div>
 				)}
-			</div>
+			</div> */}
 		</div>
 	);
 };

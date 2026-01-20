@@ -59,18 +59,18 @@ const AdminPanel = () => {
 		navigateTo('/adminlogin');
 	};	
 
-    const fetchNotifications = async () => {
-        try {
-            const response = await axios.get('http://localhost:3000/notifications');
-            setNotifications(response.data);
-            } catch (err) {
-            console.error('Error fetching notifications:', err);
-        }
-    };
+	const fetchNotifications = async () => {
+		try {
+			const response = await axios.get('http://localhost:3000/notifications');
+			setNotifications(response.data);
+			} catch (err) {
+			console.error('Error fetching notifications:', err);
+		}
+	};
 
 	return (
-		<div className={isDarkMode ? 'adminpanel dark-mode' : 'adminpanel light-mode'}>
-			<div className="navbar">
+		<div className={` ${isDarkMode ? 'dark-mode' : 'light-mode'}`}>
+			{/* <div className="navbar">
 				<nav>
 					<button className="toggle-btn" onClick={() => setIsOpen(!isOpen)}>
 						<FontAwesomeIcon icon={isOpen ? faX : faBars} className='icon' />
@@ -130,7 +130,7 @@ const AdminPanel = () => {
 						</div>
 					</div>
 				</nav>
-			</div>
+			</div> */}
 
 			<div className="container">
 				<Sidebar onMenuClick={handleMenuClick} isOpen={isOpen} handleLogout={handleLogout}/>

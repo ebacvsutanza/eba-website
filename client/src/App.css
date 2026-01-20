@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis++++\;.[mk/o].com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');@import "tailwindcss";
 
 :root {
   --primary-text: #2E2E2E;
@@ -16,8 +15,9 @@ html, body {
   background: var(--primary-bg);
   scroll-behavior: smooth;
 }
+*{box-sizing: border-box;}
 
-.font-fammily{font-family: Montserrat;}
+.font-family{font-family: Montserrat;}
 .font-heading{font-family: Merriweather;}
 .center-flex {
   display: flex;

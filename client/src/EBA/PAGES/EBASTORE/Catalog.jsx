@@ -91,75 +91,87 @@ export default function Catalog() {
   
   return (
     <div className="h-screen">
-      <StoreNavbar carts={carts} fetchCart={fetchCart} />
+      <div className="lg:px-[1.3in]">
+        <StoreNavbar carts={carts} fetchCart={fetchCart} />
+      </div>
 
-      <div className="p-5 h-[90vh] flex">
+      <div className="py-5 h-[90vh] flex flex-col md:flex-row">
         <CatalogSidebar
           categories={categories}
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
         />
 
-        <div className="w-3/4 p-3 overflow-auto">
-          <div className="flex item-center gap-5">
-            <h1 className="text-2xl font-semibold">Catalog</h1>
+        <div className="md:w-3/4 p-3 overflow-auto">
+          <div className="flex item-center md:gap-5 flex-col md:flex-row">
+            <h1 className="text-xl md:text-2xl font-semibold">Catalog</h1>
 
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                placeholder={selectedCategory}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-5 border border-gray-500 rounded-full p-2"
-              />
-              <FontAwesomeIcon
-                icon={faSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={16}
-              />
-            </div>
-
-            <div className="flex items-center gap-3 relative">
-              Sort By
-              <select
-                name=""
-                id=""
-                onClick={() => setRotate((prev) => !prev)}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="w-[180px] px-5 py-2 center-flex border border-gray-500 rounded-full appearance-none relative"
-              >
-                <option value="low-to-high">Price: Low to High</option>
-                <option value="high-to-low">Price: High to Low</option>
-                <option value="newest" selected>
-                  Newest
-                </option>
-              </select>
-              <div className="flex items-center gap-2 absolute right-2 top-1/2 -translate-y-1/2">
-                <svg
-                  className={`h-4 w-4 transition-transform ${
-                    rotate ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19 9l-7 7-7-7"
+            <div className="flex flex-col-reverse flex-1">
+              <div className="flex flex-row-reverse md:flex-row gap-3">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    placeholder={selectedCategory}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-5 border border-gray-500 rounded-full p-2"
                   />
-                </svg>
+                  <FontAwesomeIcon
+                    icon={faSearch}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={16}
+                  />
+                </div>
+
+                <div className="flex items-center gap-3 relative">
+                  Sort By
+                  <select
+                    name=""
+                    id=""
+                    onClick={() => setRotate((prev) => !prev)}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-[180px] px-5 py-2 center-flex border border-gray-500 rounded-full appearance-none relative"
+                  >
+                    <option value="low-to-high">Price: Low to High</option>
+                    <option value="high-to-low">Price: High to Low</option>
+                    <option value="newest" selected>
+                      Newest
+                    </option>
+                  </select>
+                  <div className="flex items-center gap-2 absolute right-2 top-1/2 -translate-y-1/2">
+                    <svg
+                      className={`h-4 w-4 transition-transform ${
+                        rotate ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
+
+              <p className="text-sm my-3 md:hidden">
+                Listing{" "}
+                <span className="font-bold">{filteredProducts.length}</span>{" "}
+                items for "{selectedCategory}"
+              </p>
             </div>
           </div>
 
-          <p className="text-sm my-6">
+          <p className="text-sm my-6 hidden md:block">
             Listing <span className="font-bold">{filteredProducts.length}</span>{" "}
             items for "{selectedCategory}"
           </p>
 
-          <div className="grid grid-cols-4 gap-4">
+          <div className="my-3 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredProducts.map((product, index) => {
               const isActive = activeIndex === index;
 
@@ -190,12 +202,12 @@ export default function Catalog() {
                     </h3>
 
                     <div className="flex items-center justify-between">
-                      <p>Starts at PHP {product.Price}</p>
+                      <p className="mr-18">Starts at PHP {product.Price}</p>
 
                       <button
                         onClick={(e) => handleOpenModal(e, product)}
                         className={`
-                          bg-(--primary-btn) px-5 py-1 rounded-full absolute bottom-0 right-0 cursor-pointer
+                          bg-(--primary-btn) px-5 py-1 rounded-full absolute md:bottom-0 right-0 cursor-pointer
                           ${isActive ? "visible" : "invisible"}
                         `}
                       >
@@ -229,14 +241,14 @@ export default function Catalog() {
       )}
 
       {openToast && (
-        <p className="bg-(--primary-bg) center-flex gap-2 px-10 py-3 shadow-md rounded-lg fixed left-1/2 -translate-x-1/2 bottom-10">
+        <div className="w-3/4 md:w-auto bg-(--primary-bg) center-flex gap-2 px-10 py-3 shadow-md rounded-lg fixed left-1/2 -translate-x-1/2 bottom-10">
           <FontAwesomeIcon
             icon={faCheck}
             color="var(--primary-btn)"
-            size="2x"
+            size="2x" 
           />
-          Item has been added to cart
-        </p>
+          <p>Item has been added to cart</p>
+        </div>
       )}
     </div>
   );

@@ -2,11 +2,20 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronLeft,
+  faChevronRight,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 
 import StoreNavbar from "./StoreNavbar";
 
 const Cart = () => {
+  const [orderSummary, setOrderSummary] = useState(false);
+  const toggleOrderSummary = () => {
+    setOrderSummary(!orderSummary);
+  };
+
   const [carts, setCart] = useState([]);
 
   const [totalSum, setTotalSum] = useState(null);
@@ -51,7 +60,7 @@ const Cart = () => {
   const getTotal = (data) => {
     const sum = data.reduce(
       (acc, item) => acc + item.Amount * item.Quantity,
-      0
+      0,
     );
     setTotalSum(sum);
   };
@@ -106,8 +115,6 @@ const Cart = () => {
     fetchCart();
   };
 
-
-  
   const updateCartQuantity = async (cartId, newQuantity) => {
     try {
       await axios.put(`http://localhost:3000/cart/${cartId}`, {
@@ -126,6 +133,7 @@ const Cart = () => {
       acc[key] = {
         Item_Name: item.Item_Name,
         Variant: item.Variant,
+        Category: item.Category,
         totalQuantity: 0,
         sizes: {},
       };
@@ -142,13 +150,14 @@ const Cart = () => {
     return acc;
   }, {});
 
-
   return (
-    <div className="h-screen bg-(--primary-bg)">
-      <StoreNavbar fetchCart={fetchCart} carts={carts} />
+    <div className="h-screen bg-(--primary-bg) relative">
+      <div className="lg:px-[1.3in]">
+        <StoreNavbar fetchCart={fetchCart} carts={carts} />
+      </div>
 
-      <div className="p-5 h-[90vh] flex gap-3">
-        <div className="w-3/4 overflow-auto">
+      <div className="p-5 h-[90vh] flex gap-3 flex-col lg:flex-row overflow-y-auto">
+        <div className="lg:w-3/4 xl:w-3/4 overflow-auto">
           <h1 className="mb-5 font-heading text-3xl font-bold">My Cart</h1>
           <div className="space-y-5">
             {carts.length === 0 ? (
@@ -170,73 +179,100 @@ const Cart = () => {
 
                   return (
                     <div
-                      className="h-[200px] p-5 bg-[#f5f5f5] rounded-lg flex gap-5 border-2 border-gray-300"
+                      className="h-[180px] p-3 lg:p-5 bg-[#f5f5f5] rounded-lg flex gap-5 border-2 border-gray-300 relative"
                       key={index}
                     >
-                      <div className="h-full bg-white rounded-lg p-2 flex">
+                      <div className="h-full aspect-square bg-white rounded-lg p-2 center-flex">
                         <img
                           src={`http://localhost:3000/ITEMS/${cart.Image}`}
                           alt="Item Image"
-                          className="h-full aspect-square object-contain"
+                          className="w-3/4 m-auto object-contain"
                         />
                       </div>
 
-                      <div className="flex flex-col justify-between flex-1">
-                        <div>
-                          <p className="text-(--secondary-text) font-semibold text-lg">
-                            {cart.Item_Name}
+                      <div className="flex-1 flex gap-3 flex-col justify-between md:flex-row">
+                        <div className="flex flex-col justify-between flex-1">
+                          <div>
+                            <p className="text-(--secondary-text) font-semibold md:text-lg line-clamp-2">
+                              {cart.Item_Name}
 
-                            {cart.Variant && " - "}
-                            {cart.Variant}
+                              {cart.Variant && " - "}
+                              {cart.Variant}
+                            </p>
+
+                            <p className="text-gray-500 hidden md:block">
+                              {cart.Category === "Capstone Manual" ||
+                              cart.Category === "Module" ? (
+                                ""
+                              ) : (
+                                <>Size: {cart.Size}</>
+                              )}
+                            </p>
+                          </div>
+
+                          <p className="text-gray-500 lg:text-lg">
+                            PHP {cart.Amount * cart.Quantity}
                           </p>
-
-                          <p className="text-gray-500">Size: {cart.Size}</p>
                         </div>
 
-                        <p className="text-gray-500 text-lg">
-                          PHP {cart.Amount * cart.Quantity}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col justify-between flex-1">
-                        <p className="text-(--secondary-text) font-semibold text-lg">
-                          Quantity
-                        </p>
-
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() =>
-                              handleDecrease(cart.ID, cart.Quantity)
-                            }
-                            className="cursor-pointer"
-                          >
-                            <FontAwesomeIcon icon={faChevronLeft} />
-                          </button>
-                          <p className="py-1 px-4 border border-gray-300 rounded-md">
-                            {cart.Quantity}
+                        <div className="flex md:flex-col items-center justify-between flex-1">
+                          <p className="text-(--secondary-text) font-semibold lg:text-lg">
+                            Quantity
                           </p>
+
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() =>
+                                handleDecrease(cart.ID, cart.Quantity)
+                              }
+                              className="cursor-pointer"
+                            >
+                              <FontAwesomeIcon icon={faChevronLeft} />
+                            </button>
+                            <p className="py-1 px-4 border border-gray-300 rounded-md">
+                              {cart.Quantity}
+                            </p>
+                            <button
+                              onClick={() =>
+                                handleIncrease(cart.ID, cart.Quantity)
+                              }
+                              className="cursor-pointer"
+                            >
+                              <FontAwesomeIcon icon={faChevronRight} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <p className="text-gray-500 md:hidden">
+                            {cart.Category === "Capstone Manual" ||
+                            cart.Category === "Module" ? (
+                              ""
+                            ) : (
+                              <>Size: {cart.Size}</>
+                            )}
+                          </p>
+
                           <button
-                            onClick={() =>
-                              handleIncrease(cart.ID, cart.Quantity)
-                            }
-                            className="cursor-pointer"
+                            onClick={() => handleRemove(cart.ID)}
+                            className="text-(--error) mt-auto text-lg cursor-pointer lg:relative"
                           >
-                            <FontAwesomeIcon icon={faChevronRight} />
+                            {<FontAwesomeIcon icon={faTrash} />}
                           </button>
                         </div>
                       </div>
-
-                      <button
-                        onClick={() => handleRemove(cart.ID)}
-                        className="text-(--error) mt-auto text-lg cursor-pointer"
-                      >
-                        Remove Item
-                      </button>
                     </div>
                   );
                 })}
               </>
             )}
+
+            <button
+              onClick={toggleOrderSummary}
+              className="w-full py-3 bg-(--primary-btn) hover:bg-(--accent) transition-all text-white rounded-lg lg:hidden"
+            >
+              Proceed
+            </button>
 
             {message && (
               <div className="shadow-[0_0_5px_#acacac] py-2 px-10 rounded-lg absolute bottom-5 left-1/2 -translate-x-1/2">
@@ -246,7 +282,19 @@ const Cart = () => {
           </div>
         </div>
 
-        <div className="w-1/4 p-5 flex flex-col justify-between border-2 border-gray-300">
+        {orderSummary && (
+          <div
+            className="w-full h-full bg-[rgba(0,0,0,0.5)] absolute top-0 left-0 lg:hidden"
+            onClick={toggleOrderSummary}
+          />
+        )}
+
+        <div
+          className={`
+            w-full lg:w-1/3 xl:w-1/4 p-5 flex flex-col justify-between lg:border-2 lg:border-gray-300 absolute left-0 bottom-0 shadow-lg bg-(--primary-bg) lg:bg-transparent lg:shadow-0 lg:relative lg:flex
+            ${!orderSummary && "hidden"} 
+          `}
+        >
           <div>
             <h1 className="font-heading font-bold text-3xl">Order Summary</h1>
 
@@ -258,16 +306,16 @@ const Cart = () => {
             <div className="my-5 space-y-4">
               {Object.values(groupedCarts).map((item, index) => (
                 <div key={index} className="pb-2">
-                  {/* Item name + total */}
                   <div className="flex justify-between font-semibold">
                     <p>
-                      {item.Item_Name} - {item.Variant}
+                      {item.Item_Name} {item.Variant && "-"} {item.Variant}
                     </p>
                     <p>{item.totalQuantity}</p>
                   </div>
 
-                  {/* Sizes */}
-                  <div className="ml-4 mt-1 space-y-1 text-sm text-gray-600">
+                  <div
+                    className={`ml-4 mt-1 space-y-1 text-sm text-gray-600 ${item.Category === "Capstone Manual" || item.Category === "Module" ? "hidden" : ""}`}
+                  >
                     {Object.entries(item.sizes).map(([size, qty]) => (
                       <div key={size} className="flex gap-1 max-w-xs">
                         <span>{size}:</span>
@@ -293,10 +341,10 @@ const Cart = () => {
             >
               {isLoading ? (
                 <div className="loading">
-                  <div class="sending">
-                    Placing Order<span class="dot">.</span>
-                    <span class="dot">.</span>
-                    <span class="dot">.</span>
+                  <div className="sending">
+                    Placing Order<span className="dot">.</span>
+                    <span className="dot">.</span>
+                    <span className="dot">.</span>
                   </div>
                 </div>
               ) : (

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 
-import './CSS/Store.css'
 import StoreNavbar from "./StoreNavbar";
 
 
@@ -77,58 +76,56 @@ const Store = () => {
 
 	
 	return (
-    <div className="store px-[1.3in]">
+    <div className="lg:px-[1.3in]">
       <StoreNavbar carts={carts} fetchCart={fetchCart} />
 
-      <div className="w-full h-[450px] mt-5 rounded-lg border border-gray-400 bg-gray-100">
-        <div className="relative w-full h-96 md:h-full mx-auto">
-          <div className="relative w-full h-full overflow-hidden rounded-lg shadow-2xl">
-            {slides.map((slide, index) => (
+      <div className="w-full h-[450px] mt-5 px-3 rounded-lg bg-gray-100 relative">
+        <div className="relative w-full h-full overflow-hidden rounded-lg">
+          {slides.map((slide, index) => (
+            <div
+              key={slide.id}
+              className={`absolute w-full h-full transition-opacity duration-1000 ${
+                index === currentSlide ? "opacity-100" : "opacity-0"
+              }`}
+            >
               <div
-                key={slide.id}
-                className={`absolute w-full h-full transition-opacity duration-1000 ${
-                  index === currentSlide ? "opacity-100" : "opacity-0"
-                }`}
+                className={`w-full h-full flex flex-col items-center justify-center text-white`}
               >
-                <div
-                  className={`w-full h-full bg-gray-300 flex flex-col items-center justify-center text-white`}
-                >
-                  <img
-                    src={slide.image}
-                    alt="Carousel Image"
-                    className="w-full object-cover"
-                  />
-                </div>
+                <img
+                  src={slide.image}
+                  alt="Carousel Image"
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
 
-          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10 flex gap-3">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`h-3 rounded-full transition-all duration-300 ${
-                  index === currentSlide
-                    ? "bg-white w-8"
-                    : "bg-white bg-opacity-50 w-3 hover:bg-opacity-75"
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10 flex gap-3">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`h-3 rounded-full transition-all duration-300 cursor-pointer ${
+                index === currentSlide
+                  ? "bg-white w-8"
+                  : "bg-white bg-opacity-50 w-3 hover:bg-opacity-75"
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
         </div>
       </div>
 
       <section className="mt-20">
-        <div class="flex items-center justify-between">
+        <div className="px-3 flex items-center justify-between">
           <h1 className="font-heading text-3xl font-bold">Featured Items</h1>
           <a href="/catalog" className="text-(--secondary-text) font-bold">
             View All
           </a>
         </div>
 
-        <div className="mb-10 mt-3 grid grid-cols-5 gap-5">
+        <div className="mb-10 mt-3 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 md:gap-5">
           {products.map((product, index) => (
             <div
               key={index}

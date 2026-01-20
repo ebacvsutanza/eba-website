@@ -9,7 +9,7 @@ import Announcement from './STAFFCOMPONENT/Announcement';
 import Inventory from './STAFFCOMPONENT/Inventory';
 import Date from './STAFFCOMPONENT/Date';
 
-import InputForm from '../../InputForm';
+// import InputForm from '../../InputForm';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faEnvelope, faBell, faSun, faMoon, faX, faEye, faEyeSlash, faChevronDown } from '@fortawesome/free-solid-svg-icons';

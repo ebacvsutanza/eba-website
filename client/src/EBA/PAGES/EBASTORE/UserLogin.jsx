@@ -4,7 +4,6 @@ import axios from 'axios';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 
-import './CSS/LandingStore.css';
 import './CSS/Preloader.css';
 
 const UserLogin = () => {

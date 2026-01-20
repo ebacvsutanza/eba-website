@@ -22,14 +22,14 @@ export default function StoreNavbar({ fetchCart, carts }) {
   };
 
   return (
-    <header className="px-[1.3in]">
+    <header className="px-5">
       <nav className="w-full py-3 flex justify-between items-center">
         <button
           onClick={handleNavigation}
           className="center-flex gap-5 cursor-pointer"
         >
           <img src="logo.png" alt="" className="w-15 h-15" />
-          <div className="text-left font-bold">
+          <div className="text-left font-bold hidden md:block">
             <h3>Cavite State University - Tanza</h3>
             <p className="text-(--secondary-text)">EBA Store</p>
           </div>
@@ -38,14 +38,14 @@ export default function StoreNavbar({ fetchCart, carts }) {
         <div className="flex items-center gap-3">
           <button
             onClick={() => (window.location.href = "/catalog")}
-            className="w-[150px] p-2 text-white center-flex gap-2 bg-(--primary-btn) rounded-lg cursor-pointer"
+            className="w-[130px] p-2 text-white center-flex gap-2 bg-(--primary-btn) rounded-lg cursor-pointer"
           >
             <img src="catalog.png" alt="" style={{ width: 16 }} />
             Catalog
           </button>
           <button
             onClick={() => (window.location.href = "/ebacart")}
-            className="w-[150px] p-2 text-white center-flex gap-2 bg-(--primary-btn) rounded-lg relative cursor-pointer"
+            className="w-[130px] p-2 text-white center-flex gap-2 bg-(--primary-btn) rounded-lg relative cursor-pointer"
           >
             <FontAwesomeIcon icon={faCartShopping} />
             My Cart

@@ -4,9 +4,7 @@ import axios from 'axios';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 
-import './CSS/LandingStore.css';
 import './CSS/Preloader.css';
-import InputForm from '../../InputForm';
 
 const UserSignin = () => {
 	const navigateTo = useNavigate();
@@ -53,7 +51,7 @@ const UserSignin = () => {
 						<div className="cube"></div>
 						<div className="cube"></div>
 						<div className="cube"></div>
-					</div>x``
+					</div>
 					<div className="preloader-text">Signing Up...</div>
 				</div>
 			</div>
@@ -99,7 +97,7 @@ const UserSignin = () => {
           </div>
         </div>
 
-  a     <img src="cvsuback.jpg" alt="" className="w-1/2 h-full object-cover hidden md:block" />
+  	    <img src="cvsuback.jpg" alt="" className="w-1/2 h-full object-cover hidden md:block" />
       </div>
     </div>
   );

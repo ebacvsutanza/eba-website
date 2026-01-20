@@ -112,18 +112,18 @@ const CartModal = ({
   };
 
   return (
-    <div className="w-full h-full bg-black/20 fixed top-0 left-0 center-flex">
-      <div className="bg-(--primary-bg) w-3/5 h-3/5 rounded-xl p-5">
+    <div className="w-full h-full py-3 bg-black/20 fixed top-0 left-0 center-flex">
+      <div className="w-full lg:w-3/4 xl:w-3/5 max-h-3/5 h-full p-3 bg-(--primary-bg) rounded-xl overflow-y-auto">
         <button
-          className="ml-5 bg-transparent hover:bg-transparent hover:text-primary-foreground font-bold cursor-pointer flex items-center gap-1"
+          className="md:ml-5 mb-3 bg-transparent hover:bg-transparent hover:text-primary-foreground font-bold cursor-pointer flex items-center gap-1"
           onClick={() => setOpenModal(false)}
         >
           <FontAwesomeIcon icon={faChevronLeft} />
           Back
         </button>
 
-        <div className="h-full p-5 flex gap-5">
-          <aside className="w-[300px] h-full my-auto bg-gray-200 center-flex rounded-lg">
+        <div className="w-full h-auto md:h-[90%] md:px-5 flex gap-5 flex-col md:flex-row">
+          <aside className="md:w-[300px] h-full md:my-auto bg-gray-200 center-flex rounded-lg">
             <img
               src={`http://localhost:3000/ITEMS/${product.Image}`}
               alt={product.Item_Name}
@@ -131,7 +131,7 @@ const CartModal = ({
             />
           </aside>
 
-          <main className="p-3 flex-1 flex flex-col justify-between">
+          <main className="h-auto flex-1 flex flex-col justify-between space-y-3">
             <div>
               <h1 className="flex justify-between font-bold text-2xl font-heading">
                 <span className="flex-1">{product.Item_Name}</span>
@@ -147,7 +147,7 @@ const CartModal = ({
                 <>
                   <p className="mt-10">Select Size</p>
                   <div className="mt-3 relative">
-                    <div className="flex gap-2">
+                    <div className="w-full flex gap-2 overflow-x-auto">
                       {product.Sizes.map(({ Size, Quantity }, index) => (
                         <button
                           key={index}

@@ -420,9 +420,9 @@ app.post("/addToCart", upload.single("transaction"), (req, res) => {
 
   try {
     let checkQuery = `
-			SELECT * FROM item_cart 
-			WHERE User_ID = ? AND Item_Name = ? AND Variant = ? AND Size = ?
-		`;
+      SELECT * FROM item_cart 
+      WHERE User_ID = ? AND Category = ? AND Item_Name = ? AND Variant = ? AND Size = ?
+    `;
 
     let checkParams = [UserID, Category, ItemName, Variant, Size];
 
@@ -434,15 +434,22 @@ app.post("/addToCart", upload.single("transaction"), (req, res) => {
 
       if (results.length > 0) {
         let existingItem = results[0];
-        let newQuantity = existingItem.Quantity + parseInt(Quantity);
+        let newQuantity = existingItem.Quantity + parseInt(Quantity, 10);
 
         let updateQuery = `
-					UPDATE item_cart 
-					SET Quantity = ? 
-					WHERE User_ID = ? AND Category = ? AND Item_Name = ? AND Variant = ? AND Size = ?
-				`;
+          UPDATE item_cart 
+          SET Quantity = ? 
+          WHERE User_ID = ? AND Category = ? AND Item_Name = ? AND Variant = ? AND Size = ?
+        `;
 
-        let updateParams = [newQuantity, UserID, ItemName, Variant, Size];
+        let updateParams = [
+          newQuantity,
+          UserID,
+          Category,
+          ItemName,
+          Variant,
+          Size
+        ];
 
         db.query(updateQuery, updateParams, (err, result) => {
           if (err) {
