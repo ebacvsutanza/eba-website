@@ -237,14 +237,14 @@ app.post("/usersignup", async (req, res) => {
 
       // Insert new user
       const insertUser = `
-                INSERT INTO user_account (
-                    Email_Address,
-                    Password,
-                    Username,
-                    Account_Status,
-                    Is_Email_Verified
-                ) VALUES (?, ?, ?, 'active', false)
-            `;
+        INSERT INTO user_account (
+            Email_Address,
+            Password,
+            Username,
+            Account_Status,
+            Is_Email_Verified
+        ) VALUES (?, ?, ?, 'active', false)
+      `;
 
       const username = email.split("@")[0]; // Use email prefix as username
 
@@ -312,6 +312,40 @@ app.get("/storeinventory", (req, res) => {
     res.json(Object.values(products));
   });
 });
+
+
+app.get("/top-selling-product", (req, res) => {
+  const sql = `
+    SELECT 
+      i.*,
+      t.total_sold
+    FROM inventory i
+    JOIN (
+        SELECT 
+          Item_Name,
+          Variant,
+          Size,
+          SUM(Quantity) AS total_sold
+        FROM transaction
+        GROUP BY Item_Name, Variant, Size
+        ORDER BY total_sold DESC
+        LIMIT 4
+    ) t
+    ON i.Item_Name = t.Item_Name
+    AND i.Variant = t.Variant
+    AND i.Size = t.Size
+    ORDER BY t.total_sold DESC
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json(err);
+    res.json(results);
+  });
+});
+
+
+
+
 
 app.get("/exclusive", (req, res) => {
   db.query("SELECT * FROM exclusive", (err, results) => {
