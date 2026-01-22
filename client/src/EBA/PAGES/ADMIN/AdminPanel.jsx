@@ -13,51 +13,55 @@ import AddDesign from './ADMINCOMPONENT/AddDesign';
 import Pages from './ADMINCOMPONENT/Pages';
 
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faEnvelope, faBell, faSun, faMoon, faX } from '@fortawesome/free-solid-svg-icons';
-
 import './CSS/Admin.css';
 import './CSS/Component.css';
+import AdminSidebar from './AdminSidebar';
+
 
 const AdminPanel = () => {
-    const [notifications, setNotifications] = useState([]);
-	const [notifDropdown, setNotifDropdown] = useState(false);
+	const [activeAdmin, setActiveComponent] = useState("Dashboard");
+	const handleMenuClick = (componentName) => {
+    setActiveComponent(componentName);
+  };
 
-	const [isDarkMode, setIsDarkMode] = useState(false);
-	const [activeAdmin, setActiveComponent] = useState('Dashboard');
-	const [isOpen, setIsOpen] = useState(false);
-	const [image, setImage] = useState('');
-	const [username, setUsername] = useState('');
+	const [image, setImage] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+	const token = localStorage.getItem("token");
+  useEffect(() => {
+    if (!token) {
+      window.location.href = "/adminlogin";
+      return;
+    }
+
+    const decodedToken = JSON.parse(atob(token.split(".")[1]));
+    if (decodedToken.role !== "DEAN" && decodedToken.role !== "EBA") {
+      window.location.href = "/adminlogin";
+    }
+
+    setImage(decodedToken.image);
+    setUsername(decodedToken.username);
+    setEmail(decodedToken.email);
+    fetchNotifications();
+  }, [token]);
 
 	const navigateTo = useNavigate();
-	const token = localStorage.getItem('token');
-
-	useEffect(() => {
-		if (!token) {
-			window.location.href = '/adminlogin';
-			return;
-		}
-
-		const decodedToken = JSON.parse(atob(token.split('.')[1]));
-		if (decodedToken.role !== 'DEAN' && decodedToken.role !== 'EBA') {
-		  window.location.href = '/adminlogin';
-		}
-
-		setImage(decodedToken.image);
-		setUsername(decodedToken.username);
-
-		fetchNotifications();
-	}, [token])
-
-	const handleMenuClick = (componentName) => {
-		setActiveComponent(componentName);
-	}
-
 	const handleLogout = () => {
-		localStorage.removeItem('token');
-		
-		navigateTo('/adminlogin');
+		localStorage.removeItem("token");
+		navigateTo("/adminlogin");
 	};	
+
+	const [isDarkMode, setIsDarkMode] = useState(false);
+
+
+
+
+  const [notifications, setNotifications] = useState([]);
+	const [notifDropdown, setNotifDropdown] = useState(false);
+
+	const [isOpen, setIsOpen] = useState(false);
+
+	
 
 	const fetchNotifications = async () => {
 		try {
@@ -69,8 +73,29 @@ const AdminPanel = () => {
 	};
 
 	return (
-		<div className={` ${isDarkMode ? 'dark-mode' : 'light-mode'}`}>
-			{/* <div className="navbar">
+    <div
+      className={`h-screen bg-(--secondary-bg) text-(--primary-text) flex ${isDarkMode && "dark-mode"}`}
+    >
+      <AdminSidebar
+        image={image}
+        username={username}
+        email={email}
+        onMenuClick={handleMenuClick}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+        handleLogout={handleLogout}
+      />
+
+      <div className="w-3/4 h-screen p-5 overflow-y-auto">
+        {activeAdmin === "Dashboard" && <Dashboard activeAdmin={activeAdmin} />}
+        {activeAdmin === "Transaction" && <Transaction activeAdmin={activeAdmin} />}
+        {activeAdmin === "Announcement" && <Announcement activeAdmin={activeAdmin} />}
+        {activeAdmin === "Inventory" && <Inventory activeAdmin={activeAdmin} />}
+        {activeAdmin === "Calendar" && <Calendar activeAdmin={activeAdmin} />}
+        {activeAdmin === "Pages" && <Pages activeAdmin={activeAdmin} />}
+      </div>
+
+      {/* <div className="navbar">
 				<nav>
 					<button className="toggle-btn" onClick={() => setIsOpen(!isOpen)}>
 						<FontAwesomeIcon icon={isOpen ? faX : faBars} className='icon' />
@@ -130,7 +155,7 @@ const AdminPanel = () => {
 						</div>
 					</div>
 				</nav>
-			</div> */}
+			</div>
 
 			<div className="container">
 				<Sidebar onMenuClick={handleMenuClick} isOpen={isOpen} handleLogout={handleLogout}/>
@@ -145,9 +170,9 @@ const AdminPanel = () => {
 					{activeAdmin === 'AddDesign' && <AddDesign />}
 					{activeAdmin === 'Pages' && <Pages />}
 				</div>
-			</div>
-		</div>
-	)
+			</div> */}
+    </div>
+  );
 }
 
 export default AdminPanel

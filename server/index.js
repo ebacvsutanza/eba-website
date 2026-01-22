@@ -110,6 +110,324 @@ const itemStorage = multer.diskStorage({
 const upload = multer({ storage: uploadStorage });
 const itemupload = multer({ storage: itemStorage });
 
+
+// EBA Store User Login and Signup
+app.post("/userlogin", async (req, res) => {
+  console.log("Login request body:", req.body);
+  const { googleToken } = req.body;
+  if (!googleToken) {
+    console.log("No token provided");
+    return res
+      .status(400)
+      .json({ message: "Google authentication is required" });
+  }
+
+  try {
+    console.log(
+      "Attempting to verify token with client ID:",
+      process.env.GOOGLE_CLIENT_ID,
+    );
+    const ticket = await googleClient.verifyIdToken({
+      idToken: googleToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const { email } = ticket.getPayload();
+
+    if (!email.endsWith("@cvsu.edu.ph")) {
+      return res
+        .status(403)
+        .json({ message: "Only @cvsu.edu.ph emails are allowed" });
+    }
+
+    db.query(
+      "SELECT * FROM user_account WHERE Email_Address = ?",
+      [email],
+      (err, result) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ message: "Database error occurred" });
+        }
+        if (result.length === 0) {
+          return res.status(404).json({ message: "Please register first" });
+        }
+
+        const user = result[0];
+        const token = jwt.sign(
+          {
+            id: user.ID,
+            fullname: user.Full_Name,
+            email: user.Email_Address,
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "1h" },
+        );
+        res.json({ token });
+      },
+    );
+  } catch (err) {
+    console.error("Google token verification failed:", err);
+    res.status(400).json({ message: "Invalid Google authentication" });
+  }
+});
+app.post("/usersignup", async (req, res) => {
+  const { email, password } = req.body;
+
+  // Validate email domain
+  if (!email.endsWith("@cvsu.edu.ph")) {
+    return res.json({
+      Status: "Error",
+      Message: "Only @cvsu.edu.ph email addresses are allowed",
+    });
+  }
+
+  try {
+    // Check if email already exists
+    const checkEmail = "SELECT * FROM user_account WHERE Email_Address = ?";
+    db.query(checkEmail, [email], async (err, result) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.json({
+          Status: "Error",
+          Message: "Database error occurred",
+        });
+      }
+
+      if (result.length > 0) {
+        return res.json({ Status: "Email address already exists" });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      const insertUser = `
+        INSERT INTO user_account (
+            Email_Address,
+            Password,
+            Username,
+            Account_Status,
+            Is_Email_Verified
+        ) VALUES (?, ?, ?, 'active', false)
+      `;
+
+      const username = email.split("@")[0];
+
+      db.query(insertUser, [email, hashedPassword, username], (err, result) => {
+        if (err) {
+          console.error("Insert error:", err);
+          return res.json({
+            Status: "Error",
+            Message: "Failed to create account",
+          });
+        }
+
+        const token = jwt.sign(
+          { id: result.insertId, email: email },
+          process.env.JWT_SECRET,
+          { expiresIn: "1h" },
+        );
+
+        res.json({ Status: "Success", token });
+      });
+    });
+  } catch (error) {
+    console.error("Server error:", error);
+    res.json({ Status: "Error", Message: "Server error occurred" });
+  }
+});
+
+// EBA Store Page
+app.get("/storeinventory", (req, res) => {
+  const sql = "SELECT * FROM inventory";
+
+  db.query(sql, (err, rows) => {
+    if (err) return res.status(500).send(err);
+
+    const SIZE_ORDER = ["Xtra Small", "Small", "Medium", "Large", "Xtra Large"];
+
+    const products = {};
+
+    rows.forEach((row) => {
+      const key = `${row.Item_Name}-${row.Variant}`;
+
+      if (!products[key]) {
+        products[key] = {
+          Item_Name: row.Item_Name,
+          Category: row.Category,
+          Variant: row.Variant,
+          Image: row.Image,
+          Price: row.Price,
+          Sizes: [],
+        };
+      }
+
+      products[key].Sizes.push({
+        Size: row.Size.trim(),
+        Quantity: row.Quantity,
+      });
+    });
+
+    Object.values(products).forEach((product) => {
+      product.Sizes.sort(
+        (a, b) => SIZE_ORDER.indexOf(a.Size) - SIZE_ORDER.indexOf(b.Size),
+      );
+    });
+
+    res.json(Object.values(products));
+  });
+});
+app.get("/top-selling-product", (req, res) => {
+  const sql = `
+    SELECT 
+      i.*,
+      t.total_sold
+    FROM inventory i
+    JOIN (
+        SELECT 
+          Item_Name,
+          Variant,
+          Size,
+          SUM(Quantity) AS total_sold
+        FROM transaction
+        GROUP BY Item_Name, Variant, Size
+        ORDER BY total_sold DESC
+        LIMIT 4
+    ) t
+    ON i.Item_Name = t.Item_Name
+    AND i.Variant = t.Variant
+    AND i.Size = t.Size
+    ORDER BY t.total_sold DESC
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json(err);
+    res.json(results);
+  });
+});
+
+// EBA Cart Page
+app.post("/addToCart", upload.single("transaction"), (req, res) => {
+  const {
+    UserID,
+    Category,
+    transaction,
+    ItemName,
+    Variant = "",
+    Size = "",
+    Quantity,
+    Amount,
+  } = req.body;
+
+  try {
+    let checkQuery = `
+      SELECT * FROM item_cart 
+      WHERE User_ID = ? AND Category = ? AND Item_Name = ? AND Variant = ? AND Size = ?
+    `;
+
+    let checkParams = [UserID, Category, ItemName, Variant, Size];
+
+    db.query(checkQuery, checkParams, (err, results) => {
+      if (err) {
+        console.error("Error checking item:", err);
+        return res.status(500).json({ Message: "Database error" });
+      }
+
+      if (results.length > 0) {
+        let existingItem = results[0];
+        let newQuantity = existingItem.Quantity + parseInt(Quantity, 10);
+
+        let updateQuery = `
+          UPDATE item_cart 
+          SET Quantity = ? 
+          WHERE User_ID = ? AND Category = ? AND Item_Name = ? AND Variant = ? AND Size = ?
+        `;
+
+        let updateParams = [
+          newQuantity,
+          UserID,
+          Category,
+          ItemName,
+          Variant,
+          Size,
+        ];
+
+        db.query(updateQuery, updateParams, (err, result) => {
+          if (err) {
+            console.error("Error updating quantity:", err);
+            return res.status(500).json({ Message: "Failed to update cart" });
+          }
+
+          return res.json({ Status: "Updated", UpdatedQuantity: newQuantity });
+        });
+      } else {
+        let insertQuery = `
+					INSERT INTO item_cart 
+					(User_ID, Category, Image, Item_Name, Variant, Size, Quantity, Amount) 
+					VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+				`;
+
+        let values = [
+          UserID,
+          Category,
+          transaction,
+          ItemName,
+          Variant || "",
+          Size || "",
+          Quantity,
+          Amount,
+        ];
+
+        db.query(insertQuery, values, (err, result) => {
+          if (err) {
+            console.error("Error inserting new item:", err);
+            return res.status(500).json({ Message: "Error inserting data" });
+          }
+
+          return res.json({ Status: "Inserted" });
+        });
+      }
+    });
+  } catch (error) {
+    console.error("Error processing form data:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+// Admin Dashboard
+app.get("/api/best-seller", (req, res) => {
+  const sql = `
+    SELECT Item_Name, Variant, Size, SUM(Quantity) AS total_quantity
+    FROM transaction
+    GROUP BY Item_Name, Variant, Size
+    ORDER BY total_quantity DESC
+    LIMIT 1
+  `;
+
+  db.query(sql, (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json(result[0]);
+  });
+});
+
+app.get("/api/least-purchased", (req, res) => {
+  const sql = `
+    SELECT Item_Name, Variant, Size, SUM(Quantity) AS total_quantity
+    FROM transaction
+    GROUP BY Item_Name, Variant, Size
+    ORDER BY total_quantity ASC
+    LIMIT 1
+  `;
+
+  db.query(sql, (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json(result[0]);
+  });
+});
+
+
+
+
+
+
 // BULLETIN PAGE
 // DISPLAY EVENT AND ANNOUNCEMENT
 app.get("/bulletin", (req, res) => {
@@ -145,203 +463,9 @@ app.get("/searchtransactionsbyemail/:email", (req, res) => {
 
 // EBA STORE
 // CHECK AND LOGIN THE USER TO ACCESS EBA STORE - Google Auth Only
-app.post("/userlogin", async (req, res) => {
-  console.log("Login request body:", req.body);
-  const { googleToken } = req.body;
-  if (!googleToken) {
-    console.log("No token provided");
-    return res
-      .status(400)
-      .json({ message: "Google authentication is required" });
-  }
-
-  try {
-    console.log(
-      "Attempting to verify token with client ID:",
-      process.env.GOOGLE_CLIENT_ID
-    );
-    const ticket = await googleClient.verifyIdToken({
-      idToken: googleToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    const { email } = ticket.getPayload();
-
-    if (!email.endsWith("@cvsu.edu.ph")) {
-      return res
-        .status(403)
-        .json({ message: "Only @cvsu.edu.ph emails are allowed" });
-    }
-
-    db.query(
-      "SELECT * FROM user_account WHERE Email_Address = ?",
-      [email],
-      (err, result) => {
-        if (err) {
-          console.error("Database error:", err);
-          return res.status(500).json({ message: "Database error occurred" });
-        }
-        if (result.length === 0) {
-          return res.status(404).json({ message: "Please register first" });
-        }
-
-        const user = result[0];
-        const token = jwt.sign(
-          {
-            id: user.ID,
-            fullname: user.Full_Name,
-            email: user.Email_Address,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: "1h" }
-        );
-        res.json({ token });
-      }
-    );
-  } catch (err) {
-    console.error("Google token verification failed:", err);
-    res.status(400).json({ message: "Invalid Google authentication" });
-  }
-});
-
-// User registration endpoint
-app.post("/usersignup", async (req, res) => {
-  const { email, password } = req.body;
-
-  // Validate email domain
-  if (!email.endsWith("@cvsu.edu.ph")) {
-    return res.json({
-      Status: "Error",
-      Message: "Only @cvsu.edu.ph email addresses are allowed",
-    });
-  }
-
-  try {
-    // Check if email already exists
-    const checkEmail = "SELECT * FROM user_account WHERE Email_Address = ?";
-    db.query(checkEmail, [email], async (err, result) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.json({
-          Status: "Error",
-          Message: "Database error occurred",
-        });
-      }
-
-      if (result.length > 0) {
-        return res.json({ Status: "Email address already exists" });
-      }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, salt);
-
-      // Insert new user
-      const insertUser = `
-        INSERT INTO user_account (
-            Email_Address,
-            Password,
-            Username,
-            Account_Status,
-            Is_Email_Verified
-        ) VALUES (?, ?, ?, 'active', false)
-      `;
-
-      const username = email.split("@")[0]; // Use email prefix as username
-
-      db.query(insertUser, [email, hashedPassword, username], (err, result) => {
-        if (err) {
-          console.error("Insert error:", err);
-          return res.json({
-            Status: "Error",
-            Message: "Failed to create account",
-          });
-        }
-
-        // Generate JWT token
-        const token = jwt.sign(
-          { id: result.insertId, email: email },
-          process.env.JWT_SECRET,
-          { expiresIn: "1h" }
-        );
-
-        res.json({ Status: "Success", token });
-      });
-    });
-  } catch (error) {
-    console.error("Server error:", error);
-    res.json({ Status: "Error", Message: "Server error occurred" });
-  }
-});
-
-app.get("/storeinventory", (req, res) => {
-  const sql = "SELECT * FROM inventory";
-
-  db.query(sql, (err, rows) => {
-    if (err) return res.status(500).send(err);
-
-    const SIZE_ORDER = ["Xtra Small", "Small", "Medium", "Large", "Xtra Large"];
-
-    const products = {};
-
-    rows.forEach((row) => {
-      const key = `${row.Item_Name}-${row.Variant}`;
-
-      if (!products[key]) {
-        products[key] = {
-          Item_Name: row.Item_Name,
-          Category: row.Category,
-          Variant: row.Variant,
-          Image: row.Image,
-          Price: row.Price,
-          Sizes: [],
-        };
-      }
-
-      products[key].Sizes.push({
-        Size: row.Size.trim(),
-        Quantity: row.Quantity,
-      });
-    });
-
-    Object.values(products).forEach((product) => {
-      product.Sizes.sort(
-        (a, b) => SIZE_ORDER.indexOf(a.Size) - SIZE_ORDER.indexOf(b.Size)
-      );
-    });
-
-    res.json(Object.values(products));
-  });
-});
 
 
-app.get("/top-selling-product", (req, res) => {
-  const sql = `
-    SELECT 
-      i.*,
-      t.total_sold
-    FROM inventory i
-    JOIN (
-        SELECT 
-          Item_Name,
-          Variant,
-          Size,
-          SUM(Quantity) AS total_sold
-        FROM transaction
-        GROUP BY Item_Name, Variant, Size
-        ORDER BY total_sold DESC
-        LIMIT 4
-    ) t
-    ON i.Item_Name = t.Item_Name
-    AND i.Variant = t.Variant
-    AND i.Size = t.Size
-    ORDER BY t.total_sold DESC
-  `;
 
-  db.query(sql, (err, results) => {
-    if (err) return res.status(500).json(err);
-    res.json(results);
-  });
-});
 
 
 
@@ -406,92 +530,7 @@ app.get("/cartItem", verifyToken, (req, res) => {
 // NOTICED THE CUSTOMER THROUGH EMAIL AFTER THE ORDER HAS BEEN CONFIRMED
 
 // ADD CUSTOMER'S ORDER TO THE CART
-app.post("/addToCart", upload.single("transaction"), (req, res) => {
-  const {
-    UserID,
-    Category,
-    transaction,
-    ItemName,
-    Variant = "",
-    Size = "",
-    Quantity,
-    Amount,
-  } = req.body;
 
-  try {
-    let checkQuery = `
-      SELECT * FROM item_cart 
-      WHERE User_ID = ? AND Category = ? AND Item_Name = ? AND Variant = ? AND Size = ?
-    `;
-
-    let checkParams = [UserID, Category, ItemName, Variant, Size];
-
-    db.query(checkQuery, checkParams, (err, results) => {
-      if (err) {
-        console.error("Error checking item:", err);
-        return res.status(500).json({ Message: "Database error" });
-      }
-
-      if (results.length > 0) {
-        let existingItem = results[0];
-        let newQuantity = existingItem.Quantity + parseInt(Quantity, 10);
-
-        let updateQuery = `
-          UPDATE item_cart 
-          SET Quantity = ? 
-          WHERE User_ID = ? AND Category = ? AND Item_Name = ? AND Variant = ? AND Size = ?
-        `;
-
-        let updateParams = [
-          newQuantity,
-          UserID,
-          Category,
-          ItemName,
-          Variant,
-          Size
-        ];
-
-        db.query(updateQuery, updateParams, (err, result) => {
-          if (err) {
-            console.error("Error updating quantity:", err);
-            return res.status(500).json({ Message: "Failed to update cart" });
-          }
-
-          return res.json({ Status: "Updated", UpdatedQuantity: newQuantity });
-        });
-      } else {
-        let insertQuery = `
-					INSERT INTO item_cart 
-					(User_ID, Category, Image, Item_Name, Variant, Size, Quantity, Amount) 
-					VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-				`;
-
-        let values = [
-          UserID,
-          Category,
-          transaction,
-          ItemName,
-          Variant || "",
-          Size || "",
-          Quantity,
-          Amount,
-        ];
-
-        db.query(insertQuery, values, (err, result) => {
-          if (err) {
-            console.error("Error inserting new item:", err);
-            return res.status(500).json({ Message: "Error inserting data" });
-          }
-
-          return res.json({ Status: "Inserted" });
-        });
-      }
-    });
-  } catch (error) {
-    console.error("Error processing form data:", error);
-    res.status(500).send("Internal server error");
-  }
-});
 app.put("/cart/:id", (req, res) => {
   const { id } = req.params;
   const { Quantity } = req.body;
@@ -819,6 +858,7 @@ app.post("/adminlogin", (req, res) => {
             role: user.Role,
             image: user.Image,
             username: user.Username,
+            email: user.Email_Address,
           },
           process.env.JWT_SECRET,
           { expiresIn: "1h" }

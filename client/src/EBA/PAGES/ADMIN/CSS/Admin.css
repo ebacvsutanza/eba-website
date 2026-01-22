@@ -1,25 +1,10 @@
-.light-mode {
-	--bg-color: #ffffff;
-	--main-bg: #EDEBFF;
-	--txt-color: #000000;
-	--btn-bg: #E0B5FF;
-	--shadow: #6e6e6e;
-	--card-border: #53B175;
-	--card-bg: #E5F3EA;
-}
 .dark-mode {
-	--bg-color: #141516;
-	--main-bg: #000000;
-	--txt-color: #FFFFFF;
-	--btn-bg: #6c757d;
-	--shadow: #6e6e6e;
-	--invert: 1;
-	--brightness: 2;
-	--card-border: #53B175;
-	--card-bg: #25362b;
+  --primary-text: #ECECEC;
+  --primary-bg: #303330;
+  --secondary-bg: #1F1F1F;
 }
 
-* {
+/* * {
 	scrollbar-width: none;
 }
 
@@ -634,4 +619,4 @@
 			width: 50%;
 		}
 	}
-}
+} */

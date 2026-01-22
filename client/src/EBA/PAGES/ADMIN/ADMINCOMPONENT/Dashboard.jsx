@@ -1,243 +1,181 @@
-	import React, { useEffect, useState } from 'react'
-	import axios from 'axios';
+import React, { useEffect, useState } from 'react'
+import axios from 'axios';
 
-	import Dates from './Date'
-	import '../CSS/Admin.css'
-	import SalesChart from './SalesChart';
-	import OrderChart from './OrderChart';
+import Dates from './Date'
+import SalesChart from './SalesChart';
+import OrderChart from './OrderChart';
+import '../CSS/Admin.css'
 
-	const Dashboard = () => {
-		const [transactions, setTransactions] = useState([]);
-		const [transactionAmount, setTransactionAmount] = useState(0);
-		const [transactionQuantity, setTransactionQuantity] = useState(0);
-		const [inventories, setInventory] = useState([]);
-		const [inventoryQuantity, setInventoryQuantity] = useState(0);
-		const [lowStockItems, setLowStockItems] = useState([]);
-		const [newOrdersThisWeek, setNewOrdersThisWeek] = useState(0);
-		const [fastMovingItems, setFastMovingItems] = useState([]);
+const Dashboard = ({ activeAdmin }) => {
+  const [today, setToday] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setToday(new Date());
+    }, 60000);
 
-		useEffect(() => {
-			fetchData();
-		}, []);
+    return () => clearInterval(interval);
+  }, []);
+  const day = today.toLocaleDateString(undefined, {
+    weekday: "long",
+  });
+  const date = today.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
-		const fetchData = async () => {
-			try {
-				const responseTransaction = await axios.get('http://localhost:3000/transaction');
-				const transactionsData = responseTransaction.data;
-				setTransactions(transactionsData);
+  useEffect(() => {
+    fetchData();
+  }, []);
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "PHP",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
 
-				const totalSales = transactionsData.reduce((acc, transaction) => acc + transaction.Amount, 0);
-				setTransactionAmount(totalSales);
+  const [transactionAmount, setTransactionAmount] = useState(0);
+  const [transactionQuantity, setTransactionQuantity] = useState(0);
+  const [lowStockItems, setLowStockItems] = useState([]);
+  const [inventoryQuantity, setInventoryQuantity] = useState(0);
+  const [newOrdersThisWeek, setNewOrdersThisWeek] = useState(0);
+	
+  const fetchData = async () => {
+    try {
+      const responseTransaction = await axios.get(
+        "http://localhost:3000/transaction",
+      );
+      const transactionsData = responseTransaction.data;
+      const responseInventory = await axios.get(
+        "http://localhost:3000/inventory",
+      );
 
-				const totalOrders = transactionsData.reduce((acc, transaction) => acc + transaction.Quantity, 0);
-				setTransactionQuantity(totalOrders);
+      const inventoriesData = responseInventory.data.map((inventory) => ({
+        ...inventory,
+      }));
 
-				const oneWeekAgo = new Date();
-				oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-				const newOrders = transactionsData.filter(transaction => 
-					new Date(transaction.Date) >= oneWeekAgo
-				).length;
-				setNewOrdersThisWeek(newOrders);
+      const totalSales = transactionsData.reduce(
+        (acc, transaction) => acc + transaction.Amount,
+        0,
+      );
+      setTransactionAmount(totalSales);
+      const totalOrders = transactionsData.reduce(
+        (acc, transaction) => acc + transaction.Quantity,
+        0,
+      );
+      setTransactionQuantity(totalOrders);
+      const lowStock = inventoriesData.filter((item) => item.Quantity < 11);
+      setLowStockItems(lowStock);
+      const totalInventory = inventoriesData.reduce(
+        (acc, inventory) => acc + inventory.Quantity,
+        0,
+      );
+      setInventoryQuantity(totalInventory);
 
-				const itemCounts = transactionsData.reduce((acc, transaction) => {
-					acc[transaction.Item_Name] = (acc[transaction.Item_Name] || 0) + transaction.Quantity;
-					return acc;
-				}, {});
-				
-				const fastMoving = Object.entries(itemCounts)
-					.sort(([,a], [,b]) => b - a)
-					.slice(0, 3)
-					.map(([name, count]) => ({ name, count }));
-				setFastMovingItems(fastMoving);
+			const oneWeekAgo = new Date();
+			oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      const newOrders = transactionsData.filter(
+        (transaction) => new Date(transaction.Date) >= oneWeekAgo,
+      ).length;
+      setNewOrdersThisWeek(newOrders);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+	
+  const [bestSeller, setBestSeller] = useState(null);
+  const [leastPurchased, setLeastPurchased] = useState(null);
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/api/best-seller")
+      .then((res) => setBestSeller(res.data));
+    axios
+      .get("http://localhost:3000/api/least-purchased")
+      .then((res) => setLeastPurchased(res.data));
+  }, []);
 
-				const updatedTransactions = transactionsData.map(transaction => ({
-					...transaction,
-					SizeAbbreviation: getSizeAbbreviation(transaction.Size),
-				}));
-				setTransactions(updatedTransactions);
 
-				const responseInventory = await axios.get('http://localhost:3000/inventory');
-				const inventoriesData = responseInventory.data.map(inventory => ({
-					...inventory,
-					SizeAbbreviation: getSizeAbbreviation(inventory.Size),
-				}));
-				setInventory(inventoriesData);
+  return (
+    <div className="space-y-3">
+      <div className="mb-10 flex items-center justify-between">
+        <h1 className="text-(--secondary-text) text-2xl font-bold">
+          {activeAdmin}
+        </h1>
 
-				const totalInventory = inventoriesData.reduce((acc, inventory) => acc + inventory.Quantity, 0);
-				setInventoryQuantity(totalInventory);
+        <div>
+          <h1 className="text-xl font-bold">{day},</h1>
+          <p>{date}</p>
+        </div>
+      </div>
 
-				const lowStock = inventoriesData.filter(item => item.Quantity < 11);
-				setLowStockItems(lowStock);
-			} catch (error) {
-				console.error('Error fetching data:', error);
-			}
-		};
-		
+      <div className="flex justify-between gap-3">
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+          <p className="text-md font-bold">Total Sales</p>
+          <h2 className="text-xl text-(--secondary-text) font-bold">
+            {formatCurrency(transactionAmount)}
+          </h2>
+        </div>
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+          <p className="text-md font-bold">Total Orders</p>
+          <h2 className="text-xl text-(--secondary-text) font-bold">
+            {transactionQuantity}
+          </h2>
+        </div>
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+          <p className="text-md font-bold">Items with Low Stock</p>
+          <h2 className="text-xl text-(--secondary-text) font-bold">
+            {lowStockItems.length}
+          </h2>
+        </div>
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+          <p className="text-md font-bold">Available Stocks</p>
+          <h2 className="text-xl text-(--secondary-text) font-bold">
+            {inventoryQuantity}
+          </h2>
+        </div>
+      </div>
 
-		const getSizeAbbreviation = (size) => {
-			switch (size) {
-				case 'Small':
-					return 'S';
-				case 'Medium':
-					return 'M';
-				case 'Large':
-					return 'L';
-				case 'Xtra Large':
-					return 'XL';
-				default:
-					return size; 
-			}
-		};
-		
-		const formatDate = (dateString) => {
-			const options = { year: 'numeric', month: 'long', day: 'numeric' };
-			return new Date(dateString).toLocaleDateString(undefined, options);
-		};
+      <div className="flex justify-between gap-3">
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+          <p className="text-md font-bold">Sales</p>
+          <SalesChart />
+        </div>
 
-		const formatCurrency = (amount) => {
-			return new Intl.NumberFormat('en-US', { 
-				style: 'currency', 
-				currency: 'PHP',
-				minimumFractionDigits: 2,
-				maximumFractionDigits: 2
-			}).format(amount);
-		};
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+          <p className="text-md font-bold">Total Order</p>
+          <OrderChart />
+        </div>
+      </div>
 
-		return (
-			<div className="admin-content">
-				<h1>Dashboard</h1>
+      <div className="flex justify-between gap-3">
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+          <p className="text-md font-bold">New Orders of the Week</p>
+          <h2 className="text-xl text-(--secondary-text) font-bold">
+            {newOrdersThisWeek}
+          </h2>
+        </div>
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+          <p className="text-md font-bold">Best-seller</p>
+          {bestSeller ? (
+						<h2 className="text-xl text-(--secondary-text) font-bold">{bestSeller.Item_Name} {bestSeller.Variant && `- ${bestSeller.Variant}`}</h2>
+          ) : (
+						<h2 className="text-xl text-(--secondary-text) font-bold">No Best-seller Item</h2>
+					)}
+        </div>
 
-				<div className="dashboard main-content">
-					{/* <Dates /> */}
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+          <p className="text-md font-bold">Least Purchased</p>
+          {leastPurchased ? (
+						<h2 className="text-xl text-(--secondary-text) font-bold">{leastPurchased.Item_Name} {leastPurchased.Variant && `- ${leastPurchased.Variant}`}</h2>
+          ) : (
+						<h2 className="text-xl text-(--secondary-text) font-bold">No Least Purchased Item</h2>
+					)}
+        </div>
+      </div>
+    </div>
+  );
+};
 
-					<div className="top">
-						<div className="card">
-							<p>Total Sales</p>
-							<h2>{formatCurrency(transactionAmount)}</h2>
-						</div>
-						<div className="card">
-							<p>Total Orders</p>
-							<h2>{transactionQuantity}</h2>
-						</div>
-						<div className="card"> 
-							<p>Low Stocks Item</p>
-							<h2>{lowStockItems.length}</h2>
-						</div>
-						<div className="card">
-							<p>Available Stocks</p>
-							<h2>{inventoryQuantity}</h2>
-						</div>
-					</div>
-
-					<div className="graph">
-						<div className="card">
-							<h2>Sales</h2>
-							<SalesChart />
-						</div>
-						
-						<div className="card">
-							<h2>Total Order</h2>
-							<OrderChart />
-						</div>
-					</div>
-					
-					<div className="top">
-						<div className="card">
-							<p>New Orders This Week</p>
-							<h2>{newOrdersThisWeek}</h2>
-						</div>
-						<div className="card">
-							<p>Fast Moving Items</p>
-							<h2>{fastMovingItems.length > 0 ? fastMovingItems[0].name : 'No data'}</h2>
-						</div>
-						<div className="card">
-							<p>Total Transaction</p>
-							<h2>{transactions.length}</h2>
-						</div>
-					</div>
-
-					<div className="graph graphs">
-						<div className="card orders">
-							<h2>New Orders</h2>
-
-							<table>
-								<thead>
-									<tr>
-										<th>Student Name</th>
-										<th>Quantity</th>
-										<th>Item Name</th>
-										<th>Date</th>
-									</tr>
-								</thead>
-
-								<tbody>
-									{transactions.length === 0 ? (
-										<tr>
-											<th><h3 className='no'>No Transaction</h3></th>
-										</tr>
-									) : (
-										<>
-											{transactions.slice(0, 5).map((transaction, index) => (
-												<tr key={index}>
-													<td>{transaction.Customer_Name}</td>
-													<td>{transaction.Quantity}</td>
-													<td>{transaction.Item_Name}</td>
-													<td>{formatDate(transaction.Date)}</td>
-												</tr>
-											))}
-										</>
-									)}
-								</tbody>
-							</table>
-						</div>
-
-						<div className="card cards">
-							<div className="orders-card">
-								<h2>Pending Claims</h2>
-
-								<div className="pending-block">
-									{transactions.filter(t => t.Status === 'Pending').map((transaction, index) => (
-										<div key={index} className="pending">
-											<p>{transaction.Customer_Name}</p>
-											-
-											<p>{transaction.Item_Name}</p>
-											{transaction.Item_Name !== 'Capstone Manual' && transaction.Item_Name !== 'Modules' && (
-												<>
-													-
-													<p>{transaction.SizeAbbreviation}</p>
-												</>
-											)} 
-										</div>
-									))}
-								</div>
-							</div>
-
-							<div className="orders-card">
-								<h2>Low Stock Item</h2>
-
-								<div className="pending-block">
-									{lowStockItems.length === 0 ? (
-										<p>No low stock items</p>
-									) : (
-										lowStockItems.map((inventory, index) => (
-											<div key={index} className="pending">
-												<p>{inventory.Item_Name}</p>
-												-
-												<p>{inventory.Variant}</p>
-												-
-												<p>{inventory.SizeAbbreviation}</p>
-												-
-												<p>{inventory.Quantity} left</p>
-											</div>
-										))
-									)}
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		)
-	}
-
-	export default Dashboard
+export default Dashboard
