@@ -5,7 +5,8 @@
   --secondary-text: #4CA04F;
   --primary-bg: #F5F5F5;
   --secondary-bg: #EEFBEE;
-  --primary-btn: #8EE13C;
+  --primary-btn: #7AC331;
+  --outline: #D7D7D7;
   --accent: #70BD24;
   --error: #FF2424;
   --success: #00D000;
@@ -27,4 +28,16 @@ html, body {
   justify-content: center;
   align-items: center;
 }
+.rbc-toolbar button {
+  padding: 10px 20px;
+  transition: all 300ms;
+}
+.rbc-toolbar button.rbc-active {
+  background-color: var(--primary-btn);
+  color: white;
+  box-shadow: none;
+}
+
+
+
 .bordir{border: 1px solid red;}

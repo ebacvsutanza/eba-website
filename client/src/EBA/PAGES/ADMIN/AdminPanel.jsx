@@ -59,7 +59,7 @@ const AdminPanel = () => {
 	};
 
 
-	const [activeAdmin, setActiveComponent] = useState("Transaction");
+	const [activeAdmin, setActiveComponent] = useState("Announcement");
 	const handleMenuClick = (componentName) => {
     setActiveComponent(componentName);
   };

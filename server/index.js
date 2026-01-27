@@ -1413,13 +1413,13 @@ app.post("/cancel-order", (req, res) => {
 // EVENTS & ANNOUNCEMENT PAGE
 // ADD EVENT/ANNOUNCEMENT
 app.post("/announcement", (req, res) => {
-  const { Title, Details, Faculty, FacultyName, announcementDate } = req.body;
+  const { Title, Details, FacultyName, announcementDate } = req.body;
 
   const insertQuery =
-    "INSERT INTO bulletin (Title, Details, Faculty, Faculty_Staff, announcementDate) VALUES (?, ?, ?, ?, ?)";
+    "INSERT INTO bulletin (Title, Details, Faculty_Staff, announcementDate) VALUES (?, ?, ?, ?)";
   db.query(
     insertQuery,
-    [Title, Details, Faculty, FacultyName, announcementDate],
+    [Title, Details, FacultyName, announcementDate],
     (err, result) => {
       if (err) {
         console.error("Error inserting data:", err);
@@ -1433,11 +1433,11 @@ app.post("/announcement", (req, res) => {
 // EDIT EVENT/ANNOUNCEMENT
 app.put("/announcement/:id", (req, res) => {
   const { id } = req.params;
-  const { Title, Details, Faculty, FacultyName, announcementDate } = req.body;
+  const { Title, Details, FacultyName, announcementDate } = req.body;
 
   db.query(
-    "UPDATE bulletin SET Title = ?, Details = ?, Faculty = ?, Faculty_Staff = ?, announcementDate = ? WHERE ID = ?",
-    [Title, Details, Faculty, FacultyName, announcementDate, id],
+    "UPDATE bulletin SET Title = ?, Details = ?, Faculty_Staff = ?, announcementDate = ? WHERE ID = ?",
+    [Title, Details, FacultyName, announcementDate, id],
     (err, results) => {
       if (err) return res.status(500).send(err);
       res.json({ message: "Announcement updated successfully." });
