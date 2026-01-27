@@ -19,7 +19,47 @@ import AdminSidebar from './AdminSidebar';
 
 
 const AdminPanel = () => {
-	const [activeAdmin, setActiveComponent] = useState("Dashboard");
+	const token = localStorage.getItem("token");
+	useEffect(() => {
+		if (!token) {
+			alert('Please Login First')
+			window.location.href = "/adminlogin";
+			return;
+		}
+
+		const decodedToken = JSON.parse(atob(token.split(".")[1]));
+		if (!["DEAN", "EBA"].includes(decodedToken.role)) {
+			alert("Please Login First");
+      window.location.href = "/adminlogin";
+      return;
+    }
+
+		fetchAdmin(token);
+		fetchNotifications();
+	}, []);
+
+	const fetchAdmin = async (token) => {
+		try {
+			const res = await fetch("http://localhost:3000/adminpanel", {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+
+			if (!res.ok) throw new Error("Unauthorized");
+
+			const data = await res.json();
+			setImage(data.Image);
+			setUsername(data.Username);
+			setEmail(data.Email_Address);
+		} catch (err) {
+			localStorage.removeItem("token");
+			window.location.href = "/adminlogin";
+		}
+	};
+
+
+	const [activeAdmin, setActiveComponent] = useState("Transaction");
 	const handleMenuClick = (componentName) => {
     setActiveComponent(componentName);
   };
@@ -27,24 +67,7 @@ const AdminPanel = () => {
 	const [image, setImage] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-	const token = localStorage.getItem("token");
-  useEffect(() => {
-    if (!token) {
-      window.location.href = "/adminlogin";
-      return;
-    }
-
-    const decodedToken = JSON.parse(atob(token.split(".")[1]));
-    if (decodedToken.role !== "DEAN" && decodedToken.role !== "EBA") {
-      window.location.href = "/adminlogin";
-    }
-
-    setImage(decodedToken.image);
-    setUsername(decodedToken.username);
-    setEmail(decodedToken.email);
-    fetchNotifications();
-  }, [token]);
-
+	
 	const navigateTo = useNavigate();
 	const handleLogout = () => {
 		localStorage.removeItem("token");
@@ -85,7 +108,6 @@ const AdminPanel = () => {
         setIsDarkMode={setIsDarkMode}
         handleLogout={handleLogout}
       />
-
       <div className="w-3/4 h-screen p-5 overflow-y-auto">
         {activeAdmin === "Dashboard" && <Dashboard activeAdmin={activeAdmin} />}
         {activeAdmin === "Transaction" && <Transaction activeAdmin={activeAdmin} />}

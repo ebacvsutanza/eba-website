@@ -1,246 +1,394 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRightArrowLeft, faChevronLeft, faFilter, faRotateRight } from '@fortawesome/free-solid-svg-icons';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-const Transaction = () => {
-    const [transactions, setTransactions] = useState([]);
-    const [table, setTable] = useState(true);
-    const [filter, setFilter] = useState(false);
-    const [details, setDetails] = useState(null);
-    const [formData, setFormData] = useState({});
-    const [sortOrder, setSortOrder] = useState('DESC');
-    const [statusSorted, setStatusSorted] = useState(false);
-    const [confirming, setConfirming] = useState(false);
-    const [cancelling, setCancelling] = useState(false);
+import { IoFilter } from "react-icons/io5";
+import { HiDotsVertical } from "react-icons/hi";
+import { FaCheck } from "react-icons/fa6";
+import { FaTrash } from "react-icons/fa";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
-    useEffect(() => {
-        fetchTransactions(sortOrder);
-    }, [sortOrder]);
+const Transaction = ({ activeAdmin }) => {
+  const [table, setTable] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const rowsPerPage = 20;
 
-    const fetchTransactions = async (order) => {
-        const response = await axios.get(`http://localhost:3000/transaction?order=${order}`);
-        setTransactions(response.data);
-        setStatusSorted(false);
-    };
+  const fetchTotalPages = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/transaction/count");
+      setTotalPages(Math.ceil(res.data.total / rowsPerPage));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    const toggleTable = () => setTable(!table);
+  useEffect(() => {
+    fetchTotalPages();
+  }, []);
 
-    const toggleSortOrder = () => {
-        setSortOrder(prev => (prev === 'DESC' ? 'ASC' : 'DESC'));
-    };
 
-    const sortByStatus = () => {
-        const statusPriority = { Confirmed: 1, Pending: 2, Cancelled: 3 };
-        const sorted = [...transactions].sort((a, b) => {
-            return statusPriority[a.Status] - statusPriority[b.Status];
-        });
-        setTransactions(sorted);
-        setStatusSorted(true);
-    };
+  const [transactions, setTransactions] = useState([]);
+  const [statusSorted, setStatusSorted] = useState(false);
 
-    const formatDate = (dateString) => {
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
-    };
+  const fetchTransactions = async (order = sortOrder, page = currentPage) => {
+    const response = await axios.get(
+      `http://localhost:3000/transaction?order=${order}&page=${page}`,
+    );
+    setTransactions(response.data);
+    setStatusSorted(false);
+  };
 
-    const handleDetails = (transaction) => {
-        setDetails(transaction);
-        setFormData({ 
-            orderid: transaction.OrderID, 
-            image: transaction.Image, 
-            itemName: transaction.Item_Name, 
-            variant: transaction.Variant, 
-            size: transaction.Size, 
-            quantity: transaction.Quantity, 
-            amount: transaction.Amount,
-            customerName: transaction.Customer_Name,
-            emailAddress: transaction.Email_Address,
-            date: transaction.Date,
-            status: transaction.Status
-        });
-    };
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
-    const confirmOrder = async () => {
-        setConfirming(true);
-        try {
-            const response = await axios.post('http://localhost:3000/confirm-order', {
-                orderId: details.ID,
-                name: details.customerName,
-                customerEmail: details.Email_Address,
-            });
-        
-            const updated = transactions.map(txn =>
-                txn.ID === details.ID ? { ...txn, Status: 'Confirmed' } : txn
-            );
-            setTransactions(statusSorted ? sortStatusList(updated) : updated);
-            setDetails(null);
-        } catch (error) {
-            console.error(error);
-            alert(error.response?.data?.message || 'An error occurred while confirming the order.');
-        } finally {
-            setConfirming(false);
-        }
-    };    
-
-    const cancelOrder = async () => {
-        setCancelling(true);
-        try {
-            const response = await axios.post('http://localhost:3000/cancel-order', {
-                orderId: details.ID,
-                name: details.Customer_Name,
-                customerEmail: details.Email_Address,
-            });
-        
-            const updated = transactions.map(txn =>
-                txn.ID === details.ID ? { ...txn, Status: 'Cancelled' } : txn
-            );
-            setTransactions(statusSorted ? sortStatusList(updated) : updated);
-            setDetails(null);
-        } catch (error) {
-            console.error(error);
-            alert(error.response?.data?.message || 'An error occurred while cancelling the order.');
-        } finally {
-            setCancelling(false);
-        }
-    };    
-
-    const sortStatusList = (list) => {
-        const priority = { Confirmed: 1, Pending: 2, Cancelled: 3 };
-        return [...list].sort((a, b) => priority[a.Status] - priority[b.Status]);
-    };
-
-    const refresh = () => {
-        fetchTransactions();
+  const [selected, setSelected] = useState([]);
+  const allSelected = transactions.length > 0 && selected.length === transactions.length;
+  const toggleSelectAll = () => {
+    if (selected.length === transactions.length) {
+      setSelected([]);
+    } else {
+      setSelected(transactions.map((transaction) => transaction.ID));
+    }
+  };  
+  const toggleSelect = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  };
+  const updateStatus = async (isConfirm, transaction = null) => {
+    // SINGLE ACTION
+    if (selected.length <= 1 && transaction) {
+      if (isConfirm) {
+        await confirmOrder(transaction);
+      } else {
+        await cancelOrder(transaction);
+      }
+      setSelected([]);
+      return;
     }
 
-    return (
-        <div className="admin-content">
-            <h1>Transaction</h1>
+    // BULK ACTION
+    if (selected.length >= 2) {
+      try {
+        if (isConfirm) {
+          setConfirming(true);
+          await bulkConfirmOrders(selected);
 
-            <div className="transaction main-content">
-                <div className="top">
-                    <div className="top-block">
-                        <h2>{table ? 'Order Information' : 'Customer Information'}</h2>
-                        <p onClick={toggleTable}>
-                            {table ? 'Customer Information' : 'Order Information'}
-                        </p>
-                        <FontAwesomeIcon icon={faRotateRight} onClick={refresh} className='icon' />
-                    </div>
+          const updated = transactions.map((txn) =>
+            selected.includes(txn.ID) ? { ...txn, Status: "Confirmed" } : txn,
+          );
+          setTransactions(statusSorted ? sortStatusList(updated) : updated);
+        } else {
+          setCancelling(true);
+          await bulkCancelOrders(selected);
 
-                    <div className="top-block">
-                        <h4>Total Transaction: {transactions.length}</h4>
+          const updated = transactions.map((txn) =>
+            selected.includes(txn.ID) ? { ...txn, Status: "Cancelled" } : txn,
+          );
+          setTransactions(statusSorted ? sortStatusList(updated) : updated);
+        }
 
-                        <FontAwesomeIcon icon={faFilter} className='filter' onClick={() => setFilter(!filter)} />
-                        {filter && (
-                            <div className="filter-dropdown">
-                                <button onClick={toggleSortOrder}>Sort by Date <FontAwesomeIcon icon={faArrowRightArrowLeft} style={{ transform: 'rotate(90deg)' }} /></button>
-                                <button onClick={sortByStatus}>Sort by Status</button>
-                            </div>
-                        )}
-                    </div>
-                </div>
+        setSelected([]);
+        setActiveTransaction(null);
+      } catch (error) {
+        console.error(error);
+        alert("Bulk update failed.");
+      } finally {
+        setConfirming(false);
+        setCancelling(false);
+      }
+    }
+  };
+  const bulkConfirmOrders = async (ids) => {
+    return axios.post("http://localhost:3000/bulk-confirm", {
+      orderIds: ids,
+    });
+  };
+  const bulkCancelOrders = async (ids) => {
+    return axios.post("http://localhost:3000/bulk-cancel", {
+      orderIds: ids,
+    });
+  };
 
-                <div className="table">
-                    <table>
-                        <thead>
-                            <tr>
-                                {table ? (
-                                    <>
-                                        <th>Order Number</th>
-                                        <th>Image</th>
-                                        <th>Item Name</th>
-                                        <th>Variant</th>
-                                        <th>Size</th>
-                                        <th>Quantity</th>
-                                        <th>Amount</th>
-                                    </>
-                                ) : (
-                                    <>
-                                        <th>Customer Name</th>
-                                        <th>Email Address</th>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                    </>
-                                )}
-                                <th>Action</th>
-                            </tr>
-                        </thead>
 
-                        <tbody>
-                            {transactions.length === 0 ? (
-                                <tr>
-                                    <th colSpan="100%"><h3 className='no'>No Transaction</h3></th>
-                                </tr>
-                            ) : (
-                                transactions.map((transaction, index) => (
-                                    <tr key={index}>
-                                        {table ? (
-                                            <>
-                                                <td>{transaction.OrderID}</td>
-                                                <td><img src={`http://localhost:3000/ITEMS/${transaction.Image}`} alt="" /></td>
-                                                <td>{transaction.Item_Name}</td>
-                                                <td>{transaction.Variant || '-'}</td>
-                                                <td>{transaction.Size || '-'}</td>
-                                                <td>{transaction.Quantity}</td>
-                                                <td>₱{transaction.Amount}</td>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <td>{transaction.Customer_Name}</td>
-                                                <td>{transaction.Email_Address}</td>
-                                                <td>{formatDate(transaction.Date)}</td>
-                                                <td>{transaction.Status}</td>
-                                            </>
-                                        )}
-                                        <td className='btn'>
-                                            <button onClick={() => handleDetails(transaction)}>See Details</button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {details && (
-                    <div className="modal-container">
-                        <div className="modal">
-                            <div className="title">
-                                <FontAwesomeIcon icon={faChevronLeft} className='icon' onClick={() => setDetails(null)} />
-                                <h3>Order Details</h3>
-                            </div>
-
-                            <div className="order">
-                                <div className="detail-block"><label>Order Number:</label><p>#{formData.orderid}</p></div>
-                                <div className="detail-block"><label>Image:</label><div className="img-block"><img src={`http://localhost:3000/ITEMS/${formData.image}`} alt="" /></div></div>
-                                <div className="detail-block"><label>Item Name:</label><p>{formData.itemName}</p></div>
-                                <div className="detail-block"><label>Variant:</label><p>{formData.variant}</p></div>
-                                <div className="detail-block"><label>Size:</label><p>{formData.size}</p></div>
-                                <div className="detail-block"><label>Quantity:</label><p>{formData.quantity}</p></div>
-                                <div className="detail-block"><label>Amount:</label><p>₱{formData.amount}</p></div>
-                                <div className="detail-block"><label>Customer Name:</label><p>{formData.customerName}</p></div>
-                                <div className="detail-block"><label>Email Address:</label><p>{formData.emailAddress}</p></div>
-                                <div className="detail-block"><label>Date:</label><p>{formatDate(formData.date)}</p></div>
-                                <div className="detail-block"><label>Status:</label><p>{formData.status}</p></div>
-
-                                {formData.status !== 'Confirmed' && formData.status !== 'Cancelled' && (
-                                    <div className="detail-block detail-btn">
-                                        <button onClick={confirmOrder} disabled={confirming}>
-                                            {confirming ? 'Confirming...' : 'Confirm Order'}
-                                        </button>
-                                        <button onClick={cancelOrder} disabled={cancelling}>
-                                            {cancelling ? 'Cancelling...' : 'Cancel Order'}
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+  const [activeTransaction, setActiveTransaction] = useState(null);
+  const handleStatus = (transaction) => {
+    setActiveTransaction(
+      activeTransaction === transaction.ID ? null : transaction.ID,
     );
+  };
+  const [confirming, setConfirming] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const confirmOrder = async (transaction) => {
+    setConfirming(true);
+    try {
+      const response = await axios.post("http://localhost:3000/confirm-order", {
+        orderId: transaction.ID,
+        name: transaction.customerName,
+        customerEmail: transaction.Email_Address,
+      });
+
+      const updated = transactions.map((txn) =>
+        txn.ID === transaction.ID ? { ...txn, Status: "Confirmed" } : txn,
+      );
+      setTransactions(statusSorted ? sortStatusList(updated) : updated);
+      setActiveTransaction(null);
+    } catch (error) {
+      console.error(error);
+      alert(
+        error.response?.data?.message ||
+          "An error occurred while confirming the order.",
+      );
+    } finally {
+      setConfirming(false);
+    }
+  };
+  const cancelOrder = async (transaction) => {
+    setCancelling(true);
+    try {
+      const response = await axios.post("http://localhost:3000/cancel-order", {
+        orderId: transaction.ID,
+        name: transaction.Customer_Name,
+        customerEmail: transaction.Email_Address,
+      });
+
+      const updated = transactions.map((txn) =>
+        txn.ID === transaction.ID ? { ...txn, Status: "Cancelled" } : txn,
+      );
+      setTransactions(statusSorted ? sortStatusList(updated) : updated);
+      setActiveTransaction(null);
+    } catch (error) {
+      console.error(error);
+      alert(
+        error.response?.data?.message ||
+          "An error occurred while cancelling the order.",
+      );
+    } finally {
+      setCancelling(false);
+    }
+  };
+  const sortStatusList = (list) => {
+    const priority = { Confirmed: 1, Pending: 2, Cancelled: 3 };
+    return [...list].sort((a, b) => priority[a.Status] - priority[b.Status]);
+  };
+
+  const [filter, setFilter] = useState(false);
+  const [sortOrder, setSortOrder] = useState("DESC");
+  const toggleSortOrder = async () => {
+    const newOrder = sortOrder === "DESC" ? "ASC" : "DESC";
+    setSortOrder(newOrder);
+    await fetchTransactions(newOrder);
+  };
+  const sortByStatus = () => {
+    const statusPriority = { Confirmed: 1, Pending: 2, Cancelled: 3 };
+    const sorted = [...transactions].sort((a, b) => {
+      return statusPriority[a.Status] - statusPriority[b.Status];
+    });
+    setTransactions(sorted);
+    setStatusSorted(true);
+  };
+
+  useEffect(() => {
+    fetchTransactions(sortOrder, currentPage);
+  }, [currentPage, sortOrder]);
+  
+  return (
+    <div className="transaction space-y-3">
+      <div className="mb-10 flex items-center justify-between">
+        <h1 className="text-(--secondary-text) text-2xl font-bold">
+          {activeAdmin}
+        </h1>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex gap-2 border-b border-gray-400">
+          <button
+            onClick={() => setTable(false)}
+            className={`
+              py-2 px-8 cursor-pointer transition-all hover:text-(--secondary-text) hover:border-b hover:border-(--secondary-text)
+              ${!table && "border-b border-(--secondary-text) text-(--secondary-text)"}
+            `}
+          >
+            Order Information
+          </button>
+          <button
+            onClick={() => setTable(true)}
+            className={`
+              py-2 px-8 cursor-pointer transition-all hover:text-(--secondary-text) hover:border-b hover:border-(--secondary-text)
+              ${table && "border-b border-(--secondary-text) text-(--secondary-text)"}
+            `}
+          >
+            Customer Information
+          </button>
+
+          <div className="ml-auto relative">
+            <button
+              className="flex items-center gap-2 py-2 px-8 cursor-pointer"
+              onClick={() => setFilter(!filter)}
+            >
+              Filter
+              <IoFilter />
+            </button>
+            {filter && (
+              <div className="w-[150px] py-2 px-5 space-y-2 rounded-lg shadow absolute right-1 top-[105%] bg-(--primary-bg) text-left cursor-pointer">
+                <button onClick={toggleSortOrder}>Sort by Date</button>
+                <button onClick={sortByStatus}>Sort by Status</button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="p-3 bg-(--primary-bg) shadow rounded-lg text-center">
+          <div
+            className={`px-3 grid ${!table ? "grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]" : "grid-cols-[auto_1fr_1fr_1fr_1fr_1fr_1fr]"} place-items-center text-center`}
+          >
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={toggleSelectAll}
+              className="cursor-pointer"
+            />
+            <div>Order Number</div>
+
+            {!table ? (
+              <>
+                <div>Image</div>
+                <div>Item</div>
+                <div>Variant</div>
+                <div>Size</div>
+                <div>Quantity</div>
+                <div>Total Amount</div>
+              </>
+            ) : (
+              <>
+                <div>Customer Name</div>
+                <div>Email Address</div>
+                <div>Date</div>
+                <div>Status</div>
+              </>
+            )}
+            <div>Action</div>
+          </div>
+        </div>
+
+        <div className="p-3 bg-(--primary-bg) shadow rounded-lg text-center">
+          {transactions.length === 0 ? (
+            <p className="py-6 text-gray-500">No Transaction</p>
+          ) : (
+            transactions.map((transaction, index) => (
+              <div
+                className={`mb-3 p-3 border border-gray-400 grid ${!table ? "grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]" : "grid-cols-[auto_1fr_1fr_1fr_1fr_1fr_1fr]"} place-items-center bg-(--primary-bg) shadow rounded-lg text-center`}
+                key={index}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.includes(transaction.ID)}
+                  onChange={() => toggleSelect(transaction.ID)}
+                  className="cursor-pointer"
+                />
+                <div>{transaction.OrderID}</div>
+
+                {!table ? (
+                  <>
+                    <div>
+                      <img
+                        src={`http://localhost:3000/ITEMS/${transaction.Image}`}
+                        alt=""
+                        className="w-14 h-14 object-contain mx-auto rounded"
+                      />
+                    </div>
+
+                    <div className="line-clamp-1 font-medium">
+                      {transaction.Item_Name}
+                    </div>
+
+                    <div>{transaction.Variant || "-"}</div>
+                    <div>{transaction.Size || "-"}</div>
+                    <div>{transaction.Quantity}</div>
+                    <div className="font-semibold">₱{transaction.Amount}</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="line-clamp-1 max-w-[150px]">
+                      {transaction.Customer_Name}
+                    </div>
+                    <div className="line-clamp-1 max-w-[150px]">
+                      {transaction.Email_Address}
+                    </div>
+                    <div>{formatDate(transaction.Date)}</div>
+                    <div>{transaction.Status}</div>
+                  </>
+                )}
+
+                <div className="relative">
+                  <button
+                    onClick={() => handleStatus(transaction)}
+                    className="p-2 hover:bg-gray-100 cursor-pointer"
+                  >
+                    <HiDotsVertical size={18} />
+                  </button>
+
+                  {activeTransaction === transaction.ID && (
+                    <div className="p-2 absolute top-[60%] right-[60%] bg-white border border-gray-200 shadow-lg rounded-md z-20 w-45">
+                      <button
+                        onClick={() => updateStatus(true, transaction)}
+                        disabled={
+                          transaction.Status === "Cancelled" ||
+                          transaction.Status === "Confirmed" ||
+                          cancelling
+                        }
+                        className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded cursor-pointer flex items-center gap-2"
+                      >
+                        <FaCheck />
+                        {confirming ? "Confirming..." : "Confirm"}
+                      </button>
+
+                      <button
+                        onClick={() => updateStatus(false, transaction)}
+                        disabled={
+                          transaction.Status === "Cancelled" ||
+                          transaction.Status === "Confirmed" ||
+                          confirming
+                        }
+                        className="w-full text-left px-3 py-2 hover:bg-gray-100 text-(--error) cursor-pointer flex items-center gap-2"
+                      >
+                        <FaTrash />
+                        {cancelling ? "Cancelling..." : "Cancel"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        <div className="flex justify-center gap-3 mt-5">
+          <button
+            onClick={() => setCurrentPage((prev) => prev - 1)}
+            disabled={currentPage <= 1}
+            className="cursor-pointer disabled:opacity-50"
+          >
+            <FontAwesomeIcon icon={faChevronLeft} />
+          </button>
+
+          <span className="px-3 py-1">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            onClick={() => setCurrentPage((prev) => prev + 1)}
+            disabled={currentPage >= totalPages} // disable if on last page
+            className="cursor-pointer disabled:opacity-50"
+          >
+            <FontAwesomeIcon icon={faChevronRight} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Transaction;

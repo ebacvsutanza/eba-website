@@ -1,6 +1,7 @@
+const db = require("./db");
+
 require("dotenv").config();
 const express = require("express");
-const mysql = require("mysql2");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
@@ -13,6 +14,41 @@ const { OAuth2Client } = require("google-auth-library");
 const salt = 10;
 const port = 3000;
 const app = express();
+
+app.use(express.json());
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static("public"));
+
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
+});
+
+const uploadStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/UPLOADS");
+  },
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      file.fieldname + "_" + Date.now() + path.extname(file.originalname),
+    );
+  },
+});
+const itemStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/ITEMS");
+  },
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      file.fieldname + "_" + Date.now() + path.extname(file.originalname),
+    );
+  },
+});
+const upload = multer({ storage: uploadStorage });
+const itemupload = multer({ storage: itemStorage });
+
 
 // Google OAuth configuration
 if (!process.env.GOOGLE_CLIENT_ID) {
@@ -33,7 +69,7 @@ const verifyToken = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
-    req.userId = decoded.id; // For compatibility with existing cart functionality
+    req.userId = decoded.id;
     next();
   } catch (err) {
     return res
@@ -64,51 +100,6 @@ app.get("/api/protected", verifyToken, (req, res) => {
     user: req.user,
   });
 });
-
-app.use(express.json());
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static("public"));
-
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "capstone",
-});
-
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
-db.connect((err) => {
-  if (err) throw err;
-  console.log("Connected to MySQL Database");
-});
-
-const uploadStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/UPLOADS");
-  },
-  filename: (req, file, cb) => {
-    cb(
-      null,
-      file.fieldname + "_" + Date.now() + path.extname(file.originalname)
-    );
-  },
-});
-const itemStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/ITEMS");
-  },
-  filename: (req, file, cb) => {
-    cb(
-      null,
-      file.fieldname + "_" + Date.now() + path.extname(file.originalname)
-    );
-  },
-});
-const upload = multer({ storage: uploadStorage });
-const itemupload = multer({ storage: itemStorage });
 
 
 // EBA Store User Login and Signup
@@ -423,11 +414,6 @@ app.get("/api/least-purchased", (req, res) => {
   });
 });
 
-
-
-
-
-
 // BULLETIN PAGE
 // DISPLAY EVENT AND ANNOUNCEMENT
 app.get("/bulletin", (req, res) => {
@@ -457,19 +443,12 @@ app.get("/searchtransactionsbyemail/:email", (req, res) => {
         return res.status(500).json({ error: "Database error" });
       }
       res.json(results);
-    }
+    },
   );
 });
 
 // EBA STORE
 // CHECK AND LOGIN THE USER TO ACCESS EBA STORE - Google Auth Only
-
-
-
-
-
-
-
 
 app.get("/exclusive", (req, res) => {
   db.query("SELECT * FROM exclusive", (err, results) => {
@@ -507,12 +486,13 @@ app.get("/store/:itemId/variant", (req, res) => {
     (err, results) => {
       if (err) return res.status(500).send(err);
       res.json(results);
-    }
+    },
   );
 });
 
 // EBA CART PAGE
 // FETCH ALL DATA IN CART AND DISPLAY TO CART PAGE
+
 app.get("/cartItem", verifyToken, (req, res) => {
   const userId = req.userId;
 
@@ -522,7 +502,7 @@ app.get("/cartItem", verifyToken, (req, res) => {
     (err, result) => {
       if (err) return res.status(500).json({ error: "Database error" });
       res.json({ cartItems: result.length ? result : [] });
-    }
+    },
   );
 });
 
@@ -589,7 +569,7 @@ app.post("/checkout", (req, res) => {
       if (err) {
         console.error("Query Error:", err);
         return db.rollback(() =>
-          res.status(500).json({ error: "Query failed" })
+          res.status(500).json({ error: "Query failed" }),
         );
       }
 
@@ -598,7 +578,7 @@ app.post("/checkout", (req, res) => {
       if (cartItems.length === 0) {
         console.log("Your cart is empty");
         return db.rollback(() =>
-          res.status(400).json({ error: "Your cart is empty" })
+          res.status(400).json({ error: "Your cart is empty" }),
         );
       }
 
@@ -630,7 +610,7 @@ app.post("/checkout", (req, res) => {
         if (err) {
           console.error("Insert Error:", err);
           return db.rollback(() =>
-            res.status(500).json({ error: "Insert failed" })
+            res.status(500).json({ error: "Insert failed" }),
           );
         }
 
@@ -649,7 +629,7 @@ app.post("/checkout", (req, res) => {
             if (err) {
               console.error("OrderID Update Error:", err);
               return db.rollback(() =>
-                res.status(500).json({ error: "OrderID update failed" })
+                res.status(500).json({ error: "OrderID update failed" }),
               );
             }
 
@@ -680,8 +660,8 @@ app.post("/checkout", (req, res) => {
                                         <td style="border: 1px solid gray; padding: 8px; text-align: center;">₱${
                                           row.Amount
                                         } x ${row.Quantity} = ₱${
-                    row.Amount * row.Quantity
-                  }</td>
+                                          row.Amount * row.Quantity
+                                        }</td>
                                     </tr>
                                 `;
                 })
@@ -689,7 +669,7 @@ app.post("/checkout", (req, res) => {
 
               const totalAmount = cartItems.reduce(
                 (sum, row) => sum + row.Amount * row.Quantity,
-                0
+                0,
               );
               const user = cartItems[0];
 
@@ -750,7 +730,7 @@ app.post("/checkout", (req, res) => {
                   if (err) {
                     console.error("Cart Clear Error:", err);
                     return db.rollback(() =>
-                      res.status(500).json({ error: "Failed to clear cart" })
+                      res.status(500).json({ error: "Failed to clear cart" }),
                     );
                   }
 
@@ -760,21 +740,21 @@ app.post("/checkout", (req, res) => {
                       return db.rollback(() =>
                         res
                           .status(500)
-                          .json({ error: "Transaction commit failed" })
+                          .json({ error: "Transaction commit failed" }),
                       );
                     }
 
                     res.json({ Status: "Success" });
                   });
-                }
+                },
               );
             } catch (emailError) {
               console.error("Email Error:", emailError);
               return db.rollback(() =>
-                res.status(500).json({ error: "Email sending failed" })
+                res.status(500).json({ error: "Email sending failed" }),
               );
             }
-          }
+          },
         );
       });
     });
@@ -827,7 +807,7 @@ app.get("/verifyCancelOrder/:token", (req, res) => {
           return res.status(500).send("Failed to cancel order.");
         }
         res.send("Your order has been successfully cancelled.");
-      }
+      },
     );
   });
 });
@@ -861,13 +841,31 @@ app.post("/adminlogin", (req, res) => {
             email: user.Email_Address,
           },
           process.env.JWT_SECRET,
-          { expiresIn: "1h" }
+          { expiresIn: "1h" },
         );
         res.json({ token });
       });
-    }
+    },
   );
 });
+
+app.get("/adminpanel", verifyToken, (req, res) => {
+  const adminID = req.user.id;
+
+  const sql = `
+    SELECT Image, Username, Role, Email_Address 
+    FROM admin_account 
+    WHERE ID = ?
+  `;
+
+  db.query(sql, [adminID], (err, result) => {
+    if (err) return res.status(500).json(err);
+    if (!result.length) return res.sendStatus(404);
+
+    res.json(result[0]);
+  });
+});
+
 
 app.post("/adminchangepass", async (req, res) => {
   const { id, password } = req.body;
@@ -1019,7 +1017,7 @@ app.get("/api/dashboard/all", (req, res) => {
             data: result
               .filter((row) => row.category === category)
               .map((row) =>
-                key === "salesData" ? row.total_sales : row.total_orders
+                key === "salesData" ? row.total_sales : row.total_orders,
               ),
           });
         });
@@ -1222,14 +1220,29 @@ app.get("/api/dashboard/fast-moving-items", (req, res) => {
 
 // TRANSACTION PAGE
 // FETCH AND DISPLAY THE DATA
+app.get("/transaction/count", (req, res) => {
+  db.query("SELECT COUNT(*) as count FROM transaction", (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.json({ total: result[0].count });
+  });
+});
+
 app.get("/transaction", (req, res) => {
-  const order = req.query.order === "ASC" ? "ASC" : "DESC";
-  db.query(
-    `SELECT * FROM transaction ORDER BY created_At ${order}`,
-    (err, results) => {
+  const order = req.query.order === "DESC" ? "ASC" : "DESC";
+  const page = parseInt(req.query.page) || 1; // default page 1
+  const limit = 20;
+  const offset = (page - 1) * limit;
+
+  const sql = `
+    SELECT * FROM transaction
+    ORDER BY created_At ${order}
+    LIMIT ? OFFSET ?
+  `;
+
+  db.query(sql, [limit, offset], (err, results) => {
       if (err) return res.status(500).send(err);
       res.json(results);
-    }
+    },
   );
 });
 // EDIT TRANSACTIOn
@@ -1264,7 +1277,7 @@ app.put("/transaction/:id", (req, res) => {
     (err, results) => {
       if (err) return res.status(500).send(err);
       res.json({ message: "Transaction updated successfully." });
-    }
+    },
   );
 });
 // DELETE TRANSACTION
@@ -1356,11 +1369,11 @@ app.post("/confirm-order", (req, res) => {
                     .status(200)
                     .json({ message: "Order confirmed and inventory updated" });
                 });
-              }
+              },
             );
-          }
+          },
         );
-      }
+      },
     );
   });
 });
@@ -1392,9 +1405,10 @@ app.post("/cancel-order", (req, res) => {
         }
         res.status(200).json({ message: "Order cancelled" });
       });
-    }
+    },
   );
 });
+
 
 // EVENTS & ANNOUNCEMENT PAGE
 // ADD EVENT/ANNOUNCEMENT
@@ -1413,7 +1427,7 @@ app.post("/announcement", (req, res) => {
       }
 
       return res.json({ Status: "Success" });
-    }
+    },
   );
 });
 // EDIT EVENT/ANNOUNCEMENT
@@ -1427,7 +1441,7 @@ app.put("/announcement/:id", (req, res) => {
     (err, results) => {
       if (err) return res.status(500).send(err);
       res.json({ message: "Announcement updated successfully." });
-    }
+    },
   );
 });
 // DELETE EVENT/ANNOUNCEMENT
@@ -1464,7 +1478,7 @@ app.post("/inventory", itemupload.single("inventory"), (req, res) => {
       }
 
       return res.json({ Status: "Success" });
-    }
+    },
   );
 });
 // EDIT INVENTORY
@@ -1484,7 +1498,7 @@ app.put("/inventory/:id", itemupload.single("inventory"), (req, res) => {
       (err, results) => {
         if (err) return res.status(500).send(err);
         res.json({ message: "Inventory updated successfully." });
-      }
+      },
     );
   } else {
     db.query(
@@ -1493,7 +1507,7 @@ app.put("/inventory/:id", itemupload.single("inventory"), (req, res) => {
       (err, results) => {
         if (err) return res.status(500).send(err);
         res.json({ message: "Inventory updated successfully." });
-      }
+      },
     );
   }
 });
@@ -1547,7 +1561,7 @@ app.post("/addnewadmin", upload.single("admin"), (req, res) => {
           }
 
           return res.json({ Status: "Success" });
-        }
+        },
       );
     });
   });
@@ -1577,7 +1591,7 @@ app.put("/addnewadmin/:id", upload.single("admin"), (req, res) => {
             }
 
             return res.json({ Status: "Success" });
-          }
+          },
         );
       } else {
         db.query(
@@ -1590,7 +1604,7 @@ app.put("/addnewadmin/:id", upload.single("admin"), (req, res) => {
             }
 
             return res.json({ Status: "Success" });
-          }
+          },
         );
       }
     } else {
@@ -1610,7 +1624,7 @@ app.put("/addnewadmin/:id", upload.single("admin"), (req, res) => {
               }
 
               return res.json({ Status: "Success" });
-            }
+            },
           );
         } else {
           db.query(
@@ -1625,7 +1639,7 @@ app.put("/addnewadmin/:id", upload.single("admin"), (req, res) => {
               }
 
               return res.json({ Status: "Success" });
-            }
+            },
           );
         }
       });
@@ -1704,7 +1718,7 @@ app.put("/exclusive/:id", itemupload.single("store"), (req, res) => {
       (err, results) => {
         if (err) return res.status(500).send(err);
         res.json({ message: "Item updated successfully." });
-      }
+      },
     );
   } else {
     db.query(
@@ -1713,7 +1727,7 @@ app.put("/exclusive/:id", itemupload.single("store"), (req, res) => {
       (err, results) => {
         if (err) return res.status(500).send(err);
         res.json({ message: "Item updated successfully." });
-      }
+      },
     );
   }
 });
@@ -1733,7 +1747,7 @@ app.put("/categories/:id", itemupload.single("store"), (req, res) => {
       (err, results) => {
         if (err) return res.status(500).send(err);
         res.json({ message: "Item updated successfully." });
-      }
+      },
     );
   } else {
     db.query(
@@ -1742,7 +1756,7 @@ app.put("/categories/:id", itemupload.single("store"), (req, res) => {
       (err, results) => {
         if (err) return res.status(500).send(err);
         res.json({ message: "Item updated successfully." });
-      }
+      },
     );
   }
 });
@@ -1762,7 +1776,7 @@ app.put("/store/:id", itemupload.single("store"), (req, res) => {
       (err, results) => {
         if (err) return res.status(500).send(err);
         res.json({ message: "Item updated successfully." });
-      }
+      },
     );
   } else {
     db.query(
@@ -1771,7 +1785,7 @@ app.put("/store/:id", itemupload.single("store"), (req, res) => {
       (err, results) => {
         if (err) return res.status(500).send(err);
         res.json({ message: "Item updated successfully." });
-      }
+      },
     );
   }
 });
@@ -1859,7 +1873,7 @@ app.post("/auth/google", async (req, res) => {
               const token = jwt.sign(
                 { id: userId, email, name },
                 process.env.JWT_SECRET,
-                { expiresIn: "1h" }
+                { expiresIn: "1h" },
               );
 
               res.json({
@@ -1867,7 +1881,7 @@ app.post("/auth/google", async (req, res) => {
                 token,
                 user: { id: userId, email, name, picture },
               });
-            }
+            },
           );
         } else {
           // Update existing user's information
@@ -1891,7 +1905,7 @@ app.post("/auth/google", async (req, res) => {
             const token = jwt.sign(
               { id: userId, email, name },
               process.env.JWT_SECRET,
-              { expiresIn: "1h" }
+              { expiresIn: "1h" },
             );
 
             res.json({
@@ -1901,7 +1915,7 @@ app.post("/auth/google", async (req, res) => {
             });
           });
         }
-      }
+      },
     );
   } catch (error) {
     console.error("Google auth error:", error);
@@ -2000,13 +2014,13 @@ app.post("/login", async (req, res) => {
         const token = jwt.sign(
           { id: user.ID, email: user.Email_Address },
           process.env.JWT_SECRET,
-          { expiresIn: "1h" }
+          { expiresIn: "1h" },
         );
 
         // Update last login
         db.query(
           "UPDATE user_account SET Last_Login = CURRENT_TIMESTAMP WHERE ID = ?",
-          [user.ID]
+          [user.ID],
         );
 
         res.json({
@@ -2019,10 +2033,194 @@ app.post("/login", async (req, res) => {
             picture: user.Profile_Picture,
           },
         });
-      }
+      },
     );
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ Status: "Error", Message: "Server error occurred" });
+  }
+});
+
+app.get("/tasks", (req, res) => {
+  db.query("SELECT * FROM tasks", (err, results) => {
+    if (err) return res.status(500).json(err);
+    res.json(results);
+  });
+});
+
+// Update task status (complete / incomplete)
+app.patch("/tasks/:id", (req, res) => {
+  const { completed } = req.body;
+  const { id } = req.params;
+
+  db.query(
+    "UPDATE tasks SET completed = ? WHERE id = ?",
+    [completed, id],
+    (err) => {
+      if (err) return res.status(500).json(err);
+      res.json({ success: true });
+    },
+  );
+});
+// Bulk update selected tasks
+app.patch("/tasks/bulk", (req, res) => {
+  const { ids, completed } = req.body;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: "No tasks selected" });
+  }
+
+  db.query(
+    `UPDATE tasks SET completed = ? WHERE id IN (?)`,
+    [completed, ids],
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+      res.json({ success: true, affectedRows: result.affectedRows });
+    },
+  );
+});
+
+
+
+app.post("/bulk-confirm", async (req, res) => {
+  const { orderIds } = req.body;
+
+  if (!orderIds || orderIds.length === 0) {
+    return res.status(400).json({ message: "No orders selected" });
+  }
+
+  try {
+    // 1️⃣ Get all pending transactions for these orderIds
+    const transactions = await new Promise((resolve, reject) => {
+      db.query(
+        `SELECT * FROM \`transaction\`
+         WHERE ID IN (?) AND Status = 'Pending'`,
+        [orderIds],
+        (err, result) => (err ? reject(err) : resolve(result)),
+      );
+    });
+
+    if (transactions.length === 0) {
+      return res.status(400).json({ message: "No pending orders to confirm" });
+    }
+
+    // 2️⃣ Deduct inventory
+    for (const txn of transactions) {
+      const inventory = await new Promise((resolve, reject) => {
+        db.query(
+          `SELECT Quantity FROM inventory
+           WHERE Item_Name = ? AND Variant = ? AND Size = ?`,
+          [txn.Item_Name, txn.Variant, txn.Size],
+          (err, result) => (err ? reject(err) : resolve(result[0])),
+        );
+      });
+
+      if (!inventory || inventory.Quantity < txn.Quantity) {
+        throw new Error(`Out of stock for order: ${txn.OrderID}`);
+      }
+
+      await new Promise((resolve, reject) => {
+        db.query(
+          `UPDATE inventory
+           SET Quantity = Quantity - ?
+           WHERE Item_Name = ? AND Variant = ? AND Size = ?`,
+          [txn.Quantity, txn.Item_Name, txn.Variant, txn.Size],
+          (err) => (err ? reject(err) : resolve()),
+        );
+      });
+    }
+
+    // 3️⃣ Update transaction statuses
+    await new Promise((resolve, reject) => {
+      db.query(
+        `UPDATE \`transaction\`
+         SET Status = 'Confirmed'
+         WHERE ID IN (?) AND Status = 'Pending'`,
+        [orderIds],
+        (err) => (err ? reject(err) : resolve()),
+      );
+    });
+
+    // 4️⃣ Send single email per customer
+    const customers = {};
+    transactions.forEach((txn) => {
+      if (!customers[txn.Email_Address]) {
+        customers[txn.Email_Address] = txn.Customer_Name;
+      }
+    });
+
+    for (const [email, name] of Object.entries(customers)) {
+      await transporter.sendMail({
+        from: "cvsutanzaeba@gmail.com",
+        to: email,
+        subject: "Your Orders Have Been Confirmed",
+        text: `Hello ${name}! Your orders have been confirmed. We appreciate your purchase!`,
+      });
+    }
+
+    res.json({ message: "Bulk orders confirmed" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Bulk confirm failed", error: error.message });
+  }
+});
+app.post("/bulk-cancel", async (req, res) => {
+  const { orderIds } = req.body;
+
+  if (!orderIds || orderIds.length === 0) {
+    return res.status(400).json({ message: "No orders selected" });
+  }
+
+  try {
+    // 1️⃣ Get all pending transactions for these orderIds
+    const transactions = await new Promise((resolve, reject) => {
+      db.query(
+        `SELECT * FROM \`transaction\`
+         WHERE ID IN (?) AND Status = 'Pending'`,
+        [orderIds],
+        (err, result) => (err ? reject(err) : resolve(result)),
+      );
+    });
+
+    if (transactions.length === 0) {
+      return res.status(400).json({ message: "No pending orders to cancel" });
+    }
+
+    // 2️⃣ Update transaction statuses
+    await new Promise((resolve, reject) => {
+      db.query(
+        `UPDATE \`transaction\`
+         SET Status = 'Cancelled'
+         WHERE ID IN (?) AND Status = 'Pending'`,
+        [orderIds],
+        (err) => (err ? reject(err) : resolve()),
+      );
+    });
+
+    // 3️⃣ Send single email per customer
+    const customers = {};
+    transactions.forEach((txn) => {
+      if (!customers[txn.Email_Address]) {
+        customers[txn.Email_Address] = txn.Customer_Name;
+      }
+    });
+
+    for (const [email, name] of Object.entries(customers)) {
+      await transporter.sendMail({
+        from: "cvsutanzaeba@gmail.com",
+        to: email,
+        subject: "Your Orders Have Been Cancelled",
+        text: `Hello ${name}! Your orders have been cancelled. If you have any questions, please contact us.`,
+      });
+    }
+
+    res.json({ message: "Bulk orders cancelled" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Bulk cancel failed", error: error.message });
   }
 });

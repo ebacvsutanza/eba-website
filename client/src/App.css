@@ -15,7 +15,10 @@ html, body {
   background: var(--primary-bg);
   scroll-behavior: smooth;
 }
-*{box-sizing: border-box;}
+*{
+  box-sizing: border-box;
+  /* border: 1px solid red; */
+}
 
 .font-family{font-family: Montserrat;}
 .font-heading{font-family: Merriweather;}

@@ -99,7 +99,7 @@ const Dashboard = ({ activeAdmin }) => {
 
   return (
     <div className="space-y-3">
-      <div className="mb-10 flex items-center justify-between">
+      <div className="mb-10 flex justify-between">
         <h1 className="text-(--secondary-text) text-2xl font-bold">
           {activeAdmin}
         </h1>
