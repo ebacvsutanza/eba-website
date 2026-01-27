@@ -140,13 +140,12 @@ const Announcement = ({ activeAdmin }) => {
         </h1>
       </div>
 
-      <div className="p-3 bg-(--primary-bg) rounded-lg shadow">
+      <div className="h-[85vh] p-3 bg-(--primary-bg) rounded-lg shadow">
         <Calendar
           localizer={localizer}
           events={events}
           selectable
           popup
-          style={{ height: 500 }}
           date={calendarDate}
           view={calendarView}
           onNavigate={setCalendarDate}
