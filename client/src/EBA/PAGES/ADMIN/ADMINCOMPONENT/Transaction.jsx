@@ -280,7 +280,11 @@ const Transaction = ({ activeAdmin }) => {
           ) : (
             transactions.map((transaction, index) => (
               <div
-                className={`mb-3 p-3 border border-gray-400 grid ${!table ? "grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]" : "grid-cols-[auto_1fr_1fr_1fr_1fr_1fr_1fr]"} place-items-center bg-(--primary-bg) shadow rounded-lg text-center`}
+                className={`
+                  mb-3 p-3 grid place-items-center shadow rounded-lg text-center border transition-all
+                  ${!table ? "grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]" : "grid-cols-[auto_1fr_1fr_1fr_1fr_1fr_1fr]"} 
+                  ${selected.includes(transaction.ID) ? "bg-(--accent)/15 border-transparent" : "bg-(--primary-bg) border-gray-400"}
+                `}
                 key={index}
               >
                 <input

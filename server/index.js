@@ -49,7 +49,6 @@ const itemStorage = multer.diskStorage({
 const upload = multer({ storage: uploadStorage });
 const itemupload = multer({ storage: itemStorage });
 
-
 // Google OAuth configuration
 if (!process.env.GOOGLE_CLIENT_ID) {
   console.error("GOOGLE_CLIENT_ID environment variable is not set");
@@ -100,7 +99,6 @@ app.get("/api/protected", verifyToken, (req, res) => {
     user: req.user,
   });
 });
-
 
 // EBA Store User Login and Signup
 app.post("/userlogin", async (req, res) => {
@@ -866,7 +864,6 @@ app.get("/adminpanel", verifyToken, (req, res) => {
   });
 });
 
-
 app.post("/adminchangepass", async (req, res) => {
   const { id, password } = req.body;
 
@@ -1240,10 +1237,9 @@ app.get("/transaction", (req, res) => {
   `;
 
   db.query(sql, [limit, offset], (err, results) => {
-      if (err) return res.status(500).send(err);
-      res.json(results);
-    },
-  );
+    if (err) return res.status(500).send(err);
+    res.json(results);
+  });
 });
 // EDIT TRANSACTIOn
 app.put("/transaction/:id", (req, res) => {
@@ -1287,6 +1283,149 @@ app.delete("/transaction/:id", (req, res) => {
     if (err) return res.status(500).send(err);
     res.json({ message: "Transaction deleted successfully." });
   });
+});
+
+app.post("/bulk-confirm", async (req, res) => {
+  const { orderIds } = req.body;
+
+  if (!orderIds || orderIds.length === 0) {
+    return res.status(400).json({ message: "No orders selected" });
+  }
+
+  try {
+    // 1️⃣ Get all pending transactions for these orderIds
+    const transactions = await new Promise((resolve, reject) => {
+      db.query(
+        `SELECT * FROM \`transaction\`
+         WHERE ID IN (?) AND Status = 'Pending'`,
+        [orderIds],
+        (err, result) => (err ? reject(err) : resolve(result)),
+      );
+    });
+
+    if (transactions.length === 0) {
+      return res.status(400).json({ message: "No pending orders to confirm" });
+    }
+
+    // 2️⃣ Deduct inventory
+    for (const txn of transactions) {
+      const inventory = await new Promise((resolve, reject) => {
+        db.query(
+          `SELECT Quantity FROM inventory
+           WHERE Item_Name = ? AND Variant = ? AND Size = ?`,
+          [txn.Item_Name, txn.Variant, txn.Size],
+          (err, result) => (err ? reject(err) : resolve(result[0])),
+        );
+      });
+
+      if (!inventory || inventory.Quantity < txn.Quantity) {
+        throw new Error(`Out of stock for order: ${txn.OrderID}`);
+      }
+
+      await new Promise((resolve, reject) => {
+        db.query(
+          `UPDATE inventory
+           SET Quantity = Quantity - ?
+           WHERE Item_Name = ? AND Variant = ? AND Size = ?`,
+          [txn.Quantity, txn.Item_Name, txn.Variant, txn.Size],
+          (err) => (err ? reject(err) : resolve()),
+        );
+      });
+    }
+
+    // 3️⃣ Update transaction statuses
+    await new Promise((resolve, reject) => {
+      db.query(
+        `UPDATE \`transaction\`
+         SET Status = 'Confirmed'
+         WHERE ID IN (?) AND Status = 'Pending'`,
+        [orderIds],
+        (err) => (err ? reject(err) : resolve()),
+      );
+    });
+
+    // 4️⃣ Send single email per customer
+    const customers = {};
+    transactions.forEach((txn) => {
+      if (!customers[txn.Email_Address]) {
+        customers[txn.Email_Address] = txn.Customer_Name;
+      }
+    });
+
+    for (const [email, name] of Object.entries(customers)) {
+      await transporter.sendMail({
+        from: "cvsutanzaeba@gmail.com",
+        to: email,
+        subject: "Your Orders Have Been Confirmed",
+        text: `Hello ${name}! Your orders have been confirmed. We appreciate your purchase!`,
+      });
+    }
+
+    res.json({ message: "Bulk orders confirmed" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Bulk confirm failed", error: error.message });
+  }
+});
+app.post("/bulk-cancel", async (req, res) => {
+  const { orderIds } = req.body;
+
+  if (!orderIds || orderIds.length === 0) {
+    return res.status(400).json({ message: "No orders selected" });
+  }
+
+  try {
+    // 1️⃣ Get all pending transactions for these orderIds
+    const transactions = await new Promise((resolve, reject) => {
+      db.query(
+        `SELECT * FROM \`transaction\`
+         WHERE ID IN (?) AND Status = 'Pending'`,
+        [orderIds],
+        (err, result) => (err ? reject(err) : resolve(result)),
+      );
+    });
+
+    if (transactions.length === 0) {
+      return res.status(400).json({ message: "No pending orders to cancel" });
+    }
+
+    // 2️⃣ Update transaction statuses
+    await new Promise((resolve, reject) => {
+      db.query(
+        `UPDATE \`transaction\`
+         SET Status = 'Cancelled'
+         WHERE ID IN (?) AND Status = 'Pending'`,
+        [orderIds],
+        (err) => (err ? reject(err) : resolve()),
+      );
+    });
+
+    // 3️⃣ Send single email per customer
+    const customers = {};
+    transactions.forEach((txn) => {
+      if (!customers[txn.Email_Address]) {
+        customers[txn.Email_Address] = txn.Customer_Name;
+      }
+    });
+
+    for (const [email, name] of Object.entries(customers)) {
+      await transporter.sendMail({
+        from: "cvsutanzaeba@gmail.com",
+        to: email,
+        subject: "Your Orders Have Been Cancelled",
+        text: `Hello ${name}! Your orders have been cancelled. If you have any questions, please contact us.`,
+      });
+    }
+
+    res.json({ message: "Bulk orders cancelled" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Bulk cancel failed", error: error.message });
+  }
 });
 // CONFIRM OR CANCEL ORDER
 app.post("/confirm-order", (req, res) => {
@@ -1409,7 +1548,6 @@ app.post("/cancel-order", (req, res) => {
   );
 });
 
-
 // EVENTS & ANNOUNCEMENT PAGE
 // ADD EVENT/ANNOUNCEMENT
 app.post("/announcement", (req, res) => {
@@ -1454,13 +1592,30 @@ app.delete("/announcement/:id", (req, res) => {
 });
 
 // INVENTORY PAGE
-// FETCH AND DISPLAY THE DATA
+app.get("/inventory/count", (req, res) => {
+  db.query("SELECT COUNT(*) as count FROM inventory", (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.json({ total: result[0].count });
+  });
+});
 app.get("/inventory", (req, res) => {
-  db.query("SELECT * FROM inventory", (err, results) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const offset = (page - 1) * limit;
+
+  const sql = `
+    SELECT *
+    FROM inventory
+    ORDER BY ID ASC
+    LIMIT ? OFFSET ?
+  `;
+
+  db.query(sql, [limit, offset], (err, results) => {
     if (err) return res.status(500).send(err);
     res.json(results);
   });
 });
+
 // ADD INVENTORY
 app.post("/inventory", itemupload.single("inventory"), (req, res) => {
   const image = req.file.filename;
@@ -2038,189 +2193,5 @@ app.post("/login", async (req, res) => {
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ Status: "Error", Message: "Server error occurred" });
-  }
-});
-
-app.get("/tasks", (req, res) => {
-  db.query("SELECT * FROM tasks", (err, results) => {
-    if (err) return res.status(500).json(err);
-    res.json(results);
-  });
-});
-
-// Update task status (complete / incomplete)
-app.patch("/tasks/:id", (req, res) => {
-  const { completed } = req.body;
-  const { id } = req.params;
-
-  db.query(
-    "UPDATE tasks SET completed = ? WHERE id = ?",
-    [completed, id],
-    (err) => {
-      if (err) return res.status(500).json(err);
-      res.json({ success: true });
-    },
-  );
-});
-// Bulk update selected tasks
-app.patch("/tasks/bulk", (req, res) => {
-  const { ids, completed } = req.body;
-
-  if (!Array.isArray(ids) || ids.length === 0) {
-    return res.status(400).json({ error: "No tasks selected" });
-  }
-
-  db.query(
-    `UPDATE tasks SET completed = ? WHERE id IN (?)`,
-    [completed, ids],
-    (err, result) => {
-      if (err) return res.status(500).json(err);
-      res.json({ success: true, affectedRows: result.affectedRows });
-    },
-  );
-});
-
-
-
-app.post("/bulk-confirm", async (req, res) => {
-  const { orderIds } = req.body;
-
-  if (!orderIds || orderIds.length === 0) {
-    return res.status(400).json({ message: "No orders selected" });
-  }
-
-  try {
-    // 1️⃣ Get all pending transactions for these orderIds
-    const transactions = await new Promise((resolve, reject) => {
-      db.query(
-        `SELECT * FROM \`transaction\`
-         WHERE ID IN (?) AND Status = 'Pending'`,
-        [orderIds],
-        (err, result) => (err ? reject(err) : resolve(result)),
-      );
-    });
-
-    if (transactions.length === 0) {
-      return res.status(400).json({ message: "No pending orders to confirm" });
-    }
-
-    // 2️⃣ Deduct inventory
-    for (const txn of transactions) {
-      const inventory = await new Promise((resolve, reject) => {
-        db.query(
-          `SELECT Quantity FROM inventory
-           WHERE Item_Name = ? AND Variant = ? AND Size = ?`,
-          [txn.Item_Name, txn.Variant, txn.Size],
-          (err, result) => (err ? reject(err) : resolve(result[0])),
-        );
-      });
-
-      if (!inventory || inventory.Quantity < txn.Quantity) {
-        throw new Error(`Out of stock for order: ${txn.OrderID}`);
-      }
-
-      await new Promise((resolve, reject) => {
-        db.query(
-          `UPDATE inventory
-           SET Quantity = Quantity - ?
-           WHERE Item_Name = ? AND Variant = ? AND Size = ?`,
-          [txn.Quantity, txn.Item_Name, txn.Variant, txn.Size],
-          (err) => (err ? reject(err) : resolve()),
-        );
-      });
-    }
-
-    // 3️⃣ Update transaction statuses
-    await new Promise((resolve, reject) => {
-      db.query(
-        `UPDATE \`transaction\`
-         SET Status = 'Confirmed'
-         WHERE ID IN (?) AND Status = 'Pending'`,
-        [orderIds],
-        (err) => (err ? reject(err) : resolve()),
-      );
-    });
-
-    // 4️⃣ Send single email per customer
-    const customers = {};
-    transactions.forEach((txn) => {
-      if (!customers[txn.Email_Address]) {
-        customers[txn.Email_Address] = txn.Customer_Name;
-      }
-    });
-
-    for (const [email, name] of Object.entries(customers)) {
-      await transporter.sendMail({
-        from: "cvsutanzaeba@gmail.com",
-        to: email,
-        subject: "Your Orders Have Been Confirmed",
-        text: `Hello ${name}! Your orders have been confirmed. We appreciate your purchase!`,
-      });
-    }
-
-    res.json({ message: "Bulk orders confirmed" });
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ message: "Bulk confirm failed", error: error.message });
-  }
-});
-app.post("/bulk-cancel", async (req, res) => {
-  const { orderIds } = req.body;
-
-  if (!orderIds || orderIds.length === 0) {
-    return res.status(400).json({ message: "No orders selected" });
-  }
-
-  try {
-    // 1️⃣ Get all pending transactions for these orderIds
-    const transactions = await new Promise((resolve, reject) => {
-      db.query(
-        `SELECT * FROM \`transaction\`
-         WHERE ID IN (?) AND Status = 'Pending'`,
-        [orderIds],
-        (err, result) => (err ? reject(err) : resolve(result)),
-      );
-    });
-
-    if (transactions.length === 0) {
-      return res.status(400).json({ message: "No pending orders to cancel" });
-    }
-
-    // 2️⃣ Update transaction statuses
-    await new Promise((resolve, reject) => {
-      db.query(
-        `UPDATE \`transaction\`
-         SET Status = 'Cancelled'
-         WHERE ID IN (?) AND Status = 'Pending'`,
-        [orderIds],
-        (err) => (err ? reject(err) : resolve()),
-      );
-    });
-
-    // 3️⃣ Send single email per customer
-    const customers = {};
-    transactions.forEach((txn) => {
-      if (!customers[txn.Email_Address]) {
-        customers[txn.Email_Address] = txn.Customer_Name;
-      }
-    });
-
-    for (const [email, name] of Object.entries(customers)) {
-      await transporter.sendMail({
-        from: "cvsutanzaeba@gmail.com",
-        to: email,
-        subject: "Your Orders Have Been Cancelled",
-        text: `Hello ${name}! Your orders have been cancelled. If you have any questions, please contact us.`,
-      });
-    }
-
-    res.json({ message: "Bulk orders cancelled" });
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ message: "Bulk cancel failed", error: error.message });
   }
 });

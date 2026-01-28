@@ -176,7 +176,7 @@ const Announcement = ({ activeAdmin }) => {
           <div className="bg-white p-6 rounded w-1/3 h-screen space-y-5">
             <div className="mb-10 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-(--secondary-text)">
-                {mode === "add" ? "Add Event" : "Edit Event"} {facultyName}
+                {mode === "add" ? "Add Event" : "Edit Event"}
               </h2>
 
               <button className="cursor-pointer" onClick={resetForm}>

@@ -12,6 +12,16 @@ const CartModal = ({
   emailAddress,
 }) => {
   const [size, setSize] = useState("");
+  const sizeLabelMap = {
+    "Xtra Small": "XS",
+    "Extra Small": "XS",
+    "Small": "S",
+    "Medium": "M",
+    "Large": "L",
+    "Xtra Large": "XL",
+    "Extra Large": "XL",
+  };
+
   const [message, setMessage] = useState("");
 
   const handleAddToCart = () => {
@@ -158,7 +168,7 @@ const CartModal = ({
                             ${size === Size && "bg-(--primary-btn) text-white"}
                           `}
                         >
-                          {Size}
+                          {sizeLabelMap[Size] || Size}
                         </button>
                       ))}
                     </div>
