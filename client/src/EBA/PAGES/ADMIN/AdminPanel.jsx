@@ -2,15 +2,11 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-import Sidebar from './AdminSidebar';
 import Dashboard from './ADMINCOMPONENT/Dashboard';
 import Transaction  from './ADMINCOMPONENT/Transaction';
 import Announcement from './ADMINCOMPONENT/Announcement';
 import Inventory from './ADMINCOMPONENT/Inventory';
-import Calendar from './ADMINCOMPONENT/Calendar';
-import AddNewAdmin from './ADMINCOMPONENT/AddNewAdmin';
-import AddDesign from './ADMINCOMPONENT/AddDesign';
-import Pages from './ADMINCOMPONENT/Pages';
+import ManageAccount from "./ADMINCOMPONENT/ManageAccount";
 
 
 import './CSS/Admin.css';
@@ -28,7 +24,7 @@ const AdminPanel = () => {
 		}
 
 		const decodedToken = JSON.parse(atob(token.split(".")[1]));
-		if (!["DEAN", "EBA"].includes(decodedToken.role)) {
+		if (!["DEAN", "EBA Staff"].includes(decodedToken.role)) {
 			alert("Please Login First");
       window.location.href = "/adminlogin";
       return;
@@ -59,7 +55,7 @@ const AdminPanel = () => {
 	};
 
 
-	const [activeAdmin, setActiveComponent] = useState("Inventory");
+	const [activeAdmin, setActiveComponent] = useState("Manage Account");
 	const handleMenuClick = (componentName) => {
     setActiveComponent(componentName);
   };
@@ -113,8 +109,7 @@ const AdminPanel = () => {
         {activeAdmin === "Transaction" && <Transaction activeAdmin={activeAdmin} />}
         {activeAdmin === "Announcement" && <Announcement activeAdmin={activeAdmin} />}
         {activeAdmin === "Inventory" && <Inventory activeAdmin={activeAdmin} />}
-        {activeAdmin === "Calendar" && <Calendar activeAdmin={activeAdmin} />}
-        {activeAdmin === "Pages" && <Pages activeAdmin={activeAdmin} />}
+        {activeAdmin === "Manage Account" && <ManageAccount activeAdmin={activeAdmin} />}
       </div>
 
       {/* <div className="navbar">

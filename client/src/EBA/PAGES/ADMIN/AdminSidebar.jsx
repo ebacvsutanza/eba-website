@@ -3,15 +3,13 @@ import { IoGrid, IoCalendarClear } from "react-icons/io5";
 import { GrTransaction } from "react-icons/gr";
 import { BiSolidMegaphone } from "react-icons/bi";
 import { MdInventory } from "react-icons/md";
-import { RiFileCopyFill } from "react-icons/ri";
 import { FaBars } from "react-icons/fa";
 
-import { ImUserPlus } from "react-icons/im";
-import { FaKey } from "react-icons/fa";
 import { FaBell } from "react-icons/fa";
 import { FaMoon } from "react-icons/fa";
 import { FaSun } from "react-icons/fa";
 import { MdLogout } from "react-icons/md";
+import { FaUser } from 'react-icons/fa6';
 
 import './CSS/Sidebar.css';
 
@@ -20,6 +18,7 @@ const SidebarBtn = [
   { name: "Transaction", icon: <GrTransaction size={20} /> },
   { name: "Announcement", icon: <BiSolidMegaphone size={20} /> },
   { name: "Inventory", icon: <MdInventory size={20} /> },
+  { name: "Manage Account", icon: <FaUser size={20} /> },
 ];
 
 const AdminSidebar = ({ 
@@ -85,24 +84,8 @@ const AdminSidebar = ({
         {openModal && (
           <div className="min-w-60 p-2 absolute left-[105%] bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
             <button
-              className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer"
-              onClick={handleLogout}
-            >
-              <ImUserPlus size={20} />
-              New Admin Account
-            </button>
-
-            <button
-              className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer"
-              onClick={handleLogout}
-            >
-              <FaKey size={20} />
-              Manage Account
-            </button>
-
-            <button
               className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer relative"
-              onClick={handleLogout}
+              // onClick={handleNotification}
             >
               <FaBell size={20} />
               Notification
@@ -117,7 +100,7 @@ const AdminSidebar = ({
               {isDarkMode ? "Light Mode" : "Dark Mode"}
             </button>
 
-            <div className="w-full h-0.5 my-3 bg-gray-500/30" />
+            <div className="w-full h-0.5 mt-10 mb-3 bg-gray-500/30" />
 
             <button
               className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer"

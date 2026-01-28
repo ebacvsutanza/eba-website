@@ -1675,140 +1675,144 @@ app.delete("/inventory/:id", (req, res) => {
   });
 });
 
-// ADMIN ACCOUNT PAGE
-// FETCH AND DISPLAY THE DATA
-app.get("/admin", (req, res) => {
-  db.query("SELECT * FROM admin_account", (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
+// ------------------------ GET TOTAL COUNT ------------------------
+app.get("/manageadmin/count", async (req, res) => {
+  try {
+    const [result] = await db.promise().query("SELECT COUNT(*) as count FROM admin_account");
+    res.json({ total: result[0].count });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ Message: "Server error" });
+  }
 });
-// ADD NEW ADMIN
-app.post("/addnewadmin", upload.single("admin"), (req, res) => {
-  const image = req.file.filename;
-  const { Username, Role, Email, Password } = req.body;
-  const checkQuery =
-    "SELECT * FROM admin_account WHERE Username = ? OR Email_Address = ?";
 
-  db.query(checkQuery, [Username, Email], (err, result) => {
-    if (err) {
-      console.error("Error checking existing users:", err);
-      res.status(500).send("Server error");
-      return;
-    }
+// ------------------------ GET ADMINS WITH PAGINATION ------------------------
+app.get("/manageadmin", async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const offset = (page - 1) * limit;
 
-    if (result.length > 0) {
+  try {
+    const [results] = await db.promise().query(
+      "SELECT * FROM admin_account ORDER BY ID ASC LIMIT ? OFFSET ?",
+      [limit, offset]
+    );
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ Message: "Server error" });
+  }
+});
+
+// ------------------------ ADD NEW ADMIN ------------------------
+app.post("/manageadmin", upload.single("manageadmin"), async (req, res) => {
+  const { Username, Role, Email_Address, Password } = req.body;
+  const image = req.file ? req.file.filename : null;
+
+  if (!Username || !Role || !Email_Address || !Password) {
+    return res.status(400).json({ Status: "Please fill all required fields" });
+  }
+
+  try {
+    // Check if username or email exists
+    const [existing] = await db.promise().query(
+      "SELECT * FROM admin_account WHERE Username = ? OR Email_Address = ?",
+      [Username, Email_Address]
+    );
+    if (existing.length > 0) {
       return res.json({ Status: "Username or Email already exists" });
     }
 
-    const insertQuery =
-      "INSERT INTO admin_account (Image, Username, Role, Email_Address, Password) VALUES (?, ?, ?, ?, ?)";
-    bcrypt.hash(Password.toString(), salt, (err, hash) => {
-      if (err) return res.json("Error");
+    // Hash password
+    const hashedPassword = await bcrypt.hash(Password.toString(), salt);
 
-      db.query(
-        insertQuery,
-        [image, Username, Role, Email, hash],
-        (err, result) => {
-          if (err) {
-            console.error("Error inserting data:", err);
-            return res.status(500).json({ Message: "Error inserting data" });
-          }
+    // Insert new admin
+    await db.promise().query(
+      "INSERT INTO admin_account (Image, Username, Role, Email_Address, Password) VALUES (?, ?, ?, ?, ?)",
+      [image, Username, Role, Email_Address, hashedPassword]
+    );
 
-          return res.json({ Status: "Success" });
-        },
-      );
-    });
-  });
-});
-// EDIT ADMIN
-app.put("/addnewadmin/:id", upload.single("admin"), (req, res) => {
-  const { id } = req.params;
-  const { Username, Role, Email, Password } = req.body;
-
-  let image = null;
-  if (req.file) {
-    image = req.file.filename;
+    res.json({ Status: "Success" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ Message: "Error adding admin" });
   }
-
-  db.query("SELECT * FROM admin_account WHERE ID = ?", [id], (err, result) => {
-    const currentPassword = result[0].Password;
-
-    if (currentPassword === Password) {
-      if (image) {
-        db.query(
-          "UPDATE admin_account SET Image = ?, Username = ?, Role = ?, Email_Address = ? WHERE ID = ?",
-          [image, Username, Role, Email, id],
-          (err, result) => {
-            if (err) {
-              console.error("Error inserting data:", err);
-              return res.status(500).json({ Message: "Error inserting data" });
-            }
-
-            return res.json({ Status: "Success" });
-          },
-        );
-      } else {
-        db.query(
-          "UPDATE admin_account SET Username = ?, Role = ?, Email_Address = ? WHERE ID = ?",
-          [Username, Role, Email, id],
-          (err, result) => {
-            if (err) {
-              console.error("Error inserting data:", err);
-              return res.status(500).json({ Message: "Error inserting data" });
-            }
-
-            return res.json({ Status: "Success" });
-          },
-        );
-      }
-    } else {
-      bcrypt.hash(Password.toString(), salt, (err, hash) => {
-        if (err) return res.json("Error");
-
-        if (image) {
-          db.query(
-            "UPDATE admin_account SET Image = ?, Username = ?, Role = ?, Email_Address = ?, Password = ? WHERE ID = ?",
-            [image, Username, Role, Email, hash, id],
-            (err, result) => {
-              if (err) {
-                console.error("Error inserting data:", err);
-                return res
-                  .status(500)
-                  .json({ Message: "Error inserting data" });
-              }
-
-              return res.json({ Status: "Success" });
-            },
-          );
-        } else {
-          db.query(
-            "UPDATE admin_account SET Username = ?, Role = ?, Email_Address = ?, Password = ? WHERE ID = ?",
-            [Username, Role, Email, hash, id],
-            (err, result) => {
-              if (err) {
-                console.error("Error inserting data:", err);
-                return res
-                  .status(500)
-                  .json({ Message: "Error inserting data" });
-              }
-
-              return res.json({ Status: "Success" });
-            },
-          );
-        }
-      });
-    }
-  });
 });
-// DELETE ADMIN
-app.delete("/addnewadmin/:id", (req, res) => {
-  const { id } = req.params;
 
-  db.query("DELETE FROM admin_account WHERE ID = ?", [id], (err, result) => {
-    if (err) return res.status(500).send(err);
-    res.json({ message: "Admin deleted successfully." });
-  });
+// ------------------------ EDIT ADMIN ------------------------
+app.put("/manageadmin/:id", upload.single("manageadmin"), async (req, res) => {
+  const { id } = req.params;
+  const { Username, Role, Email_Address, Password } = req.body;
+  const image = req.file ? req.file.filename : null;
+
+  try {
+    // Get current admin
+    const [admins] = await db.promise().query("SELECT * FROM admin_account WHERE ID = ?", [id]);
+    if (admins.length === 0) {
+      return res.status(404).json({ Status: "Admin not found" });
+    }
+
+    const currentAdmin = admins[0];
+
+    // Prepare fields to update
+    const fields = [];
+    const values = [];
+
+    if (Username) {
+      fields.push("Username = ?");
+      values.push(Username);
+    }
+
+    if (Role) {
+      fields.push("Role = ?");
+      values.push(Role);
+    }
+
+    if (Email_Address) {
+      fields.push("Email_Address = ?");
+      values.push(Email_Address);
+    }
+
+    if (image) {
+      fields.push("Image = ?");
+      values.push(image);
+    }
+
+    // Only update password if provided and different
+    if (Password) {
+      const isSamePassword = await bcrypt.compare(Password, currentAdmin.Password);
+      if (!isSamePassword) {
+        const hashedPassword = await bcrypt.hash(Password.toString(), salt);
+        fields.push("Password = ?");
+        values.push(hashedPassword);
+      }
+    }
+
+    if (fields.length === 0) {
+      return res.json({ Status: "No changes provided" });
+    }
+
+    const sql = `UPDATE admin_account SET ${fields.join(", ")} WHERE ID = ?`;
+    values.push(id);
+
+    await db.promise().query(sql, values);
+    res.json({ Status: "Success" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ Status: "Error updating admin" });
+  }
+});
+
+// ------------------------ DELETE ADMIN ------------------------
+app.delete("/manageadmin/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.promise().query("DELETE FROM admin_account WHERE ID = ?", [id]);
+    res.json({ Status: "Admin deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ Status: "Error deleting admin" });
+  }
 });
 
 // MANAGE PAGES
