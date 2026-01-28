@@ -20,8 +20,6 @@ const SidebarBtn = [
   { name: "Transaction", icon: <GrTransaction size={20} /> },
   { name: "Announcement", icon: <BiSolidMegaphone size={20} /> },
   { name: "Inventory", icon: <MdInventory size={20} /> },
-  { name: "Calendar", icon: <IoCalendarClear size={20} /> },
-  { name: "Pages", icon: <RiFileCopyFill size={20} /> },
 ];
 
 const AdminSidebar = ({ 
@@ -85,7 +83,7 @@ const AdminSidebar = ({
         </button>
 
         {openModal && (
-          <div className="min-w-60 p-2 absolute left-[105%] bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2">
+          <div className="min-w-60 p-2 absolute left-[105%] bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
             <button
               className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer"
               onClick={handleLogout}
