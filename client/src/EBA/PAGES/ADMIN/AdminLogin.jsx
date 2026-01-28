@@ -54,11 +54,11 @@ const Login = () => {
 			localStorage.setItem('token', token);
 		
 			const decodedToken = JSON.parse(atob(token.split('.')[1]));
-			if (decodedToken.role === 'DEAN' || decodedToken.role === 'EBA') {
-				navigateTo('/adminpanel');
-			} else {
-				navigateTo('/staffadminpanel');
-			}
+			if (decodedToken.role === "DEAN" || decodedToken.role === "EBA Staff") {
+        navigateTo("/adminpanel");
+      } else {
+        navigateTo("/staffadminpanel");
+      }
 		} catch (err) {
 		  setMessage('Invalid credentials', err);
 		}

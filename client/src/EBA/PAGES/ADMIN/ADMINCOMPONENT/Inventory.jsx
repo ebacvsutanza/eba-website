@@ -101,7 +101,6 @@ const Inventory = ({ activeAdmin }) => {
   };
   
   const [editingInventory, setEditingInventory] = useState(null);
-
   const handleEdit = (inventory) => {
     setEditingInventory(inventory);
     setMode("edit");

@@ -111,25 +111,25 @@ const Dashboard = ({ activeAdmin }) => {
       </div>
 
       <div className="flex justify-between gap-3">
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Total Sales</p>
           <h2 className="text-xl text-(--secondary-text) font-bold">
             {formatCurrency(transactionAmount)}
           </h2>
         </div>
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Total Orders</p>
           <h2 className="text-xl text-(--secondary-text) font-bold">
             {transactionQuantity}
           </h2>
         </div>
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Items with Low Stock</p>
           <h2 className="text-xl text-(--secondary-text) font-bold">
             {lowStockItems.length}
           </h2>
         </div>
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Available Stocks</p>
           <h2 className="text-xl text-(--secondary-text) font-bold">
             {inventoryQuantity}
@@ -138,40 +138,50 @@ const Dashboard = ({ activeAdmin }) => {
       </div>
 
       <div className="flex justify-between gap-3">
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Sales</p>
           <SalesChart />
         </div>
 
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Total Order</p>
           <OrderChart />
         </div>
       </div>
 
       <div className="flex justify-between gap-3">
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">New Orders of the Week</p>
           <h2 className="text-xl text-(--secondary-text) font-bold">
             {newOrdersThisWeek}
           </h2>
         </div>
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Best-seller</p>
           {bestSeller ? (
-						<h2 className="text-xl text-(--secondary-text) font-bold">{bestSeller.Item_Name} {bestSeller.Variant && `- ${bestSeller.Variant}`}</h2>
+            <h2 className="text-xl text-(--secondary-text) font-bold">
+              {bestSeller.Item_Name}{" "}
+              {bestSeller.Variant && `- ${bestSeller.Variant}`}
+            </h2>
           ) : (
-						<h2 className="text-xl text-(--secondary-text) font-bold">No Best-seller Item</h2>
-					)}
+            <h2 className="text-xl text-(--secondary-text) font-bold">
+              No Best-seller Item
+            </h2>
+          )}
         </div>
 
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg">
+        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Least Purchased</p>
           {leastPurchased ? (
-						<h2 className="text-xl text-(--secondary-text) font-bold">{leastPurchased.Item_Name} {leastPurchased.Variant && `- ${leastPurchased.Variant}`}</h2>
+            <h2 className="text-xl text-(--secondary-text) font-bold">
+              {leastPurchased.Item_Name}{" "}
+              {leastPurchased.Variant && `- ${leastPurchased.Variant}`}
+            </h2>
           ) : (
-						<h2 className="text-xl text-(--secondary-text) font-bold">No Least Purchased Item</h2>
-					)}
+            <h2 className="text-xl text-(--secondary-text) font-bold">
+              No Least Purchased Item
+            </h2>
+          )}
         </div>
       </div>
     </div>
