@@ -87,7 +87,6 @@ const AdminSidebar = ({
           <FaBars />
         </button>
 
-<<<<<<< HEAD
         {openModal &&
           (!notifDropdown ? (
             <div className="min-w-80 p-2 absolute left-[105%] bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
@@ -147,38 +146,6 @@ const AdminSidebar = ({
               ))}
             </div>
           ))}
-=======
-        {openModal && (
-          <div className="min-w-60 p-2 absolute left-[105%] bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
-            <button
-              className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer relative"
-              // onClick={handleNotification}
-            >
-              <FaBell size={20} />
-              Notification
-              <span className="w-2 h-2 bg-(--error) rounded-full absolute right-0 top-0"></span>
-            </button>
-
-            <button
-              className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer"
-              onClick={() => setIsDarkMode((prev) => !prev)}
-            >
-              {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
-              {isDarkMode ? "Light Mode" : "Dark Mode"}
-            </button>
-
-            <div className="w-full h-0.5 mt-10 mb-3 bg-gray-500/30" />
-
-            <button
-              className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer"
-              onClick={handleLogout}
-            >
-              <MdLogout size={20} />
-              Logout
-            </button>
-          </div>
-        )}
->>>>>>> 9f6470f0e190413d00059dae19912418214655a0
       </div>
     </div>
   );

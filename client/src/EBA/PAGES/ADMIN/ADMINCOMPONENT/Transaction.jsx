@@ -102,6 +102,8 @@ const Transaction = ({ activeAdmin }) => {
         setCancelling(false);
       }
     }
+
+    resetForm()
   };
   const bulkConfirmOrders = async (ids) => {
     return axios.post("http://localhost:3000/bulk-confirm", {
@@ -352,7 +354,7 @@ const Transaction = ({ activeAdmin }) => {
                 <div className="relative">
                   <button
                     onClick={() => handleStatus(transaction)}
-                    className="p-2 hover:bg-gray-100 cursor-pointer"
+                    className="p-2 cursor-pointer"
                   >
                     <HiDotsVertical size={18} />
                   </button>
