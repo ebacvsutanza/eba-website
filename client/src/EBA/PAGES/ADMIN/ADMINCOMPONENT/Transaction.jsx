@@ -67,6 +67,7 @@ const Transaction = ({ activeAdmin }) => {
         await cancelOrder(transaction);
       }
       setSelected([]);
+      setShowConfirm(false);
       return;
     }
 
@@ -195,6 +196,27 @@ const Transaction = ({ activeAdmin }) => {
     fetchTransactions(sortOrder, currentPage);
   }, [currentPage, sortOrder]);
   
+  const [mode, setMode] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [msg, setMsg] = useState('')
+  const [row, setRow] = useState(false);
+  const handleConfirm = (action, transaction) => {
+    setShowConfirm(true);
+    setRow(transaction);
+
+    if (action === true) {
+      setMsg("Confirm");
+      setMode('confirm')
+    } else {
+      setMsg("Cancel");
+      setMode('cancel')
+    }
+  };
+  const resetForm = () => {
+    setActiveTransaction(false);
+    setShowConfirm(false);
+  }
+
   return (
     <div className="transaction space-y-3">
       <div className="mb-10 flex items-center justify-between">
@@ -338,7 +360,7 @@ const Transaction = ({ activeAdmin }) => {
                   {activeTransaction === transaction.ID && (
                     <div className="p-2 absolute top-[60%] right-[60%] bg-white border border-gray-200 shadow-lg rounded-md z-20 w-45">
                       <button
-                        onClick={() => updateStatus(true, transaction)}
+                        onClick={() => handleConfirm(true, transaction)}
                         disabled={
                           transaction.Status === "Cancelled" ||
                           transaction.Status === "Confirmed" ||
@@ -347,11 +369,11 @@ const Transaction = ({ activeAdmin }) => {
                         className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded cursor-pointer flex items-center gap-2"
                       >
                         <FaCheck />
-                        {confirming ? "Confirming..." : "Confirm"}
+                        Confirm
                       </button>
 
                       <button
-                        onClick={() => updateStatus(false, transaction)}
+                        onClick={() => handleConfirm(false, transaction)}
                         disabled={
                           transaction.Status === "Cancelled" ||
                           transaction.Status === "Confirmed" ||
@@ -360,7 +382,7 @@ const Transaction = ({ activeAdmin }) => {
                         className="w-full text-left px-3 py-2 hover:bg-gray-100 text-(--error) cursor-pointer flex items-center gap-2"
                       >
                         <FaTrash />
-                        {cancelling ? "Cancelling..." : "Cancel"}
+                        Cancel
                       </button>
                     </div>
                   )}
@@ -391,6 +413,37 @@ const Transaction = ({ activeAdmin }) => {
           </button>
         </div>
       </div>
+
+      {showConfirm && (
+        <div className="h-screen fixed inset-0 bg-black/50 center-flex z-50">
+          <div className="bg-white p-5 rounded-lg w-1/3 overflow-auto flex justify-between flex-col gap-10">
+            <div className="space-y-3">
+              <h1 className="font-bold text-lg text-(--error)">
+                {msg} transaction
+              </h1>
+              <p>Are you sure you want to {mode} this transaction?</p>
+            </div>
+
+            <div className="w-full flex justify-between items-center gap-3">
+              <button
+                className="flex-1 border border-(--outline) py-2 rounded-lg shadow cursor-pointer"
+                onClick={resetForm}
+              >
+                No, cancel
+              </button>
+              <button
+                className="flex-1 bg-(--error) text-white py-2 rounded-lg shadow cursor-pointer"
+                onClick={() =>
+                  (mode === "confirm" && updateStatus(true, row)) ||
+                  (mode === "cancel" && updateStatus(false, row))
+                }
+              >
+                {mode === 'confirm' ? confirming ? "Confirming..." : `Yes, ${mode}` : cancelling ? "Cancelling..." : `Yes, ${mode}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -20,7 +20,7 @@ const ManageAccount = ({ activeAdmin }) => {
   const [showModal, setShowModal] = useState(false);
   const [mode, setMode] = useState("add"); // "add" or "edit"
   const [editingAdmin, setEditingAdmin] = useState(null);
-
+  
   const [image, setImage] = useState(null);
   const [formData, setFormData] = useState({
     Username: "",
@@ -28,7 +28,7 @@ const ManageAccount = ({ activeAdmin }) => {
     Email_Address: "",
     Password: "",
   });
-
+  
   const [message, setMessage] = useState("");
   const [formMessage, setFormMessage] = useState("");
 
@@ -104,7 +104,42 @@ const ManageAccount = ({ activeAdmin }) => {
       Password: "",
     });
     setFormMessage("");
+    setShowConfirm(false);
   };
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [remove, setRemove] = useState('')
+  const msg =
+    mode === "add" ? "Add" :
+    mode === "edit" ? "Edit" :
+    mode === "delete" ? "Delete" :
+    ""
+  ; 
+  const handleRemoveAccount = (admin) => {
+    setMode('delete');
+    setRemove(admin);
+    setShowConfirm(true);
+  }
+
+  const handleConfirm = () => {
+    if (mode !== "delete") {
+      if (
+        !formData.Username ||
+        !formData.Role ||
+        !formData.Email_Address ||
+        (mode === "add" && !formData.Password)
+      ) {
+        setFormMessage("Please fill the blanks");
+        setTimeout(() => {
+          setFormMessage("");
+        }, 2000);
+        return;
+      }
+    }
+
+    setShowConfirm(true);
+  };
+
 
   // ------------------------ Handle Submit (Add/Edit) ------------------------
   const handleSubmit = async () => {
@@ -154,6 +189,7 @@ const ManageAccount = ({ activeAdmin }) => {
       setMessage("Admin deleted successfully");
       fetchManageAccount(currentPage);
       setTimeout(() => setMessage(""), 2000);
+      setShowConfirm(false)
     } catch (err) {
       console.error(err);
       setFormMessage("Failed to delete admin");
@@ -181,7 +217,9 @@ const ManageAccount = ({ activeAdmin }) => {
     <div className="space-y-3">
       {/* Header */}
       <div className="mb-10 flex items-center justify-between">
-        <h1 className="text-(--secondary-text) text-2xl font-bold">{activeAdmin}</h1>
+        <h1 className="text-(--secondary-text) text-2xl font-bold">
+          {activeAdmin}
+        </h1>
         <button
           onClick={handleAdd}
           className="bg-(--accent) px-5 py-2 rounded-lg text-white cursor-pointer"
@@ -219,8 +257,12 @@ const ManageAccount = ({ activeAdmin }) => {
                   className="w-14 h-14 object-contain mx-auto rounded"
                 />
               </div>
-              <div className="line-clamp-Font />-w-[130px]">{admin.Username}</div>
-              <div className="line-clamp-2 font-medium max-w-[130px]">{admin.Email_Address}</div>
+              <div className="line-clamp-1 w-[130px]">
+                {admin.Username}
+              </div>
+              <div className="line-clamp-2 font-medium max-w-[130px]">
+                {admin.Email_Address}
+              </div>
               <div>{admin.Role}</div>
               <div className="center-flex">
                 <button
@@ -230,7 +272,7 @@ const ManageAccount = ({ activeAdmin }) => {
                   <FontAwesomeIcon icon={faPenToSquare} /> Edit
                 </button>
                 <button
-                  onClick={() => handleRemove(admin.ID)}
+                  onClick={() => handleRemoveAccount(admin.ID)}
                   className="w-full text-left px-3 py-2 text-(--error) cursor-pointer flex items-center gap-2"
                 >
                   <FontAwesomeIcon icon={faTrash} /> Remove
@@ -243,13 +285,21 @@ const ManageAccount = ({ activeAdmin }) => {
 
       {/* Pagination */}
       <div className="flex justify-center gap-3 mt-5">
-        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage <= 1} className="cursor-pointer disabled:opacity-50">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage <= 1}
+          className="cursor-pointer disabled:opacity-50"
+        >
           <FontAwesomeIcon icon={faChevronLeft} />
         </button>
         <span className="px-3 py-1">
           Page {currentPage} of {totalPages}
         </span>
-        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages} className="cursor-pointer disabled:opacity-50">
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages}
+          className="cursor-pointer disabled:opacity-50"
+        >
           <FontAwesomeIcon icon={faChevronRight} />
         </button>
       </div>
@@ -263,7 +313,7 @@ const ManageAccount = ({ activeAdmin }) => {
 
       {/* Add/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-end z-50">
+        <div className="h-screen fixed inset-0 bg-black/50 flex items-center justify-end z-50">
           <div className="bg-white p-6 rounded w-1/3 h-screen space-y-5 overflow-auto">
             <div className="mb-10 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-(--secondary-text)">
@@ -276,7 +326,11 @@ const ManageAccount = ({ activeAdmin }) => {
 
             <div className="flex flex-col gap-1">
               <label className="text-lg font-medium">Image</label>
-              <input type="file" onChange={handleFile} className="w-full border border-(--outline) outline-(--accent) rounded-lg p-2 cursor-pointer" />
+              <input
+                type="file"
+                onChange={handleFile}
+                className="w-full border border-(--outline) outline-(--accent) rounded-lg p-2 cursor-pointer"
+              />
             </div>
 
             <div className="flex flex-col gap-1">
@@ -314,7 +368,9 @@ const ManageAccount = ({ activeAdmin }) => {
                 required
                 className="w-full border border-(--outline) outline-(--accent) rounded-lg p-2"
               >
-                <option value="" disabled>Select Role</option>
+                <option value="" disabled>
+                  Select Role
+                </option>
                 <option value="Admin">Admin</option>
                 <option value="EBA Staff">EBA Staff</option>
                 <option value="DEAN">DEAN</option>
@@ -328,21 +384,51 @@ const ManageAccount = ({ activeAdmin }) => {
                 name="Password"
                 value={formData.Password}
                 onChange={handleChange}
-                placeholder={mode === "edit" ? "Leave blank to keep current password" : "Enter Password"}
+                placeholder={
+                  mode === "edit"
+                    ? "Leave blank to keep current password"
+                    : "Enter Password"
+                }
                 required={mode === "add"}
                 className="w-full border border-(--outline) outline-(--accent) rounded-lg p-2"
               />
             </div>
 
-            {formMessage && <div className="text-red-500">{formMessage}</div>}
-
+            {formMessage && <div className="text-(--error) text-center">{formMessage}</div>}
+            
             <button
               type="button"
-              onClick={handleSubmit}
+              onClick={handleConfirm}
               className="w-full px-4 py-2 bg-(--primary-btn) hover:bg-(--accent) transition-all text-white rounded-lg cursor-pointer"
             >
               {mode === "add" ? "Create Account" : "Update Account"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {showConfirm && (
+        <div className="h-screen fixed inset-0 bg-black/50 center-flex z-50">
+          <div className="bg-white p-5 rounded-lg w-1/3 overflow-auto flex justify-between flex-col gap-10">
+            <div className="space-y-3">
+              <h1 className="font-bold text-lg text-(--error)">{msg} account</h1>
+              <p>Are you sure you want to {mode} this account?</p>
+            </div>
+
+            <div className="w-full flex justify-between items-center gap-3">
+              <button
+                className="flex-1 border border-(--outline) py-2 rounded-lg shadow cursor-pointer"
+                onClick={resetForm}
+              >
+                No, cancel
+              </button>
+              <button
+                className="flex-1 bg-(--error) text-white py-2 rounded-lg shadow cursor-pointer"
+                onClick={() => mode === 'add' || mode === 'edit' ? handleSubmit() : handleRemove(remove)}
+              >
+                Yes, {mode}
+              </button>
+            </div>
           </div>
         </div>
       )}

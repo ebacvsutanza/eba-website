@@ -37,6 +37,9 @@ html, body {
   color: white;
   box-shadow: none;
 }
+.no-scrollbar {
+  scrollbar-width: none;
+}
 
 
 

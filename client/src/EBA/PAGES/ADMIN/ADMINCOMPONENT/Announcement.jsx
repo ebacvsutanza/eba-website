@@ -74,6 +74,7 @@ const Announcement = ({ activeAdmin }) => {
     fetchAnnouncements();
     flashMessage("Event deleted successfully");
     setShowModal(false);
+    resetForm()
   };
 
   /* ---------------- HELPERS ---------------- */
@@ -84,7 +85,8 @@ const Announcement = ({ activeAdmin }) => {
     setStartDate(new Date());
     setSelectedEvent(null);
     setShowModal(false);
-    setMode("add");
+    setShowConfirm(false);
+    setMode("");
   };
 
   const flashMessage = (text) => {
@@ -127,9 +129,38 @@ const Announcement = ({ activeAdmin }) => {
     setSelectedEvent(event);
     setTitle(event.title);
     setDetails(event.desc);
-    setFacultyName(event.facultyName); // ✅ now works
+    setFacultyName(event.facultyName);
     setStartDate(new Date(event.start));
     setShowModal(true);
+  };
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selected, setSelected] = useState('')
+  const msg =
+    mode === "add" ? "Add" :
+    mode === "edit" ? "Edit" :
+    mode === "delete" ? "Delete" :
+    ""
+  ;
+
+  const handleRemove = (selected) => {
+    setMode("delete");
+    setSelected(selected);
+    setShowConfirm(true);
+  };
+
+  const [formMessage, setFormMessage] = useState("");
+  const handleConfirm = () => {
+    if (mode === "add" || mode === "edit") {
+      if (!title || !details || !facultyName) {
+        setFormMessage("Please fill the blanks");
+        setTimeout(() => {
+          setFormMessage("");
+        }, 2000);
+        return;
+      }
+    }
+    setShowConfirm(true);
   };
 
   return (
@@ -172,7 +203,7 @@ const Announcement = ({ activeAdmin }) => {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-end z-50">
+        <div className="h-screen fixed inset-0 bg-black/50 flex items-center justify-end z-50">
           <div className="bg-white p-6 rounded w-1/3 h-screen space-y-5">
             <div className="mb-10 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-(--secondary-text)">
@@ -223,11 +254,13 @@ const Announcement = ({ activeAdmin }) => {
               />
             </div>
 
+            {formMessage && <div className="text-(--error) text-center">{formMessage}</div>}
+
             <div className="flex justify-between gap-3 pt-3">
-              {mode === "edit" && (
+              {(mode === "edit" || mode === 'delete') && (
                 <button
                   className="px-4 py-2 bg-(--error) flex-1 text-white rounded-lg cursor-pointer"
-                  onClick={() => deleteAnnouncement(selectedEvent.id)}
+                  onClick={() => handleRemove(selectedEvent.id)}
                 >
                   <FontAwesomeIcon icon={faTrash} /> Remove
                 </button>
@@ -235,11 +268,41 @@ const Announcement = ({ activeAdmin }) => {
 
               <button
                 className="px-4 py-2 bg-(--primary-btn) flex-1 text-white rounded-lg cursor-pointer"
-                onClick={
-                  mode === "add" ? createAnnouncement : updateAnnouncement
-                }
+                onClick={handleConfirm}
               >
                 {mode === "add" ? "Save" : "Update"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showConfirm && (
+        <div className="h-screen fixed inset-0 bg-black/50 center-flex z-50">
+          <div className="bg-white p-5 rounded-lg w-1/3 overflow-auto flex justify-between flex-col gap-10">
+            <div className="space-y-3">
+              <h1 className="font-bold text-lg text-(--error)">
+                {msg} Events & Announcement
+              </h1>
+              <p>Are you sure you want to {mode} this events & announcement?</p>
+            </div>
+
+            <div className="w-full flex justify-between items-center gap-3">
+              <button
+                className="flex-1 border border-(--outline) py-2 rounded-lg shadow cursor-pointer"
+                onClick={resetForm}
+              >
+                No, cancel
+              </button>
+              <button
+                className="flex-1 bg-(--error) text-white py-2 rounded-lg shadow cursor-pointer"
+                onClick={() =>
+                  (mode === "add" && createAnnouncement()) ||
+                  (mode === "edit" && updateAnnouncement()) ||
+                  (mode === "delete" && deleteAnnouncement(selected))
+                }
+              >
+                Yes, {mode}
               </button>
             </div>
           </div>

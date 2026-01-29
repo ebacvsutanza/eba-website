@@ -49,14 +49,15 @@ const Inventory = ({ activeAdmin }) => {
 
   const [form, setForm] = useState(true);
   const [selection, setSelection] = useState(null);
-  const [formData, setFormData] = useState({
-    Category: "",
-    ItemName: "",
-    Variant: "",
-    Size: "",
-    Quantity: "",
-    Price: "",
-  });
+  const initialFormData = {
+    category: "",
+    itemName: "",
+    variant: "",
+    size: "",
+    quantity: "",
+    price: "",
+  };
+  const [formData, setFormData] = useState(initialFormData);
 
   const [image, setImage] = useState();
   const [showModal, setShowModal] = useState(false);
@@ -66,26 +67,59 @@ const Inventory = ({ activeAdmin }) => {
   };
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Update form data
     setFormData({ ...formData, [name]: value });
+
+    // Automatically hide Variant and Size if category is "Capstone Manual" or "Module"
+    if (name === "category") {
+      if (value === "Capstone Manual" || value === "Module") {
+        setForm(false); // hide Variant and Size
+        setSelection("Module"); // limit dropdown to Module/Capstone Manual
+      } else {
+        setForm(true); // show Variant and Size
+        setSelection("Student Uniform"); // limit dropdown to uniforms
+      }
+    }
   };
 
+  const [formMessage, setFormMessage] = useState("");
   const handleSubmit = async () => {
-    const form = new FormData();
+    const isMissingFields =
+      !formData.category ||
+      !formData.itemName ||
+      (form && !formData.variant) ||
+      (form && !formData.size) ||
+      !formData.quantity ||
+      !formData.price;
 
-    if (image) form.append("inventory", image);
+    if ((mode === "add" && !image) || isMissingFields) {
+      setFormMessage(
+        mode === "add" && !image
+          ? "Please fill all fields including image"
+          : "Please fill all required fields",
+      );
+      setTimeout(() => setFormMessage(""), 2000);
+      return;
+    }
 
-    Object.entries(formData).forEach(([key, value]) => form.append(key, value));
+    const formdata = new FormData();
+    formdata.append("inventory", image);
+    Object.entries(formData).forEach(([key, value]) => formdata.append(key, value));
 
     try {
       if (mode === "add") {
-        await axios.post("http://localhost:3000/inventory", form);
+        await axios.post("http://localhost:3000/inventory", formdata);
+        setMessage("Item added successfully");
       } else {
         await axios.put(
           `http://localhost:3000/inventory/${editingInventory.ID}`,
-          form,
+          formdata,
         );
+        setMessage("Item edited successfully");
       }
 
+      setTimeout(() => setMessage(""), 2000);
       setShowModal(false);
       setEditingInventory(null);
       fetchInventories(currentPage);
@@ -97,6 +131,8 @@ const Inventory = ({ activeAdmin }) => {
 
   const handleAdd = () => {
     setMode("add");
+    setImage(null);
+    setFormData(initialFormData);
     setShowModal(true);
   };
   
@@ -104,18 +140,19 @@ const Inventory = ({ activeAdmin }) => {
   const handleEdit = (inventory) => {
     setEditingInventory(inventory);
     setMode("edit");
+    setImage(null);
     setShowModal(true);
 
+    // Decide whether to show Variant & Size and what selection filter to use
     if (
-      inventory.Category === "Student Uniform" ||
-      inventory.Category === "Department Shirt" ||
-      inventory.Category === "Organizational Shirt"
+      inventory.Category === "Capstone Manual" ||
+      inventory.Category === "Module"
     ) {
-      setForm(true);
-      setSelection("Student Uniform");
+      setForm(false); // hide Variant & Size
+      setSelection("Module"); // only show Module / Capstone Manual categories
     } else {
-      setForm(false);
-      setSelection("Module");
+      setForm(true); // show Variant & Size
+      setSelection("Student Uniform"); // show only uniform categories
     }
 
     setFormData({
@@ -138,17 +175,58 @@ const Inventory = ({ activeAdmin }) => {
     }, 2000);
 
     fetchInventories();
+    resetForm();
   };
 
   const resetForm = () => {
     setShowModal(false);
+    setActiveInventory(false);
     setMode("add");
-    setFormData({});
+    setFormData(initialFormData);
+    setForm(true)
+    setShowConfirm(false);
+    setSelection(null);
   };
 
   useEffect(() => {
     fetchInventories(currentPage);
   }, [currentPage]);
+
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [remove, setRemove] = useState('')
+  const msg =
+    mode === "add" ? "Add" :
+    mode === "edit" ? "Edit" :
+    mode === "delete" ? "Delete" :
+    ""
+  ;
+  const handleRemoveItem = (item) => {
+    setMode("delete");
+    setRemove(item);
+    setShowConfirm(true);
+  };
+  const handleConfirm = () => {
+    const isMissingFields =
+      !formData.category ||
+      !formData.itemName ||
+      (form && !formData.variant) ||
+      (form && !formData.size) ||
+      !formData.quantity ||
+      !formData.price;
+
+    if ((mode === "add" && !image) || isMissingFields) {
+      setFormMessage(
+        mode === "add" && !image
+          ? "Please fill all fields including image"
+          : "Please fill all required fields",
+      );
+      setTimeout(() => setFormMessage(""), 2000);
+      return;
+    }
+
+    setShowConfirm(true);
+  };
 
   return (
     <div className="space-y-3">
@@ -227,7 +305,7 @@ const Inventory = ({ activeAdmin }) => {
                       </button>
 
                       <button
-                        onClick={() => handleRemove(inventory.ID)}
+                        onClick={() => handleRemoveItem(inventory.ID)}
                         className="w-full text-left px-3 py-2 hover:bg-gray-100 text-(--error) cursor-pointer flex items-center gap-2"
                       >
                         <FontAwesomeIcon icon={faTrash} />
@@ -240,7 +318,7 @@ const Inventory = ({ activeAdmin }) => {
             ))
           )}
         </div>
-        
+
         <div className="flex justify-center gap-3 mt-5">
           <button
             onClick={() => setCurrentPage((prev) => prev - 1)}
@@ -271,7 +349,7 @@ const Inventory = ({ activeAdmin }) => {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-end z-50">
+        <div className="h-screen fixed inset-0 bg-black/50 flex items-center justify-end z-50">
           <div className="bg-white p-6 rounded w-1/3 h-screen space-y-5">
             <div className="mb-10 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-(--secondary-text)">
@@ -300,7 +378,7 @@ const Inventory = ({ activeAdmin }) => {
                 required
                 className="w-full border border-(--outline) outline-(--accent) rounded-lg p-2"
               >
-                <option value="" selected disabled>
+                <option value="" disabled>
                   Select Category
                 </option>
                 {categories
@@ -329,7 +407,8 @@ const Inventory = ({ activeAdmin }) => {
                     <option key={index} value={category.Category}>
                       {category.Category}
                     </option>
-                  ))}
+                  ))
+                }
               </select>
             </div>
             <div className="flex flex-col gap-1">
@@ -337,7 +416,7 @@ const Inventory = ({ activeAdmin }) => {
               <input
                 type="text"
                 name="itemName"
-                placeholder="Enter name here"
+                placeholder="Enter item name"
                 value={formData.itemName}
                 onChange={handleChange}
                 required
@@ -356,7 +435,7 @@ const Inventory = ({ activeAdmin }) => {
                     onChange={handleChange}
                     required
                     className="w-full border border-(--outline) outline-(--accent) rounded-lg p-2"
-                  ></input>
+                  />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-lg font-medium">Size</label>
@@ -367,7 +446,7 @@ const Inventory = ({ activeAdmin }) => {
                     required
                     className="w-full border border-(--outline) outline-(--accent) rounded-lg p-2"
                   >
-                    <option value="" selected disabled>
+                    <option value="" disabled>
                       Select Size
                     </option>
                     <option value="Small">Small</option>
@@ -403,13 +482,47 @@ const Inventory = ({ activeAdmin }) => {
               />
             </div>
 
+            {formMessage && (
+              <div className="text-(--error) text-center">{formMessage}</div>
+            )}
+
             <button
               type="button"
-              onClick={handleSubmit}
+              onClick={handleConfirm}
               className="w-full px-4 py-2 bg-(--primary-btn) hover:bg-(--accent) transition-all text-white rounded-lg cursor-pointer"
             >
               {mode === "add" ? "Add Item" : "Update Item"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {showConfirm && (
+        <div className="h-screen fixed inset-0 bg-black/50 center-flex z-50">
+          <div className="bg-white p-5 rounded-lg w-1/3 overflow-auto flex justify-between flex-col gap-10">
+            <div className="space-y-3">
+              <h1 className="font-bold text-lg text-(--error)">{msg} item</h1>
+              <p>Are you sure you want to {mode} this item?</p>
+            </div>
+
+            <div className="w-full flex justify-between items-center gap-3">
+              <button
+                className="flex-1 border border-(--outline) py-2 rounded-lg shadow cursor-pointer"
+                onClick={resetForm}
+              >
+                No, cancel
+              </button>
+              <button
+                className="flex-1 bg-(--error) text-white py-2 rounded-lg shadow cursor-pointer"
+                onClick={() =>
+                  mode === "add" || mode === "edit"
+                    ? handleSubmit()
+                    : handleRemove(remove)
+                }
+              >
+                Yes, {mode}
+              </button>
+            </div>
           </div>
         </div>
       )}

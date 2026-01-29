@@ -1241,7 +1241,7 @@ app.get("/transaction", (req, res) => {
     res.json(results);
   });
 });
-// EDIT TRANSACTIOn
+// EDIT TRANSACTION
 app.put("/transaction/:id", (req, res) => {
   const { id } = req.params;
   const {
@@ -1606,7 +1606,7 @@ app.get("/inventory", (req, res) => {
   const sql = `
     SELECT *
     FROM inventory
-    ORDER BY ID ASC
+    ORDER BY ID DESC
     LIMIT ? OFFSET ?
   `;
 
@@ -1619,13 +1619,13 @@ app.get("/inventory", (req, res) => {
 // ADD INVENTORY
 app.post("/inventory", itemupload.single("inventory"), (req, res) => {
   const image = req.file.filename;
-  const { Category, ItemName, Variant, Size, Quantity, Price } = req.body;
+  const { category, itemName, variant, size, quantity, price } = req.body;
   const insertQuery =
     "INSERT INTO inventory (Image, Category, Item_Name, Variant, Size, Quantity, Price) VALUES ( ?, ?, ?, ?, ?, ?, ?)";
 
   db.query(
     insertQuery,
-    [image, Category, ItemName, Variant, Size, Quantity, Price],
+    [image, category, itemName, variant, size, quantity, price],
     (err, result) => {
       if (err) {
         console.error("Error inserting data:", err);

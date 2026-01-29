@@ -28,7 +28,8 @@ const AdminSidebar = ({
 	isDarkMode,
 	setIsDarkMode,
 	onMenuClick, 
-	handleLogout 
+	handleLogout,
+  notification
 }) => {
   const [activeButton, setActiveButton] = useState("Dashboard");
   const handleButtonClick = (componentName) => {
@@ -37,6 +38,11 @@ const AdminSidebar = ({
   };
 
 	const [openModal, setOpenModal] = useState(false);
+	const [notifDropdown, setNotifDropdown] = useState(false);
+  const handleMenu = () => {
+    setOpenModal(!openModal);
+    setNotifDropdown(false)
+  }
 
   return (
     <div className="w-1/4 h-screen p-3 bg-(--primary-bg) shadow-lg flex flex-col justify-between">
@@ -76,41 +82,70 @@ const AdminSidebar = ({
 
         <button
           className="ml-auto cursor-pointer"
-          onClick={() => setOpenModal(!openModal)}
+          onClick={handleMenu}
         >
           <FaBars />
         </button>
 
-        {openModal && (
-          <div className="min-w-60 p-2 absolute left-[105%] bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
-            <button
-              className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer relative"
-              // onClick={handleNotification}
-            >
-              <FaBell size={20} />
-              Notification
-              <span className="w-2 h-2 bg-(--error) rounded-full absolute right-0 top-0"></span>
-            </button>
+        {openModal &&
+          (!notifDropdown ? (
+            <div className="min-w-80 p-2 absolute left-[105%] bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
+              <button
+                className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer relative"
+                onClick={() => setNotifDropdown((prev) => !prev)}
+              >
+                <FaBell size={20} />
+                Notification
+                <span className="w-4 h-4 bg-(--error) text-white text-[10px] rounded-full center-flex absolute right-0 top-0">
+                  {notification.length}
+                </span>
+              </button>
 
-            <button
-              className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer"
-              onClick={() => setIsDarkMode((prev) => !prev)}
-            >
-              {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
-              {isDarkMode ? "Light Mode" : "Dark Mode"}
-            </button>
+              <button
+                className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer"
+                onClick={() => setIsDarkMode((prev) => !prev)}
+              >
+                {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
+                {isDarkMode ? "Light Mode" : "Dark Mode"}
+              </button>
 
-            <div className="w-full h-0.5 mt-10 mb-3 bg-gray-500/30" />
+              <div className="w-full h-0.5 mt-10 mb-3 bg-gray-500/30" />
 
-            <button
-              className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer"
-              onClick={handleLogout}
-            >
-              <MdLogout size={20} />
-              Logout
-            </button>
-          </div>
-        )}
+              <button
+                className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer"
+                onClick={handleLogout}
+              >
+                <MdLogout size={20} />
+                Logout
+              </button>
+            </div>
+          ) : notification.length === 0 ? (
+            <p>No new notification.</p>
+          ) : (
+            <div className="min-w-80 max-h-100 overflow-auto no-scrollbar p-2 absolute left-[105%] bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
+              {notification.map((notif, index) => (
+                <li key={index} className='p-3 rounded-lg transition-all hover:bg-gray-200'>
+                  {notif.type === "transaction" ? (
+                    <div className="notif">
+                      <p className='font-semibold'>🛒 New Order</p>
+                      <p>Item Name: {notif.Item_Name} - {notif.Size}</p>
+                      <p>Variant: {notif.Variant}</p>
+                      <p>Quantity: {notif.Quantity}</p>
+                    </div>
+                  ) : (
+                    <div className="notif">
+                      <p className='font-semibold'>⚠️ Low Stock</p>
+                      <p>
+                        <span>{notif.Item_Name}</span> ({notif.Variant},{" "}
+                        {notif.Size})
+                      </p>
+                      <p>Remaining: <span className='font-semibold'>{notif.Quantity}</span></p>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </div>
+          ))}
       </div>
     </div>
   );
