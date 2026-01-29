@@ -20,7 +20,11 @@ const ManageAccount = ({ activeAdmin }) => {
   const [showModal, setShowModal] = useState(false);
   const [mode, setMode] = useState("add"); // "add" or "edit"
   const [editingAdmin, setEditingAdmin] = useState(null);
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
   const [image, setImage] = useState(null);
   const [formData, setFormData] = useState({
     Username: "",
@@ -28,7 +32,11 @@ const ManageAccount = ({ activeAdmin }) => {
     Email_Address: "",
     Password: "",
   });
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
   const [message, setMessage] = useState("");
   const [formMessage, setFormMessage] = useState("");
 
@@ -104,6 +112,7 @@ const ManageAccount = ({ activeAdmin }) => {
       Password: "",
     });
     setFormMessage("");
+<<<<<<< HEAD
     setShowConfirm(false);
   };
 
@@ -141,6 +150,10 @@ const ManageAccount = ({ activeAdmin }) => {
   };
 
 
+=======
+  };
+
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
   // ------------------------ Handle Submit (Add/Edit) ------------------------
   const handleSubmit = async () => {
     // Validate required fields
@@ -189,7 +202,10 @@ const ManageAccount = ({ activeAdmin }) => {
       setMessage("Admin deleted successfully");
       fetchManageAccount(currentPage);
       setTimeout(() => setMessage(""), 2000);
+<<<<<<< HEAD
       setShowConfirm(false)
+=======
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
     } catch (err) {
       console.error(err);
       setFormMessage("Failed to delete admin");
@@ -217,9 +233,13 @@ const ManageAccount = ({ activeAdmin }) => {
     <div className="space-y-3">
       {/* Header */}
       <div className="mb-10 flex items-center justify-between">
+<<<<<<< HEAD
         <h1 className="text-(--secondary-text) text-2xl font-bold">
           {activeAdmin}
         </h1>
+=======
+        <h1 className="text-(--secondary-text) text-2xl font-bold">{activeAdmin}</h1>
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
         <button
           onClick={handleAdd}
           className="bg-(--accent) px-5 py-2 rounded-lg text-white cursor-pointer"
@@ -257,12 +277,17 @@ const ManageAccount = ({ activeAdmin }) => {
                   className="w-14 h-14 object-contain mx-auto rounded"
                 />
               </div>
+<<<<<<< HEAD
               <div className="line-clamp-1 w-[130px]">
                 {admin.Username}
               </div>
               <div className="line-clamp-2 font-medium max-w-[130px]">
                 {admin.Email_Address}
               </div>
+=======
+              <div className="line-clamp-Font />-w-[130px]">{admin.Username}</div>
+              <div className="line-clamp-2 font-medium max-w-[130px]">{admin.Email_Address}</div>
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
               <div>{admin.Role}</div>
               <div className="center-flex">
                 <button
@@ -272,7 +297,11 @@ const ManageAccount = ({ activeAdmin }) => {
                   <FontAwesomeIcon icon={faPenToSquare} /> Edit
                 </button>
                 <button
+<<<<<<< HEAD
                   onClick={() => handleRemoveAccount(admin.ID)}
+=======
+                  onClick={() => handleRemove(admin.ID)}
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
                   className="w-full text-left px-3 py-2 text-(--error) cursor-pointer flex items-center gap-2"
                 >
                   <FontAwesomeIcon icon={faTrash} /> Remove
@@ -285,21 +314,29 @@ const ManageAccount = ({ activeAdmin }) => {
 
       {/* Pagination */}
       <div className="flex justify-center gap-3 mt-5">
+<<<<<<< HEAD
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage <= 1}
           className="cursor-pointer disabled:opacity-50"
         >
+=======
+        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage <= 1} className="cursor-pointer disabled:opacity-50">
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
           <FontAwesomeIcon icon={faChevronLeft} />
         </button>
         <span className="px-3 py-1">
           Page {currentPage} of {totalPages}
         </span>
+<<<<<<< HEAD
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
           className="cursor-pointer disabled:opacity-50"
         >
+=======
+        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages} className="cursor-pointer disabled:opacity-50">
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
           <FontAwesomeIcon icon={faChevronRight} />
         </button>
       </div>
@@ -313,7 +350,11 @@ const ManageAccount = ({ activeAdmin }) => {
 
       {/* Add/Edit Modal */}
       {showModal && (
+<<<<<<< HEAD
         <div className="h-screen fixed inset-0 bg-black/50 flex items-center justify-end z-50">
+=======
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-end z-50">
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
           <div className="bg-white p-6 rounded w-1/3 h-screen space-y-5 overflow-auto">
             <div className="mb-10 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-(--secondary-text)">
@@ -326,11 +367,15 @@ const ManageAccount = ({ activeAdmin }) => {
 
             <div className="flex flex-col gap-1">
               <label className="text-lg font-medium">Image</label>
+<<<<<<< HEAD
               <input
                 type="file"
                 onChange={handleFile}
                 className="w-full border border-(--outline) outline-(--accent) rounded-lg p-2 cursor-pointer"
               />
+=======
+              <input type="file" onChange={handleFile} className="w-full border border-(--outline) outline-(--accent) rounded-lg p-2 cursor-pointer" />
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
             </div>
 
             <div className="flex flex-col gap-1">
@@ -368,9 +413,13 @@ const ManageAccount = ({ activeAdmin }) => {
                 required
                 className="w-full border border-(--outline) outline-(--accent) rounded-lg p-2"
               >
+<<<<<<< HEAD
                 <option value="" disabled>
                   Select Role
                 </option>
+=======
+                <option value="" disabled>Select Role</option>
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
                 <option value="Admin">Admin</option>
                 <option value="EBA Staff">EBA Staff</option>
                 <option value="DEAN">DEAN</option>
@@ -384,21 +433,33 @@ const ManageAccount = ({ activeAdmin }) => {
                 name="Password"
                 value={formData.Password}
                 onChange={handleChange}
+<<<<<<< HEAD
                 placeholder={
                   mode === "edit"
                     ? "Leave blank to keep current password"
                     : "Enter Password"
                 }
+=======
+                placeholder={mode === "edit" ? "Leave blank to keep current password" : "Enter Password"}
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
                 required={mode === "add"}
                 className="w-full border border-(--outline) outline-(--accent) rounded-lg p-2"
               />
             </div>
 
+<<<<<<< HEAD
             {formMessage && <div className="text-(--error) text-center">{formMessage}</div>}
             
             <button
               type="button"
               onClick={handleConfirm}
+=======
+            {formMessage && <div className="text-red-500">{formMessage}</div>}
+
+            <button
+              type="button"
+              onClick={handleSubmit}
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
               className="w-full px-4 py-2 bg-(--primary-btn) hover:bg-(--accent) transition-all text-white rounded-lg cursor-pointer"
             >
               {mode === "add" ? "Create Account" : "Update Account"}
@@ -406,6 +467,7 @@ const ManageAccount = ({ activeAdmin }) => {
           </div>
         </div>
       )}
+<<<<<<< HEAD
 
       {showConfirm && (
         <div className="h-screen fixed inset-0 bg-black/50 center-flex z-50">
@@ -432,6 +494,8 @@ const ManageAccount = ({ activeAdmin }) => {
           </div>
         </div>
       )}
+=======
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
     </div>
   );
 };

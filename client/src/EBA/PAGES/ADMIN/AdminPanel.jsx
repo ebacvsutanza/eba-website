@@ -55,7 +55,11 @@ const AdminPanel = () => {
 	};
 
 
+<<<<<<< HEAD
 	const [activeAdmin, setActiveComponent] = useState("Dashboard");
+=======
+	const [activeAdmin, setActiveComponent] = useState("Manage Account");
+>>>>>>> 9f6470f0e190413d00059dae19912418214655a0
 	const handleMenuClick = (componentName) => {
     setActiveComponent(componentName);
   };
