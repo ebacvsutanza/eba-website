@@ -10,6 +10,7 @@ import { FaMoon } from "react-icons/fa";
 import { FaSun } from "react-icons/fa";
 import { MdLogout } from "react-icons/md";
 import { FaUser } from 'react-icons/fa6';
+import { VscLayoutSidebarRight } from "react-icons/vsc";
 
 import './CSS/Sidebar.css';
 
@@ -21,15 +22,17 @@ const SidebarBtn = [
   { name: "Manage Account", icon: <FaUser size={20} /> },
 ];
 
-const AdminSidebar = ({ 
-	image, 
-	username, 
-	email,
-	isDarkMode,
-	setIsDarkMode,
-	onMenuClick, 
-	handleLogout,
-  notification
+const AdminSidebar = ({
+  image,
+  username,
+  email,
+  isDarkMode,
+  setIsDarkMode,
+  onMenuClick,
+  handleLogout,
+  notification,
+  sidebar,
+  setSidebar
 }) => {
   const [activeButton, setActiveButton] = useState("Dashboard");
   const handleButtonClick = (componentName) => {
@@ -37,21 +40,36 @@ const AdminSidebar = ({
     onMenuClick(componentName);
   };
 
-	const [openModal, setOpenModal] = useState(false);
-	const [notifDropdown, setNotifDropdown] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [notifDropdown, setNotifDropdown] = useState(false);
   const handleMenu = () => {
     setOpenModal(!openModal);
-    setNotifDropdown(false)
-  }
+    setNotifDropdown(false);
+  };
 
   return (
-    <div className="w-1/4 h-screen p-3 bg-(--primary-bg) shadow-lg flex flex-col justify-between">
+    <div
+      className={`
+      w-3/4 md:w-1/2 xl:w-1/4 h-screen p-3 bg-(--primary-bg) shadow-lg flex flex-col justify-between z-50 transition-all xl:relative xl:left-0 absolute top-0
+      ${sidebar ? "left-0" : "-left-full"}
+    `}
+    >
       <div>
         <div className="flex items-center gap-3">
           <img src="logo.png" alt="Logo" className="w-15 h-15" />
-          <div className="font-bold">
-            <p>Cavite State University - Tanza</p>
-            <p className="text-(--secondary-text)">EBA Admin Panel</p>
+          <div className="w-full font-bold flex xl:block items-center justify-between gap-2">
+            <div>
+              <p>Cavite State University - Tanza</p>
+              <p className="hidden lg:block text-(--secondary-text)">
+                EBA Admin Panel
+              </p>
+            </div>
+            <button
+              onClick={() => setSidebar((prev) => !prev)}
+              className="xl:hidden"
+            >
+              <VscLayoutSidebarRight size={20} />
+            </button>
           </div>
         </div>
 
@@ -80,16 +98,13 @@ const AdminSidebar = ({
           <p className="text-xs">{email}</p>
         </div>
 
-        <button
-          className="ml-auto cursor-pointer"
-          onClick={handleMenu}
-        >
+        <button className="ml-auto cursor-pointer" onClick={handleMenu}>
           <FaBars />
         </button>
 
         {openModal &&
           (!notifDropdown ? (
-            <div className="min-w-80 p-2 absolute left-[105%] bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
+            <div className="w-full max-w-70 p-2 absolute md:left-[105%] bottom-18 md:bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
               <button
                 className="w-full text-left py-2 px-4 hover:bg-(--accent)/25 transition-all rounded-lg flex items-center gap-3 cursor-pointer relative"
                 onClick={() => setNotifDropdown((prev) => !prev)}
@@ -122,24 +137,32 @@ const AdminSidebar = ({
           ) : notification.length === 0 ? (
             <p>No new notification.</p>
           ) : (
-            <div className="min-w-80 max-h-100 overflow-auto no-scrollbar p-2 absolute left-[105%] bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
+            <div className="w-full max-w-70 max-h-100 overflow-auto no-scrollbar p-2 absolute md:left-[105%] bottom-18 md:bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
               {notification.map((notif, index) => (
-                <li key={index} className='p-3 rounded-lg transition-all hover:bg-gray-200'>
+                <li
+                  key={index}
+                  className="p-3 rounded-lg transition-all hover:bg-gray-200"
+                >
                   {notif.type === "transaction" ? (
                     <div className="notif">
-                      <p className='font-semibold'>🛒 New Order</p>
-                      <p>Item Name: {notif.Item_Name} - {notif.Size}</p>
+                      <p className="font-semibold">🛒 New Order</p>
+                      <p>
+                        Item Name: {notif.Item_Name} - {notif.Size}
+                      </p>
                       <p>Variant: {notif.Variant}</p>
                       <p>Quantity: {notif.Quantity}</p>
                     </div>
                   ) : (
                     <div className="notif">
-                      <p className='font-semibold'>⚠️ Low Stock</p>
+                      <p className="font-semibold">⚠️ Low Stock</p>
                       <p>
                         <span>{notif.Item_Name}</span> ({notif.Variant},{" "}
                         {notif.Size})
                       </p>
-                      <p>Remaining: <span className='font-semibold'>{notif.Quantity}</span></p>
+                      <p>
+                        Remaining:{" "}
+                        <span className="font-semibold">{notif.Quantity}</span>
+                      </p>
                     </div>
                   )}
                 </li>

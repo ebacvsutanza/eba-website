@@ -11,8 +11,9 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { HiDotsVertical } from "react-icons/hi";
+import { VscLayoutSidebarRight } from "react-icons/vsc";
 
-const Inventory = ({ activeAdmin }) => {
+const Inventory = ({ activeAdmin, openSidebar }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const rowsPerPage = 20;
@@ -231,9 +232,15 @@ const Inventory = ({ activeAdmin }) => {
   return (
     <div className="space-y-3">
       <div className="mb-10 flex items-center justify-between">
-        <h1 className="text-(--secondary-text) text-2xl font-bold">
-          {activeAdmin}
-        </h1>
+        <div className="flex items-center gap-2">
+          <button onClick={openSidebar} className="cursor-pointer xl:hidden">
+            <VscLayoutSidebarRight size={20} />
+          </button>
+
+          <h1 className="text-(--secondary-text) text-2xl font-bold">
+            {activeAdmin}
+          </h1>
+        </div>
 
         <button
           onClick={handleAdd}

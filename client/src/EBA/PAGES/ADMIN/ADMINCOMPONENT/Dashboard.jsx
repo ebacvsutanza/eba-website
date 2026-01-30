@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 
-import Dates from './Date'
 import SalesChart from './SalesChart';
 import OrderChart from './OrderChart';
 import '../CSS/Admin.css'
+import { VscLayoutSidebarRight } from "react-icons/vsc";
 
-const Dashboard = ({ activeAdmin }) => {
+const Dashboard = ({ activeAdmin, openSidebar }) => {
   const [today, setToday] = useState(new Date());
   useEffect(() => {
     const interval = setInterval(() => {
@@ -41,7 +41,7 @@ const Dashboard = ({ activeAdmin }) => {
   const [lowStockItems, setLowStockItems] = useState([]);
   const [inventoryQuantity, setInventoryQuantity] = useState(0);
   const [newOrdersThisWeek, setNewOrdersThisWeek] = useState(0);
-	
+
   const fetchData = async () => {
     try {
       const responseTransaction = await axios.get(
@@ -74,8 +74,8 @@ const Dashboard = ({ activeAdmin }) => {
       );
       setInventoryQuantity(totalInventory);
 
-			const oneWeekAgo = new Date();
-			oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
       const newOrders = transactionsData.filter(
         (transaction) => new Date(transaction.Date) >= oneWeekAgo,
       ).length;
@@ -84,7 +84,7 @@ const Dashboard = ({ activeAdmin }) => {
       console.error("Error fetching data:", error);
     }
   };
-	
+
   const [bestSeller, setBestSeller] = useState(null);
   const [leastPurchased, setLeastPurchased] = useState(null);
   useEffect(() => {
@@ -96,13 +96,17 @@ const Dashboard = ({ activeAdmin }) => {
       .then((res) => setLeastPurchased(res.data));
   }, []);
 
-
   return (
     <div className="space-y-3">
       <div className="mb-10 flex justify-between">
-        <h1 className="text-(--secondary-text) text-2xl font-bold">
-          {activeAdmin}
-        </h1>
+        <div className="flex items-center gap-2">
+          <button onClick={openSidebar} className="cursor-pointer xl:hidden">
+            <VscLayoutSidebarRight size={20} />
+          </button>
+          <h1 className="text-(--secondary-text) text-2xl font-bold">
+            {activeAdmin}
+          </h1>
+        </div>
 
         <div>
           <h1 className="text-xl font-bold">{day},</h1>

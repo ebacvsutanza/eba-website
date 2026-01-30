@@ -82,6 +82,11 @@ const AdminPanel = () => {
 		}
 	};
 
+	const [sidebar, setSidebar] = useState(false);
+	const openSidebar = () => {
+		setSidebar(prev => !prev)
+	}
+
 	return (
     <div
       className={`h-screen bg-(--secondary-bg) text-(--primary-text) flex ${isDarkMode && "dark-mode"}`}
@@ -95,13 +100,15 @@ const AdminPanel = () => {
         setIsDarkMode={setIsDarkMode}
         handleLogout={handleLogout}
 				notification={notification}
+				sidebar={sidebar}
+				setSidebar={setSidebar}
       />
-      <div className="w-3/4 h-screen p-5 overflow-y-auto">
-        {activeAdmin === "Dashboard" && <Dashboard activeAdmin={activeAdmin} />}
-        {activeAdmin === "Transaction" && <Transaction activeAdmin={activeAdmin} />}
-        {activeAdmin === "Announcement" && <Announcement activeAdmin={activeAdmin} />}
-        {activeAdmin === "Inventory" && <Inventory activeAdmin={activeAdmin} />}
-        {activeAdmin === "Manage Account" && <ManageAccount activeAdmin={activeAdmin} />}
+      <div className="w-full xl:w-3/4 h-screen p-5 overflow-y-auto">
+        {activeAdmin === "Dashboard" && <Dashboard activeAdmin={activeAdmin} openSidebar={openSidebar} />}
+        {activeAdmin === "Transaction" && <Transaction activeAdmin={activeAdmin} openSidebar={openSidebar} />}
+        {activeAdmin === "Announcement" && <Announcement activeAdmin={activeAdmin} openSidebar={openSidebar} />}
+        {activeAdmin === "Inventory" && <Inventory activeAdmin={activeAdmin} openSidebar={openSidebar} />}
+        {activeAdmin === "Manage Account" && <ManageAccount activeAdmin={activeAdmin} openSidebar={openSidebar} />}
       </div>
     </div>
   );

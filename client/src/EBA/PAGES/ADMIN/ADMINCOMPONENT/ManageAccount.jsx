@@ -9,8 +9,9 @@ import {
   faPlus,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import { VscLayoutSidebarRight } from "react-icons/vsc";
 
-const ManageAccount = ({ activeAdmin }) => {
+const ManageAccount = ({ activeAdmin, openSidebar }) => {
   // ------------------------ State ------------------------
   const [manageAdmin, setManageAdmin] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -219,9 +220,15 @@ const ManageAccount = ({ activeAdmin }) => {
     <div className="space-y-3">
       {/* Header */}
       <div className="mb-10 flex items-center justify-between">
-        <h1 className="text-(--secondary-text) text-2xl font-bold">
-          {activeAdmin}
-        </h1>
+        <div className="flex items-center gap-2">
+          <button onClick={openSidebar} className="cursor-pointer xl:hidden">
+            <VscLayoutSidebarRight size={20} />
+          </button>
+          <h1 className="text-(--secondary-text) text-2xl font-bold">
+            {activeAdmin}
+          </h1>
+        </div>
+
         <button
           onClick={handleAdd}
           className="bg-(--accent) px-5 py-2 rounded-lg text-white cursor-pointer"

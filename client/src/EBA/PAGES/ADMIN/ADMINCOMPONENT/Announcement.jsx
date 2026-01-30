@@ -5,13 +5,14 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { VscLayoutSidebarRight } from "react-icons/vsc";
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 const localizer = momentLocalizer(moment);
 
-const Announcement = ({ activeAdmin }) => {
+const Announcement = ({ activeAdmin, openSidebar }) => {
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [calendarView, setCalendarView] = useState("month");
 
@@ -166,9 +167,14 @@ const Announcement = ({ activeAdmin }) => {
   return (
     <div className="space-y-3">
       <div className="mb-10 flex items-center justify-between">
-        <h1 className="text-(--secondary-text) text-2xl font-bold">
-          Events & {activeAdmin}s
-        </h1>
+        <div className="flex items-center gap-2">
+          <button onClick={openSidebar} className="cursor-pointer xl:hidden">
+            <VscLayoutSidebarRight size={20} />
+          </button>
+          <h1 className="text-(--secondary-text) text-2xl font-bold">
+            Events & {activeAdmin}s
+          </h1>
+        </div>
       </div>
 
       <div className="h-[85vh] p-3 bg-(--primary-bg) rounded-lg shadow">
