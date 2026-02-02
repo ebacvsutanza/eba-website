@@ -12,7 +12,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 const localizer = momentLocalizer(moment);
 
-const Announcement = ({ activeAdmin, openSidebar }) => {
+const Announcement = ({ activeAdmin, openSidebar, role }) => {
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [calendarView, setCalendarView] = useState("month");
 
@@ -227,7 +227,7 @@ const Announcement = ({ activeAdmin, openSidebar }) => {
           <div className="bg-white p-6 rounded w-3/4 lg:w-1/3 h-screen space-y-5">
             <div className="mb-10 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-(--secondary-text)">
-                {mode === "add" ? "Add Event" : "Edit Event"}
+                {role === 'Admin' ? 'View Event' : mode === "add" ? "Add Event" : "Edit Event"}
               </h2>
 
               <button className="cursor-pointer" onClick={resetForm}>
@@ -278,7 +278,7 @@ const Announcement = ({ activeAdmin, openSidebar }) => {
               <div className="text-(--error) text-center">{formMessage}</div>
             )}
 
-            <div className="flex justify-between gap-3 pt-3">
+            <div className={`justify-between gap-3 pt-3 ${role !== 'Admin' ? 'flex' : 'hidden'}`}>
               {(mode === "edit" || mode === "delete") && (
                 <button
                   className="px-4 py-2 bg-(--error) flex-1 text-white rounded-lg cursor-pointer"

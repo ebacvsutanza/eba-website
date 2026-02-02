@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { VscLayoutSidebarRight } from "react-icons/vsc";
 
-const Transaction = ({ activeAdmin, openSidebar }) => {
+const Transaction = ({ activeAdmin, openSidebar, role }) => {
   const [table, setTable] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -237,7 +237,6 @@ const Transaction = ({ activeAdmin, openSidebar }) => {
           </button>
           <h1 className="text-(--secondary-text) text-2xl font-bold">
             {activeAdmin}
-            {showConfirm}
           </h1>
         </div>
       </div>
@@ -285,9 +284,9 @@ const Transaction = ({ activeAdmin, openSidebar }) => {
             <div className="min-w-full p-3 bg-(--primary-bg) rounded-lg text-center">
               <div
                 className={`
-              ${!table ? "grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]" : "grid-cols-[minmax(100px,1fr)_repeat(6,minmax(100px,1fr))]"} 
-              px-3 grid place-items-center text-center
-            `}
+                  ${!table ? "grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]" : "grid-cols-[minmax(100px,1fr)_repeat(6,minmax(100px,1fr))]"} 
+                  px-3 grid place-items-center text-center
+                `}
               >
                 <input
                   type="checkbox"
@@ -376,6 +375,7 @@ const Transaction = ({ activeAdmin, openSidebar }) => {
                     <div className="relative">
                       <button
                         onClick={() => handleStatus(transaction)}
+                        disabled={role === 'Admin'}
                         className="p-2 cursor-pointer"
                       >
                         <HiDotsVertical size={18} />

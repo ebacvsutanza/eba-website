@@ -53,12 +53,13 @@ const Login = () => {
 			const { token } = response.data;
 			localStorage.setItem('token', token);
 		
-			const decodedToken = JSON.parse(atob(token.split('.')[1]));
-			if (decodedToken.role === "DEAN" || decodedToken.role === "EBA Staff") {
-        navigateTo("/adminpanel");
-      } else {
-        navigateTo("/staffadminpanel");
-      }
+			// const decodedToken = JSON.parse(atob(token.split('.')[1]));
+			// if (decodedToken.role === "DEAN" || decodedToken.role === "EBA Staff") {
+      //   navigateTo("/adminpanel");
+      // } else {
+			// 	navigateTo("/staffadminpanel");
+      // }
+			navigateTo("/adminpanel");
 		} catch (err) {
 		  setMessage('Invalid credentials', err);
 		}

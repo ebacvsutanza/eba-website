@@ -13,7 +13,7 @@ import {
 import { HiDotsVertical } from "react-icons/hi";
 import { VscLayoutSidebarRight } from "react-icons/vsc";
 
-const Inventory = ({ activeAdmin, openSidebar }) => {
+const Inventory = ({ activeAdmin, openSidebar, role }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const rowsPerPage = 20;
@@ -244,7 +244,7 @@ const Inventory = ({ activeAdmin, openSidebar }) => {
 
         <button
           onClick={handleAdd}
-          className="bg-(--accent) px-5 py-2 rounded-lg text-white cursor-pointer"
+          className={`bg-(--accent) px-5 py-2 rounded-lg text-white cursor-pointer ${role === "Admin" && "hidden"}`}
         >
           <FontAwesomeIcon icon={faPlus} className="mr-1" />
           Add New Item
@@ -297,6 +297,7 @@ const Inventory = ({ activeAdmin, openSidebar }) => {
                   <div className="relative">
                     <button
                       onClick={() => handleAction(inventory)}
+                      disabled={role === "Admin"}
                       className="p-2 cursor-pointer"
                     >
                       <HiDotsVertical size={18} />

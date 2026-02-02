@@ -23,12 +23,12 @@ const AdminPanel = () => {
 			return;
 		}
 
-		const decodedToken = JSON.parse(atob(token.split(".")[1]));
-		if (!["DEAN", "EBA Staff"].includes(decodedToken.role)) {
-			alert("Please Login First");
-      window.location.href = "/adminlogin";
-      return;
-    }
+		// const decodedToken = JSON.parse(atob(token.split(".")[1]));
+		// if (!["DEAN", "EBA Staff"].includes(decodedToken.role)) {
+		// 	alert("Please Login First");
+    //   window.location.href = "/adminlogin";
+    //   return;
+    // }
 
 		fetchAdmin(token);
 		fetchNotifications();
@@ -48,6 +48,7 @@ const AdminPanel = () => {
 			setImage(data.Image);
 			setUsername(data.Username);
 			setEmail(data.Email_Address);
+			setRole(data.Role);
 		} catch {
 			localStorage.removeItem("token");
 			window.location.href = "/adminlogin";
@@ -63,6 +64,7 @@ const AdminPanel = () => {
 	const [image, setImage] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState("");
 	
 	const navigateTo = useNavigate();
 	const handleLogout = () => {
@@ -102,13 +104,14 @@ const AdminPanel = () => {
 				notification={notification}
 				sidebar={sidebar}
 				setSidebar={setSidebar}
+				role={role}
       />
       <div className="w-full xl:w-3/4 h-screen p-5 overflow-y-auto">
         {activeAdmin === "Dashboard" && <Dashboard activeAdmin={activeAdmin} openSidebar={openSidebar} />}
-        {activeAdmin === "Transaction" && <Transaction activeAdmin={activeAdmin} openSidebar={openSidebar} />}
-        {activeAdmin === "Announcement" && <Announcement activeAdmin={activeAdmin} openSidebar={openSidebar} />}
-        {activeAdmin === "Inventory" && <Inventory activeAdmin={activeAdmin} openSidebar={openSidebar} />}
-        {activeAdmin === "Manage Account" && <ManageAccount activeAdmin={activeAdmin} openSidebar={openSidebar} />}
+        {activeAdmin === "Transaction" && <Transaction activeAdmin={activeAdmin} openSidebar={openSidebar} role={role} />}
+        {activeAdmin === "Announcement" && <Announcement activeAdmin={activeAdmin} openSidebar={openSidebar} role={role} />}
+        {activeAdmin === "Inventory" && <Inventory activeAdmin={activeAdmin} openSidebar={openSidebar} role={role} />}
+				{role !== 'Admin' && activeAdmin === "Manage Account" && <ManageAccount activeAdmin={activeAdmin} openSidebar={openSidebar} />}
       </div>
     </div>
   );

@@ -32,7 +32,8 @@ const AdminSidebar = ({
   handleLogout,
   notification,
   sidebar,
-  setSidebar
+  setSidebar,
+  role
 }) => {
   const [activeButton, setActiveButton] = useState("Dashboard");
   const handleButtonClick = (componentName) => {
@@ -74,7 +75,9 @@ const AdminSidebar = ({
         </div>
 
         <div className="mt-10 flex flex-col gap-3">
-          {SidebarBtn.map((button) => (
+          {SidebarBtn
+            .filter(button => role !== "Admin" || button.name !== "Manage Account")
+            .map((button) => (
             <button
               key={button.name}
               onClick={() => handleButtonClick(button.name)}
