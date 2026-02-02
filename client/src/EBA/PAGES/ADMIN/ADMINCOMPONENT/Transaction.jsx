@@ -140,6 +140,7 @@ const Transaction = ({ activeAdmin, openSidebar }) => {
       );
       setTransactions(statusSorted ? sortStatusList(updated) : updated);
       setActiveTransaction(null);
+      flashMessage("Transaction confirmed successfully");
     } catch (error) {
       console.error(error);
       alert(
@@ -164,6 +165,7 @@ const Transaction = ({ activeAdmin, openSidebar }) => {
       );
       setTransactions(statusSorted ? sortStatusList(updated) : updated);
       setActiveTransaction(null);
+      flashMessage("Transaction cancelled successfully");
     } catch (error) {
       console.error(error);
       alert(
@@ -220,25 +222,32 @@ const Transaction = ({ activeAdmin, openSidebar }) => {
     setShowConfirm(false);
   }
 
+  const [message, setMessage] = useState("");
+  const flashMessage = (text) => {
+    setMessage(text);
+    setTimeout(() => setMessage(""), 2000);
+  };
+
   return (
     <div className="transaction space-y-3">
       <div className="mb-10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <button onClick={openSidebar} className="cursor-pointer xl:hidden">
+          <button onClick={openSidebar} className="cursor-pointer lg:hidden">
             <VscLayoutSidebarRight size={20} />
           </button>
           <h1 className="text-(--secondary-text) text-2xl font-bold">
             {activeAdmin}
+            {showConfirm}
           </h1>
         </div>
       </div>
 
       <div className="space-y-3">
-        <div className="flex gap-2 border-b border-gray-400">
+        <div className="flex items-center gap-1 border-b border-gray-400">
           <button
             onClick={() => setTable(false)}
             className={`
-              py-2 px-8 cursor-pointer transition-all hover:text-(--secondary-text) hover:border-b hover:border-(--secondary-text)
+              py-2 px-2 lg:px-8 cursor-pointer transition-all hover:text-(--secondary-text) hover:border-b hover:border-(--secondary-text)
               ${!table && "border-b border-(--secondary-text) text-(--secondary-text)"}
             `}
           >
@@ -271,134 +280,144 @@ const Transaction = ({ activeAdmin, openSidebar }) => {
           </div>
         </div>
 
-        <div className="p-3 bg-(--primary-bg) shadow rounded-lg text-center">
-          <div
-            className={`px-3 grid ${!table ? "grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]" : "grid-cols-[auto_1fr_1fr_1fr_1fr_1fr_1fr]"} place-items-center text-center`}
-          >
-            <input
-              type="checkbox"
-              checked={allSelected}
-              onChange={toggleSelectAll}
-              className="cursor-pointer"
-            />
-            <div>Order Number</div>
-
-            {!table ? (
-              <>
-                <div>Image</div>
-                <div>Item</div>
-                <div>Variant</div>
-                <div>Size</div>
-                <div>Quantity</div>
-                <div>Total Amount</div>
-              </>
-            ) : (
-              <>
-                <div>Customer Name</div>
-                <div>Email Address</div>
-                <div>Date</div>
-                <div>Status</div>
-              </>
-            )}
-            <div>Action</div>
-          </div>
-        </div>
-
-        <div className="p-3 bg-(--primary-bg) shadow rounded-lg text-center">
-          {transactions.length === 0 ? (
-            <p className="py-6 text-gray-500">No Transaction</p>
-          ) : (
-            transactions.map((transaction, index) => (
+        <div className="no-scrollbar overflow-auto">
+          <div className="min-w-[900px] space-y-3">
+            <div className="min-w-full p-3 bg-(--primary-bg) rounded-lg text-center">
               <div
                 className={`
-                  mb-3 p-3 grid place-items-center shadow rounded-lg text-center border transition-all
-                  ${!table ? "grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]" : "grid-cols-[auto_1fr_1fr_1fr_1fr_1fr_1fr]"} 
-                  ${selected.includes(transaction.ID) ? "bg-(--accent)/15 border-transparent" : "bg-(--primary-bg) border-gray-400"}
-                `}
-                key={index}
+              ${!table ? "grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]" : "grid-cols-[minmax(100px,1fr)_repeat(6,minmax(100px,1fr))]"} 
+              px-3 grid place-items-center text-center
+            `}
               >
                 <input
                   type="checkbox"
-                  checked={selected.includes(transaction.ID)}
-                  onChange={() => toggleSelect(transaction.ID)}
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
                   className="cursor-pointer"
                 />
-                <div>{transaction.OrderID}</div>
+                <div>Order Number</div>
 
                 {!table ? (
                   <>
-                    <div>
-                      <img
-                        src={`http://localhost:3000/ITEMS/${transaction.Image}`}
-                        alt=""
-                        className="w-14 h-14 object-contain mx-auto rounded"
-                      />
-                    </div>
-
-                    <div className="line-clamp-1 font-medium">
-                      {transaction.Item_Name}
-                    </div>
-
-                    <div>{transaction.Variant || "-"}</div>
-                    <div>{transaction.Size || "-"}</div>
-                    <div>{transaction.Quantity}</div>
-                    <div className="font-semibold">₱{transaction.Amount}</div>
+                    <div>Image</div>
+                    <div>Item</div>
+                    <div>Variant</div>
+                    <div>Size</div>
+                    <div>Quantity</div>
+                    <div>Total Amount</div>
                   </>
                 ) : (
                   <>
-                    <div className="line-clamp-1 max-w-[150px]">
-                      {transaction.Customer_Name}
-                    </div>
-                    <div className="line-clamp-1 max-w-[150px]">
-                      {transaction.Email_Address}
-                    </div>
-                    <div>{formatDate(transaction.Date)}</div>
-                    <div>{transaction.Status}</div>
+                    <div>Customer Name</div>
+                    <div>Email Address</div>
+                    <div>Date</div>
+                    <div>Status</div>
                   </>
                 )}
-
-                <div className="relative">
-                  <button
-                    onClick={() => handleStatus(transaction)}
-                    className="p-2 cursor-pointer"
-                  >
-                    <HiDotsVertical size={18} />
-                  </button>
-
-                  {activeTransaction === transaction.ID && (
-                    <div className="p-2 absolute top-[60%] right-[60%] bg-white border border-gray-200 shadow-lg rounded-md z-20 w-45">
-                      <button
-                        onClick={() => handleConfirm(true, transaction)}
-                        disabled={
-                          transaction.Status === "Cancelled" ||
-                          transaction.Status === "Confirmed" ||
-                          cancelling
-                        }
-                        className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded cursor-pointer flex items-center gap-2"
-                      >
-                        <FaCheck />
-                        Confirm
-                      </button>
-
-                      <button
-                        onClick={() => handleConfirm(false, transaction)}
-                        disabled={
-                          transaction.Status === "Cancelled" ||
-                          transaction.Status === "Confirmed" ||
-                          confirming
-                        }
-                        className="w-full text-left px-3 py-2 hover:bg-gray-100 text-(--error) cursor-pointer flex items-center gap-2"
-                      >
-                        <FaTrash />
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <div>Action</div>
               </div>
-            ))
-          )}
+            </div>
+
+            <div className="min-w-full p-3 bg-(--primary-bg) rounded-lg text-center">
+              {transactions.length === 0 ? (
+                <p className="py-6 text-gray-500">No Transaction</p>
+              ) : (
+                transactions.map((transaction, index) => (
+                  <div
+                    className={`
+                      mb-3 p-3 grid place-items-center shadow rounded-lg text-center border transition-all
+                      ${!table ? "grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]" : "grid-cols-[minmax(100px,1fr)_repeat(6,minmax(100px,1fr))]"} 
+                      ${selected.includes(transaction.ID) ? "bg-(--accent)/15 border-transparent" : "bg-(--primary-bg) border-gray-400"}
+                    `}
+                    key={index}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(transaction.ID)}
+                      onChange={() => toggleSelect(transaction.ID)}
+                      className="cursor-pointer"
+                    />
+                    <div>{transaction.OrderID}</div>
+
+                    {!table ? (
+                      <>
+                        <div>
+                          <img
+                            src={`http://localhost:3000/ITEMS/${transaction.Image}`}
+                            alt=""
+                            className="w-14 h-14 object-contain mx-auto rounded"
+                          />
+                        </div>
+
+                        <div className="line-clamp-2 lg:line-clamp-1 font-medium">
+                          {transaction.Item_Name}
+                        </div>
+
+                        <div>{transaction.Variant || "-"}</div>
+                        <div>{transaction.Size || "-"}</div>
+                        <div>{transaction.Quantity}</div>
+                        <div className="font-semibold">
+                          ₱{transaction.Amount}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="line-clamp-2 lg:line-clamp-1 max-w-[150px]">
+                          {transaction.Customer_Name}
+                        </div>
+                        <div className="line-clamp-2 lg:line-clamp-1 max-w-[100px]">
+                          {transaction.Email_Address}
+                        </div>
+                        <div>{formatDate(transaction.Date)}</div>
+                        <div>{transaction.Status}</div>
+                      </>
+                    )}
+
+                    <div className="relative">
+                      <button
+                        onClick={() => handleStatus(transaction)}
+                        className="p-2 cursor-pointer"
+                      >
+                        <HiDotsVertical size={18} />
+                      </button>
+
+                      {activeTransaction === transaction.ID && (
+                        <div className="p-2 absolute bottom-0 right-[70%] bg-white border border-gray-200 shadow-lg rounded-md z-50 w-45">
+                          <button
+                            onClick={() => handleConfirm(true, transaction)}
+                            disabled={
+                              transaction.Status === "Cancelled" ||
+                              transaction.Status === "Confirmed" ||
+                              cancelling
+                            }
+                            className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded cursor-pointer flex items-center gap-2"
+                          >
+                            <FaCheck />
+                            Confirm
+                          </button>
+
+                          <button
+                            onClick={() => handleConfirm(false, transaction)}
+                            disabled={
+                              transaction.Status === "Cancelled" ||
+                              transaction.Status === "Confirmed" ||
+                              confirming
+                            }
+                            className="w-full text-left px-3 py-2 hover:bg-gray-100 text-(--error) cursor-pointer flex items-center gap-2"
+                          >
+                            <FaTrash />
+                            Cancel
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
+
         <div className="flex justify-center gap-3 mt-5">
           <button
             onClick={() => setCurrentPage((prev) => prev - 1)}
@@ -422,9 +441,15 @@ const Transaction = ({ activeAdmin, openSidebar }) => {
         </div>
       </div>
 
+      {message && (
+        <div className="w-3/4 lg:w-auto bg-(--primary-bg) shadow-[0_0_5px_#acacac] py-2 px-10 rounded-lg absolute bottom-5 left-1/2 -translate-x-1/2 text-center">
+          {message}
+        </div>
+      )}
+
       {showConfirm && (
-        <div className="h-screen fixed inset-0 bg-black/50 center-flex z-50">
-          <div className="bg-white p-5 rounded-lg w-1/3 overflow-auto flex justify-between flex-col gap-10">
+        <div className="h-screen p-3 fixed inset-0 bg-black/50 center-flex z-50">
+          <div className="w-full bg-white p-5 rounded-lg lg:w-1/3 overflow-auto flex justify-between flex-col gap-10">
             <div className="space-y-3">
               <h1 className="font-bold text-lg text-(--error)">
                 {msg} transaction
@@ -446,7 +471,13 @@ const Transaction = ({ activeAdmin, openSidebar }) => {
                   (mode === "cancel" && updateStatus(false, row))
                 }
               >
-                {mode === 'confirm' ? confirming ? "Confirming..." : `Yes, ${mode}` : cancelling ? "Cancelling..." : `Yes, ${mode}`}
+                {mode === "confirm"
+                  ? confirming
+                    ? "Confirming..."
+                    : `Yes, ${mode}`
+                  : cancelling
+                    ? "Cancelling..."
+                    : `Yes, ${mode}`}
               </button>
             </div>
           </div>

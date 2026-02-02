@@ -233,7 +233,7 @@ const Inventory = ({ activeAdmin, openSidebar }) => {
     <div className="space-y-3">
       <div className="mb-10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <button onClick={openSidebar} className="cursor-pointer xl:hidden">
+          <button onClick={openSidebar} className="cursor-pointer lg:hidden">
             <VscLayoutSidebarRight size={20} />
           </button>
 
@@ -251,113 +251,115 @@ const Inventory = ({ activeAdmin, openSidebar }) => {
         </button>
       </div>
 
-      <div className="space-y-3">
-        <div className="p-3 bg-(--primary-bg) shadow rounded-lg text-center">
-          <div className="px-3 grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] place-items-center text-center">
-            <div>Image</div>
-            <div>Category</div>
-            <div>Item</div>
-            <div>Variant</div>
-            <div>Size</div>
-            <div>Quantity</div>
-            <div>Price</div>
-            <div>Action</div>
+      <div className="no-scrollbar overflow-auto">
+        <div className="min-w-[900px] space-y-3">
+          <div className="p-3 bg-(--primary-bg) shadow rounded-lg text-center">
+            <div className="px-3 grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] place-items-center text-center">
+              <div>Image</div>
+              <div>Category</div>
+              <div>Item</div>
+              <div>Variant</div>
+              <div>Size</div>
+              <div>Quantity</div>
+              <div>Price</div>
+              <div>Action</div>
+            </div>
+          </div>
+          <div className="p-3 bg-(--primary-bg) shadow rounded-lg text-center">
+            {inventories.length === 0 ? (
+              <p className="py-6 text-gray-500">No Items</p>
+            ) : (
+              inventories.map((inventory, index) => (
+                <div
+                  className={`
+                      mb-3 p-3 grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] place-items-center shadow rounded-lg text-center transition-all
+                      ${activeInventory === inventory.ID ? "bg-(--accent)/15 border-transparent" : "bg-(--primary-bg) border-gray-400"}
+                    `}
+                  key={index}
+                >
+                  <div>
+                    <img
+                      src={`http://localhost:3000/ITEMS/${inventory.Image}`}
+                      alt=""
+                      className="w-14 h-14 object-contain mx-auto rounded"
+                    />
+                  </div>
+                  <div className="line-clamp-Font />-w-[130px]">
+                    {inventory.Category}
+                  </div>
+                  <div className="line-clamp-2 font-medium max-w-[130px]">
+                    {inventory.Item_Name}
+                  </div>
+                  <div>{inventory.Variant || "-"}</div>
+                  <div>{inventory.Size || "-"}</div>
+                  <div>{inventory.Quantity}</div>
+                  <div className="font-medium">₱{inventory.Price}</div>
+                  <div className="relative">
+                    <button
+                      onClick={() => handleAction(inventory)}
+                      className="p-2 cursor-pointer"
+                    >
+                      <HiDotsVertical size={18} />
+                    </button>
+
+                    {activeInventory === inventory.ID && (
+                      <div className="p-2 absolute bottom-0 right-[70%] bg-white border border-gray-200 shadow-lg rounded-md z-50 w-45">
+                        <button
+                          onClick={() => handleEdit(inventory)}
+                          className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded cursor-pointer flex items-center gap-2"
+                        >
+                          <FontAwesomeIcon icon={faPenToSquare} />
+                          Edit
+                        </button>
+
+                        <button
+                          onClick={() => handleRemoveItem(inventory.ID)}
+                          className="w-full text-left px-3 py-2 hover:bg-gray-100 text-(--error) cursor-pointer flex items-center gap-2"
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
-        <div className="p-3 bg-(--primary-bg) shadow rounded-lg text-center">
-          {inventories.length === 0 ? (
-            <p className="py-6 text-gray-500">No Items</p>
-          ) : (
-            inventories.map((inventory, index) => (
-              <div
-                className={`
-                  mb-3 p-3 grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] place-items-center shadow rounded-lg text-center transition-all
-                  ${activeInventory === inventory.ID ? "bg-(--accent)/15 border-transparent" : "bg-(--primary-bg) border-gray-400"}
-                `}
-                key={index}
-              >
-                <div>
-                  <img
-                    src={`http://localhost:3000/ITEMS/${inventory.Image}`}
-                    alt=""
-                    className="w-14 h-14 object-contain mx-auto rounded"
-                  />
-                </div>
-                <div className="line-clamp-Font />-w-[130px]">
-                  {inventory.Category}
-                </div>
-                <div className="line-clamp-2 font-medium max-w-[130px]">
-                  {inventory.Item_Name}
-                </div>
-                <div>{inventory.Variant || "-"}</div>
-                <div>{inventory.Size || "-"}</div>
-                <div>{inventory.Quantity}</div>
-                <div className="font-medium">₱{inventory.Price}</div>
-                <div className="relative">
-                  <button
-                    onClick={() => handleAction(inventory)}
-                    className="p-2 cursor-pointer"
-                  >
-                    <HiDotsVertical size={18} />
-                  </button>
-
-                  {activeInventory === inventory.ID && (
-                    <div className="p-2 absolute top-[60%] right-[60%] bg-white border border-gray-200 shadow-lg rounded-md z-20 w-45">
-                      <button
-                        onClick={() => handleEdit(inventory)}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded cursor-pointer flex items-center gap-2"
-                      >
-                        <FontAwesomeIcon icon={faPenToSquare} />
-                        Edit
-                      </button>
-
-                      <button
-                        onClick={() => handleRemoveItem(inventory.ID)}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-100 text-(--error) cursor-pointer flex items-center gap-2"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                        Remove
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div className="flex justify-center gap-3 mt-5">
-          <button
-            onClick={() => setCurrentPage((prev) => prev - 1)}
-            disabled={currentPage <= 1}
-            className="cursor-pointer disabled:opacity-50"
-          >
-            <FontAwesomeIcon icon={faChevronLeft} />
-          </button>
-
-          <span className="px-3 py-1">
-            Page {currentPage} of {totalPages}
-          </span>
-
-          <button
-            onClick={() => setCurrentPage((prev) => prev + 1)}
-            disabled={currentPage >= totalPages} // disable if on last page
-            className="cursor-pointer disabled:opacity-50"
-          >
-            <FontAwesomeIcon icon={faChevronRight} />
-          </button>
-        </div>
-
-        {message && (
-          <div className="bg-(--primary-bg) shadow-[0_0_5px_#acacac] py-2 px-10 rounded-lg absolute bottom-5 left-1/2 -translate-x-1/2">
-            {message}
-          </div>
-        )}
       </div>
+
+      <div className="flex justify-center gap-3 mt-5">
+        <button
+          onClick={() => setCurrentPage((prev) => prev - 1)}
+          disabled={currentPage <= 1}
+          className="cursor-pointer disabled:opacity-50"
+        >
+          <FontAwesomeIcon icon={faChevronLeft} />
+        </button>
+
+        <span className="px-3 py-1">
+          Page {currentPage} of {totalPages}
+        </span>
+
+        <button
+          onClick={() => setCurrentPage((prev) => prev + 1)}
+          disabled={currentPage >= totalPages} // disable if on last page
+          className="cursor-pointer disabled:opacity-50"
+        >
+          <FontAwesomeIcon icon={faChevronRight} />
+        </button>
+      </div>
+
+      {message && (
+        <div className="w-3/4 lg:w-auto bg-(--primary-bg) shadow-[0_0_5px_#acacac] py-2 px-10 rounded-lg absolute bottom-5 left-1/2 -translate-x-1/2 text-center">
+          {message}
+        </div>
+      )}
 
       {showModal && (
         <div className="h-screen fixed inset-0 bg-black/50 flex items-center justify-end z-50">
-          <div className="bg-white p-6 rounded w-1/3 h-screen space-y-5">
+          <div className="bg-white p-6 rounded w-3/4 lg:w-1/3 h-screen space-y-5">
             <div className="mb-10 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-(--secondary-text)">
                 {mode === "add" ? "Add Inventory" : "Edit Inventory"}
@@ -414,8 +416,7 @@ const Inventory = ({ activeAdmin, openSidebar }) => {
                     <option key={index} value={category.Category}>
                       {category.Category}
                     </option>
-                  ))
-                }
+                  ))}
               </select>
             </div>
             <div className="flex flex-col gap-1">
@@ -505,8 +506,8 @@ const Inventory = ({ activeAdmin, openSidebar }) => {
       )}
 
       {showConfirm && (
-        <div className="h-screen fixed inset-0 bg-black/50 center-flex z-50">
-          <div className="bg-white p-5 rounded-lg w-1/3 overflow-auto flex justify-between flex-col gap-10">
+        <div className="h-screen p-3 fixed inset-0 bg-black/50 center-flex z-50">
+          <div className="w-full bg-white p-5 rounded-lg lg:w-1/3 overflow-auto flex justify-between flex-col gap-10">
             <div className="space-y-3">
               <h1 className="font-bold text-lg text-(--error)">{msg} item</h1>
               <p>Are you sure you want to {mode} this item?</p>

@@ -38,9 +38,17 @@ html, body {
   box-shadow: none;
 }
 .no-scrollbar {
-  scrollbar-width: none;
+  scrollbar-width: none; 
 }
 
+@media (max-width: 1024px) {
+  .rbc-toolbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+}
 
 
 .bordir{border: 1px solid red;}

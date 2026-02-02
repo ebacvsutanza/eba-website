@@ -100,7 +100,7 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
     <div className="space-y-3">
       <div className="mb-10 flex justify-between">
         <div className="flex items-center gap-2">
-          <button onClick={openSidebar} className="cursor-pointer xl:hidden">
+          <button onClick={openSidebar} className="cursor-pointer lg:hidden">
             <VscLayoutSidebarRight size={20} />
           </button>
           <h1 className="text-(--secondary-text) text-2xl font-bold">
@@ -114,26 +114,26 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
         </div>
       </div>
 
-      <div className="flex justify-between gap-3">
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 lg:gap-3">
+        <div className="space-y-5 p-3 bg-(--primary-bg) border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Total Sales</p>
           <h2 className="text-xl text-(--secondary-text) font-bold">
             {formatCurrency(transactionAmount)}
           </h2>
         </div>
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
+        <div className="space-y-5 p-3 bg-(--primary-bg) border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Total Orders</p>
           <h2 className="text-xl text-(--secondary-text) font-bold">
             {transactionQuantity}
           </h2>
         </div>
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
+        <div className="space-y-5 p-3 bg-(--primary-bg) border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Items with Low Stock</p>
           <h2 className="text-xl text-(--secondary-text) font-bold">
             {lowStockItems.length}
           </h2>
         </div>
-        <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
+        <div className="space-y-5 p-3 bg-(--primary-bg) border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Available Stocks</p>
           <h2 className="text-xl text-(--secondary-text) font-bold">
             {inventoryQuantity}
@@ -141,7 +141,7 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
         </div>
       </div>
 
-      <div className="flex justify-between gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Sales</p>
           <SalesChart />
@@ -153,7 +153,7 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
         </div>
       </div>
 
-      <div className="flex justify-between gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">New Orders of the Week</p>
           <h2 className="text-xl text-(--secondary-text) font-bold">

@@ -10,7 +10,7 @@ import { FaMoon } from "react-icons/fa";
 import { FaSun } from "react-icons/fa";
 import { MdLogout } from "react-icons/md";
 import { FaUser } from 'react-icons/fa6';
-import { VscLayoutSidebarRight } from "react-icons/vsc";
+import { VscLayoutSidebarLeft, VscLayoutSidebarRight } from "react-icons/vsc";
 
 import './CSS/Sidebar.css';
 
@@ -50,7 +50,7 @@ const AdminSidebar = ({
   return (
     <div
       className={`
-      w-3/4 md:w-1/2 xl:w-1/4 h-screen p-3 bg-(--primary-bg) shadow-lg flex flex-col justify-between z-50 transition-all xl:relative xl:left-0 absolute top-0
+      w-3/4 md:w-1/2 xl:w-1/4 h-screen p-3 bg-(--primary-bg) shadow-lg flex flex-col justify-between z-50 transition-all lg:relative lg:left-0 absolute top-0
       ${sidebar ? "left-0" : "-left-full"}
     `}
     >
@@ -66,9 +66,9 @@ const AdminSidebar = ({
             </div>
             <button
               onClick={() => setSidebar((prev) => !prev)}
-              className="xl:hidden"
+              className="lg:hidden"
             >
-              <VscLayoutSidebarRight size={20} />
+              <VscLayoutSidebarLeft size={20} />
             </button>
           </div>
         </div>

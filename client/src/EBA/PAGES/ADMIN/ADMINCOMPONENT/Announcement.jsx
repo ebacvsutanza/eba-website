@@ -164,11 +164,22 @@ const Announcement = ({ activeAdmin, openSidebar }) => {
     setShowConfirm(true);
   };
 
+  const isTouchDevice = () => window.matchMedia("(pointer: coarse)").matches;
+  const [isTouch, setIsTouch] = useState(isTouchDevice());
+
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse)");
+    const handler = () => setIsTouch(mq.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+
   return (
     <div className="space-y-3">
       <div className="mb-10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <button onClick={openSidebar} className="cursor-pointer xl:hidden">
+          <button onClick={openSidebar} className="cursor-pointer lg:hidden">
             <VscLayoutSidebarRight size={20} />
           </button>
           <h1 className="text-(--secondary-text) text-2xl font-bold">
@@ -179,15 +190,17 @@ const Announcement = ({ activeAdmin, openSidebar }) => {
 
       <div className="h-[85vh] p-3 bg-(--primary-bg) rounded-lg shadow">
         <Calendar
+          key={isTouch ? "touch-calendar" : "mouse-calendar"}
           localizer={localizer}
           events={events}
           selectable
-          popup
+          popup={false}
+          longPressThreshold={0}
           date={calendarDate}
           view={calendarView}
           onNavigate={setCalendarDate}
           onView={setCalendarView}
-          views={["month", "week", "day", "agenda"]}
+          views={["month", "week", "day"]}
           onSelectSlot={handleSelectSlot}
           onSelectEvent={handleSelectEvent}
           eventPropGetter={() => ({
@@ -197,20 +210,21 @@ const Announcement = ({ activeAdmin, openSidebar }) => {
               color: "#fff",
               borderRadius: "6px",
               border: "none",
+              touchAction: "manipulation",
             },
           })}
         />
       </div>
 
       {message && (
-        <div className="bg-(--primary-bg) shadow-[0_0_5px_#acacac] py-2 px-10 rounded-lg absolute bottom-5 left-1/2 -translate-x-1/2">
+        <div className="w-3/4 lg:w-auto bg-(--primary-bg) shadow-[0_0_5px_#acacac] py-2 px-10 rounded-lg absolute bottom-5 left-1/2 -translate-x-1/2 text-center">
           {message}
         </div>
       )}
 
       {showModal && (
         <div className="h-screen fixed inset-0 bg-black/50 flex items-center justify-end z-50">
-          <div className="bg-white p-6 rounded w-1/3 h-screen space-y-5">
+          <div className="bg-white p-6 rounded w-3/4 lg:w-1/3 h-screen space-y-5">
             <div className="mb-10 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-(--secondary-text)">
                 {mode === "add" ? "Add Event" : "Edit Event"}
@@ -260,10 +274,12 @@ const Announcement = ({ activeAdmin, openSidebar }) => {
               />
             </div>
 
-            {formMessage && <div className="text-(--error) text-center">{formMessage}</div>}
+            {formMessage && (
+              <div className="text-(--error) text-center">{formMessage}</div>
+            )}
 
             <div className="flex justify-between gap-3 pt-3">
-              {(mode === "edit" || mode === 'delete') && (
+              {(mode === "edit" || mode === "delete") && (
                 <button
                   className="px-4 py-2 bg-(--error) flex-1 text-white rounded-lg cursor-pointer"
                   onClick={() => handleRemove(selectedEvent.id)}
@@ -284,8 +300,8 @@ const Announcement = ({ activeAdmin, openSidebar }) => {
       )}
 
       {showConfirm && (
-        <div className="h-screen fixed inset-0 bg-black/50 center-flex z-50">
-          <div className="bg-white p-5 rounded-lg w-1/3 overflow-auto flex justify-between flex-col gap-10">
+        <div className="h-screen p-3 fixed inset-0 bg-black/50 center-flex z-50">
+          <div className="w-full bg-white p-5 rounded-lg lg:w-1/3 overflow-auto flex justify-between flex-col gap-10">
             <div className="space-y-3">
               <h1 className="font-bold text-lg text-(--error)">
                 {msg} Events & Announcement

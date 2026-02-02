@@ -218,10 +218,9 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
   // ------------------------ Render ------------------------
   return (
     <div className="space-y-3">
-      {/* Header */}
       <div className="mb-10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <button onClick={openSidebar} className="cursor-pointer xl:hidden">
+          <button onClick={openSidebar} className="cursor-pointer lg:hidden">
             <VscLayoutSidebarRight size={20} />
           </button>
           <h1 className="text-(--secondary-text) text-2xl font-bold">
@@ -238,61 +237,60 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
         </button>
       </div>
 
-      {/* Table Header */}
-      <div className="p-3 bg-(--primary-bg) shadow rounded-lg text-center">
-        <div className="px-3 grid grid-cols-[1fr_1fr_1fr_1fr_1fr] place-items-center text-center">
-          <div>Image</div>
-          <div>Name</div>
-          <div>Email Address</div>
-          <div>Role</div>
-          <div>Action</div>
+      <div className="no-scrollbar overflow-auto">
+        <div className="min-w-[900px] space-y-3">
+          <div className="p-3 bg-(--primary-bg) shadow rounded-lg text-center">
+            <div className="px-3 grid grid-cols-[1fr_1fr_1fr_1fr_1fr] place-items-center text-center">
+              <div>Image</div>
+              <div>Name</div>
+              <div>Email Address</div>
+              <div>Role</div>
+              <div>Action</div>
+            </div>
+          </div>
+
+          <div className="p-3 bg-(--primary-bg) shadow rounded-lg text-center">
+            {manageAdmin.length === 0 ? (
+              <p className="py-6 text-gray-500">No Items</p>
+            ) : (
+              manageAdmin.map((admin) => (
+                <div
+                  key={admin.ID}
+                  className="mb-3 p-3 grid grid-cols-[1fr_1fr_1fr_1fr_1fr] place-items-center shadow rounded-lg text-center transition-all hover:bg-(--accent)/15 hover:border-transparent bg-(--primary-bg) border-gray-400"
+                >
+                  <div>
+                    <img
+                      src={`http://localhost:3000/UPLOADS/${admin.Image}`}
+                      alt=""
+                      className="w-14 h-14 object-contain mx-auto rounded"
+                    />
+                  </div>
+                  <div className="line-clamp-1 w-[130px]">{admin.Username}</div>
+                  <div className="line-clamp-2 font-medium max-w-[130px]">
+                    {admin.Email_Address}
+                  </div>
+                  <div>{admin.Role}</div>
+                  <div className="center-flex lg:flex-row flex-col">
+                    <button
+                      onClick={() => handleEdit(admin)}
+                      className="w-full text-left px-3 py-2 rounded cursor-pointer flex items-center gap-2"
+                    >
+                      <FontAwesomeIcon icon={faPenToSquare} /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleRemoveAccount(admin.ID)}
+                      className="w-full text-left px-3 py-2 text-(--error) cursor-pointer flex items-center gap-2"
+                    >
+                      <FontAwesomeIcon icon={faTrash} /> Remove
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Admin List */}
-      <div className="p-3 bg-(--primary-bg) shadow rounded-lg text-center">
-        {manageAdmin.length === 0 ? (
-          <p className="py-6 text-gray-500">No Items</p>
-        ) : (
-          manageAdmin.map((admin) => (
-            <div
-              key={admin.ID}
-              className="mb-3 p-3 grid grid-cols-[1fr_1fr_1fr_1fr_1fr] place-items-center shadow rounded-lg text-center transition-all hover:bg-(--accent)/15 hover:border-transparent bg-(--primary-bg) border-gray-400"
-            >
-              <div>
-                <img
-                  src={`http://localhost:3000/UPLOADS/${admin.Image}`}
-                  alt=""
-                  className="w-14 h-14 object-contain mx-auto rounded"
-                />
-              </div>
-              <div className="line-clamp-1 w-[130px]">
-                {admin.Username}
-              </div>
-              <div className="line-clamp-2 font-medium max-w-[130px]">
-                {admin.Email_Address}
-              </div>
-              <div>{admin.Role}</div>
-              <div className="center-flex">
-                <button
-                  onClick={() => handleEdit(admin)}
-                  className="w-full text-left px-3 py-2 rounded cursor-pointer flex items-center gap-2"
-                >
-                  <FontAwesomeIcon icon={faPenToSquare} /> Edit
-                </button>
-                <button
-                  onClick={() => handleRemoveAccount(admin.ID)}
-                  className="w-full text-left px-3 py-2 text-(--error) cursor-pointer flex items-center gap-2"
-                >
-                  <FontAwesomeIcon icon={faTrash} /> Remove
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Pagination */}
       <div className="flex justify-center gap-3 mt-5">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
@@ -315,15 +313,14 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
 
       {/* Notifications */}
       {message && (
-        <div className="bg-(--primary-bg) shadow-[0_0_5px_#acacac] py-2 px-10 rounded-lg absolute bottom-5 left-1/2 -translate-x-1/2">
+        <div className="w-3/4 lg:w-auto bg-(--primary-bg) shadow-[0_0_5px_#acacac] py-2 px-10 rounded-lg absolute bottom-5 left-1/2 -translate-x-1/2 text-center">
           {message}
         </div>
       )}
 
-      {/* Add/Edit Modal */}
       {showModal && (
         <div className="h-screen fixed inset-0 bg-black/50 flex items-center justify-end z-50">
-          <div className="bg-white p-6 rounded w-1/3 h-screen space-y-5 overflow-auto">
+          <div className="bg-white p-6 rounded w-3/4 lg:w-1/3 h-screen space-y-5">
             <div className="mb-10 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-(--secondary-text)">
                 {mode === "add" ? "Add Account" : "Edit Account"}
@@ -403,8 +400,10 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
               />
             </div>
 
-            {formMessage && <div className="text-(--error) text-center">{formMessage}</div>}
-            
+            {formMessage && (
+              <div className="text-(--error) text-center">{formMessage}</div>
+            )}
+
             <button
               type="button"
               onClick={handleConfirm}
@@ -418,9 +417,11 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
 
       {showConfirm && (
         <div className="h-screen fixed inset-0 bg-black/50 center-flex z-50">
-          <div className="bg-white p-5 rounded-lg w-1/3 overflow-auto flex justify-between flex-col gap-10">
+          <div className="bg-white p-5 rounded-lg lg:w-1/3 overflow-auto flex justify-between flex-col gap-10">
             <div className="space-y-3">
-              <h1 className="font-bold text-lg text-(--error)">{msg} account</h1>
+              <h1 className="font-bold text-lg text-(--error)">
+                {msg} account
+              </h1>
               <p>Are you sure you want to {mode} this account?</p>
             </div>
 
@@ -433,7 +434,11 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
               </button>
               <button
                 className="flex-1 bg-(--error) text-white py-2 rounded-lg shadow cursor-pointer"
-                onClick={() => mode === 'add' || mode === 'edit' ? handleSubmit() : handleRemove(remove)}
+                onClick={() =>
+                  mode === "add" || mode === "edit"
+                    ? handleSubmit()
+                    : handleRemove(remove)
+                }
               >
                 Yes, {mode}
               </button>
