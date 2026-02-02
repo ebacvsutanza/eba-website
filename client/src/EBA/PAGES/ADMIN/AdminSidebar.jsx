@@ -81,7 +81,10 @@ const AdminSidebar = ({
             <button
               key={button.name}
               onClick={() => handleButtonClick(button.name)}
-              className={`py-2 px-5 flex items-center gap-3 hover:bg-(--accent) hover:text-white transition-all rounded-lg cursor-pointer ${activeButton === button.name && "bg-(--primary-btn) hover:bg-(--primary-btn) text-white"}`}
+              className={`
+                py-2 px-5 flex items-center gap-3 hover:bg-(--accent) hover:text-white transition-all rounded-lg cursor-pointer 
+                ${activeButton === button.name && "bg-(--primary-btn) hover:bg-(--primary-btn) text-white"}
+              `}
             >
               {button.icon} {button.name}
             </button>

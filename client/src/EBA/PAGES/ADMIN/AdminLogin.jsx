@@ -73,7 +73,7 @@ const Login = () => {
 			>
 				<div className="space-y-3 text-center">
 					<div className="relative">
-						<a href="/eba" className="absolute left-0 top-1/2 -translate-y-1/2">
+						<a href="/" className="absolute left-0 top-1/2 -translate-y-1/2">
 							<FontAwesomeIcon icon={faArrowLeft} />
 						</a>
 						<h2 className='text-(--secondary-text) font-bold font-heading text-2xl'>LOGIN</h2>

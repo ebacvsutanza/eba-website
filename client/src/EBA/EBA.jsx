@@ -50,7 +50,6 @@ const EBA = () => {
     <div className="eba">
       <Navbar />
 
-      {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-text">
           <h1>

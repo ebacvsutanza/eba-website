@@ -1,9 +1,9 @@
 import React from 'react';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 
-import Bulletin from './BULLETIN/Bulletin';
 
 import EBA from './EBA/EBA';
+import News from './EBA/PAGES/News'
 import AboutEBA from './EBA/PAGES/About';
 import AboutDeveloper from './EBA/PAGES/AboutUs';
 
@@ -27,10 +27,10 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* BULLETIN PAGE */}
-          <Route path="/" element={<Bulletin />}></Route>
+          <Route path="/" element={<EBA />}></Route>
 
           {/* EBA PAGE */}
-          <Route path="/eba" element={<EBA />}></Route>
+          <Route path="/news" element={<News />}></Route>
           <Route path="/abouteba" element={<AboutEBA />}></Route>
           <Route path="/aboutdeveloper" element={<AboutDeveloper />}></Route>
 

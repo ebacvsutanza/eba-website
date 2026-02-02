@@ -67,7 +67,7 @@ const UserSignin = () => {
               src="/logo.png"
               alt="CvSU Logo"
               className="w-20 object-contain"
-              onClick={() => navigateTo("/eba")}
+              onClick={() => navigateTo("/")}
             />
             <h1 className="text-3xl text-(--secondary-text) font-heading font-bold">
               Sign Up

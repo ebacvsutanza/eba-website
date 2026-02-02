@@ -423,12 +423,48 @@ app.get("/bulletin", (req, res) => {
 
 app.get("/search", (req, res) => {
   const searchTerm = req.query.q || "";
-  const sql = `SELECT * FROM transaction WHERE Email_Address LIKE ? LIMIT 10`;
+
+  const sql = `
+    SELECT *
+    FROM transaction
+    WHERE Email_Address LIKE ?
+    ORDER BY Customer_Name
+  `;
+
   db.query(sql, [`%${searchTerm}%`], (err, results) => {
     if (err) return res.status(500).json({ error: err });
-    res.json(results);
+
+    // Combine rows by Email_Address
+    const grouped = {};
+
+    results.forEach((row) => {
+      const email = row.Email_Address;
+
+      if (!grouped[email]) {
+        grouped[email] = {
+          Customer_Name: row.Customer_Name,
+          Email_Address: row.Email_Address,
+          Username: row.Username,
+          transactions: [],
+        };
+      }
+      
+      grouped[email].transactions.push({
+        ID: row.ID,
+        OrderID: row.OrderID,
+        Customer_Name: row.Customer_Name,
+        Email_Address: row.Email_Address,
+        Item_Name: row.Item_Name,
+        Quantity: row.Quantity,
+        Variant: row.Variant,
+        Status: row.Status,
+      });
+    });
+
+    res.json(Object.values(grouped));
   });
 });
+
 
 app.get("/searchtransactionsbyemail/:email", (req, res) => {
   const email = req.params.email;
@@ -759,7 +795,7 @@ app.post("/checkout", (req, res) => {
   });
 });
 app.post("/requestCancelOrder", (req, res) => {
-  const { email, orderId } = req.body;
+  const { email, orderId, item, variant } = req.body;
 
   // Generate a verification token
   const token = jwt.sign({ email, orderId }, "yourSecretKey", {
@@ -773,7 +809,7 @@ app.post("/requestCancelOrder", (req, res) => {
     to: email,
     subject: "Order Cancellation Verification",
     html: `
-            <p>We received a request to cancel your order <strong>${orderId}</strong>.</p>
+            <p>We received a request to cancel your order number <strong>${orderId}, ${item} - ${variant}</strong></p>
             <p>If this was you, please confirm by clicking the link below:</p>
             <a href="${cancelLink}">Confirm Cancellation</a>
         `,
