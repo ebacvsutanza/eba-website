@@ -414,8 +414,25 @@ app.get("/api/least-purchased", (req, res) => {
 
 // BULLETIN PAGE
 // DISPLAY EVENT AND ANNOUNCEMENT
+app.get("/bulletin/count", (req, res) => {
+  db.query("SELECT COUNT(*) as count FROM bulletin", (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.json({ total: result[0].count });
+  });
+});
 app.get("/bulletin", (req, res) => {
-  db.query("SELECT * FROM bulletin", (err, results) => {
+  const order = req.query.order === "DESC" ? "ASC" : "DESC";
+  const page = parseInt(req.query.page) || 1; // default page 1
+  const limit = 4;
+  const offset = (page - 1) * limit;
+  
+  const sql = `
+    SELECT * FROM bulletin
+    ORDER BY announcementDate ${order}
+    LIMIT ? OFFSET ?
+  `;
+
+  db.query(sql, [limit, offset], (err, results) => {
     if (err) return res.status(500).send(err);
     res.json(results);
   });
