@@ -5,11 +5,10 @@ import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBan, faBars, faClose, faSearch, faTimes } from "@fortawesome/free-solid-svg-icons";
 
-const Navbar = () => {
-	const isActive = (path) => location.pathname === path;
+const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
+  const isActive = (path) => location.pathname === path;
   const [isOpen, setIsOpen] = useState(false);
   const [isAbout, setIsAbout] = useState(false);
-  const [openStatus, setOpenStatus] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
 
@@ -19,10 +18,6 @@ const Navbar = () => {
 
   const toggleAbout = () => {
     setIsAbout(!isAbout);
-  };
-
-  const toggleCheckStatus = () => {
-    setOpenStatus(!openStatus);
   };
 
   useEffect(() => {
@@ -42,7 +37,7 @@ const Navbar = () => {
   }, [query]);
 
   const [selectedTransactions, setSelectedTransactions] = useState([]); // store multiple transactions
-  const [cancelModal, setCancelModal] = useState(false)
+  const [cancelModal, setCancelModal] = useState(false);
   const [cancelData, setCancelData] = useState(null);
 
   const handleCancelOrder = (orderId, customer, email, item, variant) => {
@@ -54,29 +49,34 @@ const Navbar = () => {
 
     try {
       axios
-        .post("http://localhost:3000/requestCancelOrder", { email, orderId, item, variant })
+        .post("http://localhost:3000/requestCancelOrder", {
+          email,
+          orderId,
+          item,
+          variant,
+        })
         .then(() => {
           setCancelModal(true);
         })
         .catch((err) => console.error("Error sending cancel request:", err));
     } catch {
-      console.log('error')
+      console.log("error");
     }
   };
 
-const [cancellingOrderId, setCancellingOrderId] = useState(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState(null);
 
   const resetModal = () => {
-    setOpenStatus(false)
-    setCancelModal(false)
-    setCancellingOrderId(null)
-    setQuery('')
-    setSelectedTransactions([])
-  }
+    setOpenStatus(false);
+    setCancelModal(false);
+    setCancellingOrderId(null);
+    setQuery("");
+    setSelectedTransactions([]);
+  };
 
   return (
     <div className="bg-(--primary-bg)">
-      <nav className="w-full p-3 bg-(--primary-bg) shadow fixed top-0 left-0">
+      <nav className="w-full p-3 bg-(--primary-bg) shadow fixed top-0 left-0 z-50">
         <div className="lg:px-[1in] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/logo.png" className="w-15 h-15" />
@@ -85,7 +85,7 @@ const [cancellingOrderId, setCancellingOrderId] = useState(null);
                 Cavite State University - Tanza
               </span>{" "}
               <br />
-              External Business and Affairs
+              External and Business Affairs
             </p>
           </div>
 

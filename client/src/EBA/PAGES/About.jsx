@@ -1,34 +1,52 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import Navbar from '../Navbar'
 import Footer from '../Footer'
 
 const About = () => {
+	const [openStatus, setOpenStatus] = useState(false);
+	const toggleCheckStatus = () => {
+		setOpenStatus(!openStatus);
+	};
+
 	return (
-		<div className='about'>
-			<Navbar />
+    <div className="about">
+      <Navbar
+        toggleCheckStatus={toggleCheckStatus}
+        openStatus={openStatus}
+        setOpenStatus={setOpenStatus}
+      />
+      <div className="container">
+        <div className="cvsu">
+          <h1>CAVITE STATE UNIVERSITY - TANZA CAMPUS</h1>
+        </div>
 
-			<div className="container">
-				<div className="cvsu">
-					<h1>CAVITE STATE UNIVERSITY - TANZA CAMPUS</h1>
-				</div>
+        <div className="university mission">
+          <h1>University Mission</h1>
 
-				<div className="university mission">
-					<h1>University Mission</h1>
+          <p>
+            CAVITE STATE UNIVERSITY shall provide excellent, equitable and
+            relevant educational opportunities in the arts, sciences, and
+            technology through quality instruction and responsive research and
+            development activities. It shall produce professional skilled and
+            morally upright individuals for global competitiveness.
+          </p>
+        </div>
 
-					<p>CAVITE STATE UNIVERSITY shall provide excellent, equitable and relevant educational opportunities in the arts, sciences, and technology through quality instruction and responsive research and development activities. It shall produce professional skilled and morally upright individuals for global competitiveness.</p>
-				</div>
+        <div className="university vision">
+          <h1>University Vision</h1>
 
-				<div className="university vision">
-					<h1>University Vision</h1>
+          <p>
+            The premier university in historic Cavite globally recognized for
+            excellence in character development, academics, research,
+            innovation, and sustainable community engagement.
+          </p>
+        </div>
+      </div>
 
-					<p>The premier university in historic Cavite globally recognized for excellence in character development, academics, research, innovation, and sustainable community engagement.</p>
-				</div>
-			</div>
-
-			<Footer />
-		</div>
-	)
+      <Footer toggleCheckStatus={toggleCheckStatus} openStatus={openStatus} />
+    </div>
+  );
 }
 
 export default About

@@ -1,13 +1,24 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Navbar from '../Navbar'
 import Footer from '../Footer'
 
-export default function News() {
+const News = () => {
+  const [openStatus, setOpenStatus] = useState(false);
+  const toggleCheckStatus = () => {
+    setOpenStatus(!openStatus);
+  };
+
   return (
     <div>
-      <Navbar />
+      <Navbar
+        toggleCheckStatus={toggleCheckStatus}
+        openStatus={openStatus}
+        setOpenStatus={setOpenStatus}
+      />
       News
-      <Footer />
+      <Footer toggleCheckStatus={toggleCheckStatus} openStatus={openStatus} />
     </div>
-  )
+  );
 }
+
+export default News;
