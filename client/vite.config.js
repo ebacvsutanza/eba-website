@@ -12,5 +12,5 @@ export default defineConfig({
       port: 5173,
     },
   },
-  base: process.env.VITE_BASE_PATH || '/capstone'
+  base: '/capstone'
 });
