@@ -9,7 +9,8 @@ export default defineConfig({
     port: 5173,
     host: true,
     hmr: {
-      port: 5173
-    }
-  }
-})
+      port: 5173,
+    },
+  },
+  base: process.env.VITE_BASE_PATH || '/capstone'
+});
