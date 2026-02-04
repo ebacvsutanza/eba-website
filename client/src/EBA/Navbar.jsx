@@ -229,7 +229,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
                         Order Details
                       </h3>
 
-                      <div className="min-h-[300px] p-2 border border-(--outline) rounded center-flex flex-col">
+                      <div className="min-h-[300px] p-2 border border-(--outline) rounded flex flex-col">
                         {selectedTransactions.length > 0 ? (
                           selectedTransactions
                             .filter(

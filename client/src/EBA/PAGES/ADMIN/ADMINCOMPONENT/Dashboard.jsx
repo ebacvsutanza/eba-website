@@ -141,7 +141,7 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <div className="space-y-5 p-3 bg-(--primary-bg) flex-1 border border-gray-300 rounded-lg shadow">
           <p className="text-md font-bold">Sales</p>
           <SalesChart />

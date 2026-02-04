@@ -50,6 +50,7 @@ const AdminPanel = () => {
 			setEmail(data.Email_Address);
 			setRole(data.Role);
 		} catch {
+      alert('Login expired, please login again');
 			localStorage.removeItem("token");
 			window.location.href = "/adminlogin";
 		}

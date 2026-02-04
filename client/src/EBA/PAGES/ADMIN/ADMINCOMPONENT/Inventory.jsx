@@ -38,7 +38,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
       `http://localhost:3000/inventory?page=${page}`,
     );
     setInventories(response.data);
-    const categoryResponse = await axios.get("http://localhost:3000/exclusive");
+    const categoryResponse = await axios.get("http://localhost:3000/categories");
     setCategories(categoryResponse.data);
   };
 

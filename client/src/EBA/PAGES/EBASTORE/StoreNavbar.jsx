@@ -6,6 +6,7 @@ export default function StoreNavbar({ fetchCart, carts }) {
   const token = localStorage.getItem("token");
   useEffect(() => {
     if (!token) {
+			alert("Please Login First");
       window.location.href = "/userlogin";
       return;
     }
@@ -14,7 +15,7 @@ export default function StoreNavbar({ fetchCart, carts }) {
 
   const handleNavigation = () => {
     if (window.location.pathname === "/ebastore") {
-      window.location.href = "/eba";
+      window.location.href = "/";
       localStorage.removeItem("token");
     } else {
       window.location.href = "/ebastore";

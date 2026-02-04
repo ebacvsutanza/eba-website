@@ -130,8 +130,9 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
     setConfirming(true);
     try {
       const response = await axios.post("http://localhost:3000/confirm-order", {
-        orderId: transaction.ID,
-        name: transaction.customerName,
+        id: transaction.ID,
+        orderId: transaction.OrderID,
+        name: transaction.Customer_Name,
         customerEmail: transaction.Email_Address,
       });
 
@@ -155,7 +156,11 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
     setCancelling(true);
     try {
       const response = await axios.post("http://localhost:3000/cancel-order", {
-        orderId: transaction.ID,
+        id: transaction.ID,
+        orderId: transaction.OrderID,
+        itemName: transaction.Item_Name,
+        variant: transaction.Variant,
+        size: transaction.Size,
         name: transaction.Customer_Name,
         customerEmail: transaction.Email_Address,
       });

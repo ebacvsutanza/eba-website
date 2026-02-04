@@ -258,7 +258,7 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
               <label className="text-lg font-medium">Faculty Staff</label>
               <input
                 className="w-full border border-(--outline) outline-(--accent) rounded-lg p-2"
-                placeholder="Ms. John Jeomi"
+                placeholder="Ma'am Admin"
                 value={facultyName}
                 onChange={(e) => setFacultyName(e.target.value)}
               />

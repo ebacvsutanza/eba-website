@@ -70,7 +70,6 @@ const News = () => {
                         month: "long",
                         day: "numeric",
                         year: "numeric",
-                        timeZone: "UTC",
                       },
                     )}{" "}
                   </p>

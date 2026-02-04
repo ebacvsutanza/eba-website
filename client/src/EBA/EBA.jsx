@@ -87,7 +87,7 @@ const EBA = () => {
         setOpenStatus={setOpenStatus}
       />
 
-      <div class="min-h-screen">
+      <div class="min-h-screen overflow-x-hidden">
         <div className="h-screen flex items-center">
           <div className="lg:w-1/2 p-10 space-y-10">
             <div className="text-[.4in] lg:text-[.5in] font-semibold">
@@ -209,7 +209,9 @@ const EBA = () => {
                   `}
                 >
                   <div className="mb-5 flex lg:items-center justify-between text-left">
-                    <h3 className="font-medium lg:text-[16px]">{faq.question}</h3>
+                    <h3 className="font-medium lg:text-[16px]">
+                      {faq.question}
+                    </h3>
 
                     <FaChevronUp
                       className={`transition-all ${

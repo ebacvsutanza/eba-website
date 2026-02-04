@@ -30,19 +30,19 @@ const Store = () => {
   const slides = [
     {
       id: 1,
-      image: 'developers/mykel.png'
+      image: 'unif.jpg'
     },
     {
       id: 2,
-      image: 'developers/wendell.png'
+      image: 'maleunif.png'
     },
     {
       id: 3,
-      image: 'developers/paulo.png'
+      image: 'femaleunif.jpg'
     },
     {
       id: 4,
-      image: 'developers/lee.png'
+      image: 'cvsuback.jpg'
     },
   ];
   useEffect(() => {
@@ -60,6 +60,7 @@ const Store = () => {
   const token = localStorage.getItem("token");
   useEffect(() => {
     if (!token) {
+			alert("Please Login First");
       window.location.href = '/userlogin';
       return;
     }
