@@ -10,7 +10,7 @@ const About = () => {
 	};
 
 	return (
-    <div className="about">
+    <div className="about mt-20">
       <Navbar
         toggleCheckStatus={toggleCheckStatus}
         openStatus={openStatus}
@@ -18,11 +18,13 @@ const About = () => {
       />
       <div className="container">
         <div className="cvsu">
-          <h1>CAVITE STATE UNIVERSITY - TANZA CAMPUS</h1>
+          <h1 className="text-3xl lg:text-4xl font-heading">
+            CAVITE STATE UNIVERSITY - TANZA CAMPUS
+          </h1>
         </div>
 
         <div className="university mission">
-          <h1>University Mission</h1>
+          <h1 className="w-full xl:w-1/3 text-3xl font-heading">University Mission</h1>
 
           <p>
             CAVITE STATE UNIVERSITY shall provide excellent, equitable and
@@ -34,7 +36,7 @@ const About = () => {
         </div>
 
         <div className="university vision">
-          <h1>University Vision</h1>
+          <h1 className="w-full xl:w-1/3 text-3xl font-heading">University Vision</h1>
 
           <p>
             The premier university in historic Cavite globally recognized for
