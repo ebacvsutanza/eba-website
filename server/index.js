@@ -12,16 +12,20 @@ const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 
 const salt = 10;
-const port = 3000;
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "https://capstone-eba.vercel.app"
+}));
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+// Use Render's port
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 const uploadStorage = multer.diskStorage({
