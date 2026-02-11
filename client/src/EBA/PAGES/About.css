@@ -16,7 +16,7 @@
 
 	.cvsu {
 		height: 300px;
-		background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('cvsuback.jpg');
+		background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/cvsuback.jpg');
 		background-position: center;
 		background-size: cover;
 		display: flex;
