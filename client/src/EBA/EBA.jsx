@@ -42,43 +42,6 @@ const EBA = () => {
   
   const [openIndex, setOpenIndex] = useState(null);
 
-	// carousel
-	// const [currentIndex, setCurrentIndex] = useState(0);
-
-	// const slides = [
-	// 	{
-	// 		image: 'ITEMS/f2.png',
-	// 		title: 'Male Uniform',
-	// 		description: "Trying on the campus uniform is made easy with the help of Augmented Reality, you can easily see how the uniform would look while you're wearing it, without the need to wear one physically."
-	// 	},
-	// 	{
-	// 		image: 'ITEMS/f1.png',
-	// 		title: 'Female Uniform',
-	// 		description: "Trying on the campus uniform is made easy with the help of Augmented Reality, you can easily see how the uniform would look while you're wearing it, without the need to wear one physically."
-	// 	},
-	// 	{
-	// 		image: 'ITEMS/DIT.png',
-	// 		title: 'Department Shirt',
-	// 		description: "Trying on the campus uniform is made easy with the help of Augmented Reality, you can easily see how the uniform would look while you're wearing it, without the need to wear one physically."
-	// 	},
-	// 	{
-	// 		image: 'ITEMS/Anglicist_Guild-White.png',
-	// 		title: 'Organizational Shirt',
-	// 		description: "Trying on the campus uniform is made easy with the help of Augmented Reality, you can easily see how the uniform would look while you're wearing it, without the need to wear one physically."
-	// 	}
-	// ];
-	// const goToPrevious = () => {
-	// 	const isFirstSlide = currentIndex === 0;
-	// 	const newIndex = isFirstSlide ? slides.length - 1 : currentIndex - 1;
-	// 	setCurrentIndex(newIndex);
-	// };
-	// const goToNext = () => {
-	// 	const isLastSlide = currentIndex === slides.length - 1;
-	// 	const newIndex = isLastSlide ? 0 : currentIndex + 1;
-	// 	setCurrentIndex(newIndex);
-	// };
-
-
 	return (
     <div>
       <Navbar
@@ -215,7 +178,7 @@ const EBA = () => {
 
                     <FaChevronUp
                       className={`transition-all ${
-                        isOpen ? "rotate-180" : "rotate-0"
+                        !isOpen ? "rotate-180" : "rotate-0"
                       }`}
                     />
                   </div>
