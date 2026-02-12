@@ -1,6 +1,4 @@
 const db = require("./db");
-
-require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -15,15 +13,11 @@ const salt = 10;
 const app = express();
 
 app.use(express.json());
-app.use(cors({
-  origin: "https://capstone-eba.vercel.app"
-}));
+app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-// Use Render's port
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
@@ -61,25 +55,33 @@ if (!process.env.GOOGLE_CLIENT_ID) {
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Middleware to verify JWT token
-const verifyToken = (req, res, next) => {
-  const token =
-    req.headers["authorization"]?.split(" ")[1] || req.headers["authorization"];
+const verifyToken =
+  (allowedRoles = []) =>
+  (req, res, next) => {
+    const token =
+      req.headers["authorization"]?.split(" ")[1] ||
+      req.headers["authorization"];
 
-  if (!token) {
-    return res.status(403).json({ message: "No token provided" });
-  }
+    if (!token) return res.status(403).json({ message: "No token provided" });
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    req.userId = decoded.id;
-    next();
-  } catch (err) {
-    return res
-      .status(403)
-      .json({ message: "Login expired, please login again" });
-  }
-};
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = decoded;
+      req.userId = decoded.id;
+
+      if (allowedRoles.length && !allowedRoles.includes(decoded.role)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      next();
+    } catch (err) {
+      return res
+        .status(403)
+        .json({ message: "Login expired, please login again" });
+    }
+  };
+
+
 
 // Test endpoint for JWT
 app.post("/api/test-jwt", (req, res) => {
@@ -149,6 +151,7 @@ app.post("/userlogin", async (req, res) => {
         const token = jwt.sign(
           {
             id: user.ID,
+            role: 'user',
             fullname: user.Full_Name,
             email: user.Email_Address,
           },
@@ -214,7 +217,7 @@ app.post("/usersignup", async (req, res) => {
         }
 
         const token = jwt.sign(
-          { id: result.insertId, email: email },
+          { id: result.insertId, role: 'user', email: email },
           process.env.JWT_SECRET,
           { expiresIn: "1h" },
         );
@@ -548,7 +551,7 @@ app.get("/store/:itemId/variant", (req, res) => {
 // EBA CART PAGE
 // FETCH ALL DATA IN CART AND DISPLAY TO CART PAGE
 
-app.get("/cartItem", verifyToken, (req, res) => {
+app.get("/cartItem", verifyToken('user'), (req, res) => {
   const userId = req.userId;
 
   db.query(
@@ -904,7 +907,7 @@ app.post("/adminlogin", (req, res) => {
   );
 });
 
-app.get("/adminpanel", verifyToken, (req, res) => {
+app.get("/adminpanel", verifyToken(['DEAN', 'EBA Staff', 'Admin']), (req, res) => {
   const adminID = req.user.id;
 
   const sql = `
@@ -2144,7 +2147,7 @@ app.post("/auth/google", async (req, res) => {
               const token = jwt.sign(
                 { id: userId, email, name },
                 process.env.JWT_SECRET,
-                { expiresIn: "x" },
+                { expiresIn: "1h" },
               );
 
               res.json({

@@ -23,13 +23,6 @@ const AdminPanel = () => {
 			return;
 		}
 
-		// const decodedToken = JSON.parse(atob(token.split(".")[1]));
-		// if (!["DEAN", "EBA Staff"].includes(decodedToken.role)) {
-		// 	alert("Please Login First");
-    //   window.location.href = "/adminlogin";
-    //   return;
-    // }
-
 		fetchAdmin(token);
 		fetchNotifications();
 	}, []);
