@@ -299,7 +299,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
                 />
               </div>
 
-              <div class="space-y-3">
+              <div className="space-y-3">
                 <p>
                   A confirmation email has been sent to the account’s address.
                 </p>

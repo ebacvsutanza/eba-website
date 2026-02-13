@@ -38,10 +38,10 @@ const AdminPanel = () => {
 			if (!res.ok) throw new Error("Unauthorized");
 
 			const data = await res.json();
-			setImage(data.Image);
-			setUsername(data.Username);
-			setEmail(data.Email_Address);
-			setRole(data.Role);
+			setImage(data.image);
+			setUsername(data.username);
+			setEmail(data.email_address);
+			setRole(data.role);
 		} catch {
       alert('Login expired, please login again');
 			localStorage.removeItem("token");

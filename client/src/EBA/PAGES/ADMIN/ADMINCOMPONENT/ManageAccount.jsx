@@ -73,9 +73,9 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
     setImage(null);
 
     setFormData({
-      Username: admin.Username,
-      Role: admin.Role,
-      Email_Address: admin.Email_Address,
+      Username: admin.username,
+      Role: admin.role,
+      Email_Address: admin.email_address,
       Password: "", // Leave blank so user can keep old password
     });
   };
@@ -123,7 +123,6 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
   }
 
   const handleConfirm = () => {
-    
     const isMissingFields =
       !formData.Username ||
       !formData.Role ||
@@ -165,7 +164,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
       if (mode === "add") {
         res = await axios.post("http://localhost:3000/manageadmin", form);
       } else {
-        res = await axios.put(`http://localhost:3000/manageadmin/${editingAdmin.ID}`, form);
+        res = await axios.put(`http://localhost:3000/manageadmin/${editingAdmin.id}`, form);
       }
 
       if (res.data.Status === "Success") {
@@ -260,16 +259,16 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
                 >
                   <div>
                     <img
-                      src={`http://localhost:3000/UPLOADS/${admin.Image}`}
+                      src={`http://localhost:3000/UPLOADS/${admin.image}`}
                       alt=""
                       className="w-14 h-14 object-contain mx-auto rounded"
                     />
                   </div>
-                  <div className="line-clamp-1 w-[130px]">{admin.Username}</div>
+                  <div className="line-clamp-1 w-[130px]">{admin.username}</div>
                   <div className="line-clamp-2 font-medium max-w-[130px]">
-                    {admin.Email_Address}
+                    {admin.email_address}
                   </div>
-                  <div>{admin.Role}</div>
+                  <div>{admin.role}</div>
                   <div className="center-flex lg:flex-row flex-col">
                     <button
                       onClick={() => handleEdit(admin)}
@@ -278,7 +277,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
                       <FontAwesomeIcon icon={faPenToSquare} /> Edit
                     </button>
                     <button
-                      onClick={() => handleRemoveAccount(admin.ID)}
+                      onClick={() => handleRemoveAccount(admin.id)}
                       className="w-full text-left px-3 py-2 text-(--error) cursor-pointer flex items-center gap-2"
                     >
                       <FontAwesomeIcon icon={faTrash} /> Remove

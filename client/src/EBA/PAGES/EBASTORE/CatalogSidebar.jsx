@@ -5,10 +5,10 @@ export default function CatalogSidebar({ categories, selectedCategory, setSelect
   const [opens, setOpens] = useState(false);
 
   const clothingCategories = categories.filter(
-    (item) => !["Capstone Manual", "Module"].includes(item.Category)
+    (item) => !["Capstone Manual", "Module"].includes(item.category)
   );
   const bookCategories = categories.filter((item) =>
-    ["Capstone Manual", "Module"].includes(item.Category)
+    ["Capstone Manual", "Module"].includes(item.category)
   );
 
   return (
@@ -53,13 +53,13 @@ export default function CatalogSidebar({ categories, selectedCategory, setSelect
                   className={`
                     w-full text-left cursor-pointer rounded-md px-4 py-2 hover:bg-(--accent)/25
                     ${
-                      selectedCategory === item.Category &&
+                      selectedCategory === item.category &&
                       "bg-(--accent)/65 hover:bg-(--accent)/65 text-white"
                     }
                   `}
-                  onClick={() => setSelectedCategory(item.Category)}
+                  onClick={() => setSelectedCategory(item.category)}
                 >
-                  {item.Category}
+                  {item.category}
                 </button>
               ))}
             </ul>
@@ -101,13 +101,13 @@ export default function CatalogSidebar({ categories, selectedCategory, setSelect
                   className={`
                     w-full text-left cursor-pointer rounded-md px-4 py-2 hover:bg-(--accent)/25
                     ${
-                      selectedCategory === item.Category &&
+                      selectedCategory === item.category &&
                       "bg-(--accent)/65 hover:bg-(--accent)/65 text-white"
                     }
                   `}
-                  onClick={() => setSelectedCategory(item.Category)}
+                  onClick={() => setSelectedCategory(item.category)}
                 >
-                  {item.Category}
+                  {item.category}
                 </button>
               ))}
             </ul>

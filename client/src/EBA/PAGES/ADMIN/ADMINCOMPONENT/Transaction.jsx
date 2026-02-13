@@ -130,10 +130,10 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
     setConfirming(true);
     try {
       const response = await axios.post("http://localhost:3000/confirm-order", {
-        id: transaction.ID,
-        orderId: transaction.OrderID,
-        name: transaction.Customer_Name,
-        customerEmail: transaction.Email_Address,
+        id: transaction.id,
+        orderId: transaction.orderid,
+        name: transaction.customer_name,
+        customerEmail: transaction.email_address,
       });
 
       const updated = transactions.map((txn) =>
@@ -142,6 +142,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
       setTransactions(statusSorted ? sortStatusList(updated) : updated);
       setActiveTransaction(null);
       flashMessage("Transaction confirmed successfully");
+      fetchTransactions()
     } catch (error) {
       console.error(error);
       alert(
@@ -156,13 +157,13 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
     setCancelling(true);
     try {
       const response = await axios.post("http://localhost:3000/cancel-order", {
-        id: transaction.ID,
-        orderId: transaction.OrderID,
-        itemName: transaction.Item_Name,
-        variant: transaction.Variant,
-        size: transaction.Size,
-        name: transaction.Customer_Name,
-        customerEmail: transaction.Email_Address,
+        id: transaction.id,
+        orderId: transaction.orderid,
+        itemName: transaction.item_name,
+        variant: transaction.variant,
+        size: transaction.size,
+        name: transaction.customer_name,
+        customerEmail: transaction.email_address,
       });
 
       const updated = transactions.map((txn) =>
@@ -171,6 +172,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
       setTransactions(statusSorted ? sortStatusList(updated) : updated);
       setActiveTransaction(null);
       flashMessage("Transaction cancelled successfully");
+      fetchTransactions()
     } catch (error) {
       console.error(error);
       alert(
@@ -341,39 +343,39 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                       onChange={() => toggleSelect(transaction.ID)}
                       className="cursor-pointer"
                     />
-                    <div>{transaction.OrderID}</div>
+                    <div>{transaction.orderid}</div>
 
                     {!table ? (
                       <>
                         <div>
                           <img
-                            src={`http://localhost:3000/ITEMS/${transaction.Image}`}
+                            src={`http://localhost:3000/ITEMS/${transaction.image}`}
                             alt=""
                             className="w-14 h-14 object-contain mx-auto rounded"
-                          />
+                          />  
                         </div>
 
                         <div className="line-clamp-2 lg:line-clamp-1 font-medium">
-                          {transaction.Item_Name}
+                          {transaction.item_name}
                         </div>
 
-                        <div>{transaction.Variant || "-"}</div>
-                        <div>{transaction.Size || "-"}</div>
-                        <div>{transaction.Quantity}</div>
+                        <div>{transaction.variant || "-"}</div>
+                        <div>{transaction.size || "-"}</div>
+                        <div>{transaction.quantity}</div>
                         <div className="font-semibold">
-                          ₱{transaction.Amount}
+                          ₱{transaction.amount}
                         </div>
                       </>
                     ) : (
                       <>
                         <div className="line-clamp-2 lg:line-clamp-1 max-w-[150px]">
-                          {transaction.Customer_Name}
+                          {transaction.customer_name}
                         </div>
                         <div className="line-clamp-2 lg:line-clamp-1 max-w-[100px]">
-                          {transaction.Email_Address}
+                          {transaction.email_address}
                         </div>
-                        <div>{formatDate(transaction.Date)}</div>
-                        <div>{transaction.Status}</div>
+                        <div>{formatDate(transaction.date)}</div>
+                        <div>{transaction.status}</div>
                       </>
                     )}
 
@@ -391,8 +393,8 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                           <button
                             onClick={() => handleConfirm(true, transaction)}
                             disabled={
-                              transaction.Status === "Cancelled" ||
-                              transaction.Status === "Confirmed" ||
+                              transaction.status === "Cancelled" ||
+                              transaction.status === "Confirmed" ||
                               cancelling
                             }
                             className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded cursor-pointer flex items-center gap-2"
@@ -404,8 +406,8 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                           <button
                             onClick={() => handleConfirm(false, transaction)}
                             disabled={
-                              transaction.Status === "Cancelled" ||
-                              transaction.Status === "Confirmed" ||
+                              transaction.status === "Cancelled" ||
+                              transaction.status === "Confirmed" ||
                               confirming
                             }
                             className="w-full text-left px-3 py-2 hover:bg-gray-100 text-(--error) cursor-pointer flex items-center gap-2"

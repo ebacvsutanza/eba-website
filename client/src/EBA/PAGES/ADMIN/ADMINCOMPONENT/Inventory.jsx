@@ -45,7 +45,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
   const [message, setMessage] = useState("");
   const [activeInventory, setActiveInventory] = useState(null);
   const handleAction = (inventory) => {
-    setActiveInventory(activeInventory === inventory.ID ? null : inventory.ID);
+    setActiveInventory(activeInventory === inventory.id ? null : inventory.id);
   };
 
   const [form, setForm] = useState(true);
@@ -114,7 +114,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
         setMessage("Item added successfully");
       } else {
         await axios.put(
-          `http://localhost:3000/inventory/${editingInventory.ID}`,
+          `http://localhost:3000/inventory/${editingInventory.id}`,
           formdata,
         );
         setMessage("Item edited successfully");
@@ -146,8 +146,8 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
 
     // Decide whether to show Variant & Size and what selection filter to use
     if (
-      inventory.Category === "Capstone Manual" ||
-      inventory.Category === "Module"
+      inventory.category === "Capstone Manual" ||
+      inventory.category === "Module"
     ) {
       setForm(false); // hide Variant & Size
       setSelection("Module"); // only show Module / Capstone Manual categories
@@ -157,12 +157,12 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
     }
 
     setFormData({
-      category: inventory.Category,
-      itemName: inventory.Item_Name,
-      variant: inventory.Variant || "",
-      size: inventory.Size || "",
-      quantity: inventory.Quantity,
-      price: inventory.Price,
+      category: inventory.category,
+      itemName: inventory.item_name,
+      variant: inventory.variant || "",
+      size: inventory.size || "",
+      quantity: inventory.quantity,
+      price: inventory.price,
     });
   };
 
@@ -273,27 +273,27 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                 <div
                   className={`
                       mb-3 p-3 grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] place-items-center shadow rounded-lg text-center transition-all
-                      ${activeInventory === inventory.ID ? "bg-(--accent)/15 border-transparent" : "bg-(--primary-bg) border-gray-400"}
+                      ${activeInventory === inventory.id ? "bg-(--accent)/15 border-transparent" : "bg-(--primary-bg) border-gray-400"}
                     `}
                   key={index}
                 >
                   <div>
                     <img
-                      src={`http://localhost:3000/ITEMS/${inventory.Image}`}
+                      src={`http://localhost:3000/ITEMS/${inventory.image}`}
                       alt=""
                       className="w-14 h-14 object-contain mx-auto rounded"
                     />
                   </div>
                   <div className="line-clamp-Font />-w-[130px]">
-                    {inventory.Category}
+                    {inventory.category}
                   </div>
                   <div className="line-clamp-2 font-medium max-w-[130px]">
-                    {inventory.Item_Name}
+                    {inventory.item_name}
                   </div>
-                  <div>{inventory.Variant || "-"}</div>
-                  <div>{inventory.Size || "-"}</div>
-                  <div>{inventory.Quantity}</div>
-                  <div className="font-medium">₱{inventory.Price}</div>
+                  <div>{inventory.variant || "-"}</div>
+                  <div>{inventory.size || "-"}</div>
+                  <div>{inventory.quantity}</div>
+                  <div className="font-medium">₱{inventory.price}</div>
                   <div className="relative">
                     <button
                       onClick={() => handleAction(inventory)}
@@ -303,7 +303,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                       <HiDotsVertical size={18} />
                     </button>
 
-                    {activeInventory === inventory.ID && (
+                    {activeInventory === inventory.id && (
                       <div className="p-2 absolute bottom-0 right-[70%] bg-white border border-gray-200 shadow-lg rounded-md z-50 w-45">
                         <button
                           onClick={() => handleEdit(inventory)}
@@ -314,7 +314,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                         </button>
 
                         <button
-                          onClick={() => handleRemoveItem(inventory.ID)}
+                          onClick={() => handleRemoveItem(inventory.id)}
                           className="w-full text-left px-3 py-2 hover:bg-gray-100 text-(--error) cursor-pointer flex items-center gap-2"
                         >
                           <FontAwesomeIcon icon={faTrash} />
@@ -393,16 +393,18 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                 </option>
                 {categories
                   .filter((category) => {
-                    if (selection === "Module") {
-                      return ["Module", "Capstone Manual"].includes(
-                        category.Category,
-                      );
-                    } else if (selection === "Student Uniform") {
-                      return [
-                        "Student Uniform",
-                        "Department Shirt",
-                        "Organizational Shirt",
-                      ].includes(category.Category);
+                    if (mode === 'edit') {
+                      if (selection === "Module") {
+                        return ["Module", "Capstone Manual"].includes(
+                          category.category,
+                        );
+                      } else if (selection === "Student Uniform") {
+                        return [
+                          "Student Uniform",
+                          "Department Shirt",
+                          "Organizational Shirt",
+                        ].includes(category.category);
+                      }
                     } else {
                       return [
                         "Student Uniform",
@@ -410,12 +412,12 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                         "Organizational Shirt",
                         "Module",
                         "Capstone Manual",
-                      ].includes(category.Category);
+                      ].includes(category.category);
                     }
                   })
                   .map((category, index) => (
-                    <option key={index} value={category.Category}>
-                      {category.Category}
+                    <option key={index} value={category.category}>
+                      {category.category}
                     </option>
                   ))}
               </select>

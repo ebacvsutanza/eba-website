@@ -75,9 +75,9 @@ const AdminSidebar = ({
         </div>
 
         <div className="mt-10 flex flex-col gap-3">
-          {SidebarBtn
-            .filter(button => role !== "Admin" || button.name !== "Manage Account")
-            .map((button) => (
+          {SidebarBtn.filter(
+            (button) => role !== "Admin" || button.name !== "Manage Account",
+          ).map((button) => (
             <button
               key={button.name}
               onClick={() => handleButtonClick(button.name)}
@@ -153,21 +153,21 @@ const AdminSidebar = ({
                     <div className="notif">
                       <p className="font-semibold">🛒 New Order</p>
                       <p>
-                        Item Name: {notif.Item_Name} - {notif.Size}
+                        Item Name: {notif.item_name} - {notif.size}
                       </p>
-                      <p>Variant: {notif.Variant}</p>
-                      <p>Quantity: {notif.Quantity}</p>
+                      <p>Variant: {notif.variant}</p>
+                      <p>Quantity: {notif.quantity}</p>
                     </div>
                   ) : (
                     <div className="notif">
                       <p className="font-semibold">⚠️ Low Stock</p>
                       <p>
-                        <span>{notif.Item_Name}</span> ({notif.Variant},{" "}
-                        {notif.Size})
+                        <span>{notif.item_name}</span> ({notif.variant},
+                        {notif.size})
                       </p>
                       <p>
                         Remaining:{" "}
-                        <span className="font-semibold">{notif.Quantity}</span>
+                        <span className="font-semibold">{notif.quantity}</span>
                       </p>
                     </div>
                   )}

@@ -132,21 +132,21 @@ const Store = () => {
               key={index}
               onClick={() =>
                 navigate("/catalog", {
-                  state: { selectedCategory: product.Category },
+                  state: { selectedCategory: product.category },
                 })
               }
               className="p-3 rounded-lg border-2 border-transparent hover:border-(--primary-btn) transition-all"
             >
               <div className="img-block">
                 <img
-                  src={`http://localhost:3000/ITEMS/${product.Image}`}
+                  src={`http://localhost:3000/ITEMS/${product.image}`}
                   alt="Item Image"
                   className="aspect-square p-5 border border-gray-400 rounded-lg"
                 />
               </div>
               <div className="h-[150px] p-3 flex flex-col justify-between">
-                <h3 className="text-lg font-semibold">{product.Item_Name}</h3>
-                <p>Starts at PHP {product.Price}</p>
+                <h3 className="text-lg font-semibold">{product.item_name}</h3>
+                <p>Starts at PHP {product.price}</p>
               </div>
             </div>
           ))}

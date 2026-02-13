@@ -40,7 +40,6 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
   const [transactionQuantity, setTransactionQuantity] = useState(0);
   const [lowStockItems, setLowStockItems] = useState([]);
   const [inventoryQuantity, setInventoryQuantity] = useState(0);
-  const [newOrdersThisWeek, setNewOrdersThisWeek] = useState(0);
 
   const fetchData = async () => {
     try {
@@ -57,33 +56,27 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
       }));
 
       const totalSales = transactionsData.reduce(
-        (acc, transaction) => acc + transaction.Amount,
+        (acc, transaction) => acc + transaction.amount,
         0,
       );
       setTransactionAmount(totalSales);
       const totalOrders = transactionsData.reduce(
-        (acc, transaction) => acc + transaction.Quantity,
+        (acc, transaction) => acc + transaction.quantity,
         0,
       );
       setTransactionQuantity(totalOrders);
-      const lowStock = inventoriesData.filter((item) => item.Quantity < 11);
+      const lowStock = inventoriesData.filter((item) => item.quantity < 11);
       setLowStockItems(lowStock);
       const totalInventory = inventoriesData.reduce(
-        (acc, inventory) => acc + inventory.Quantity,
+        (acc, inventory) => acc + inventory.quantity,
         0,
       );
       setInventoryQuantity(totalInventory);
-
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      const newOrders = transactionsData.filter(
-        (transaction) => new Date(transaction.Date) >= oneWeekAgo,
-      ).length;
-      setNewOrdersThisWeek(newOrders);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
+  
 
   const [bestSeller, setBestSeller] = useState(null);
   const [leastPurchased, setLeastPurchased] = useState(null);
@@ -95,6 +88,24 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
       .get("http://localhost:3000/api/least-purchased")
       .then((res) => setLeastPurchased(res.data));
   }, []);
+
+  const [newOrdersThisWeek, setNewOrdersThisWeek] = useState(0);
+
+  useEffect(() => {
+    const fetchNewOrders = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/dashboard/new-orders",
+        );
+        setNewOrdersThisWeek(response.data.new_orders);
+      } catch (error) {
+        console.error("Error fetching new orders:", error);
+      }
+    };
+
+    fetchNewOrders();
+  }, []);
+
 
   return (
     <div className="space-y-3">
@@ -164,8 +175,8 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
           <p className="text-md font-bold">Best-seller</p>
           {bestSeller ? (
             <h2 className="text-xl text-(--secondary-text) font-bold">
-              {bestSeller.Item_Name}{" "}
-              {bestSeller.Variant && `- ${bestSeller.Variant}`}
+              {bestSeller.item_name}
+              {bestSeller.variant && `- ${bestSeller.variant}`}
             </h2>
           ) : (
             <h2 className="text-xl text-(--secondary-text) font-bold">
@@ -178,8 +189,8 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
           <p className="text-md font-bold">Least Purchased</p>
           {leastPurchased ? (
             <h2 className="text-xl text-(--secondary-text) font-bold">
-              {leastPurchased.Item_Name}{" "}
-              {leastPurchased.Variant && `- ${leastPurchased.Variant}`}
+              {leastPurchased.item_name}
+              {leastPurchased.variant && `- ${leastPurchased.variant}`}
             </h2>
           ) : (
             <h2 className="text-xl text-(--secondary-text) font-bold">

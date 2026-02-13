@@ -17,7 +17,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
@@ -81,8 +81,6 @@ const verifyToken =
     }
   };
 
-
-
 // Test endpoint for JWT
 app.post("/api/test-jwt", (req, res) => {
   try {
@@ -135,41 +133,35 @@ app.post("/userlogin", async (req, res) => {
         .json({ message: "Only @cvsu.edu.ph emails are allowed" });
     }
 
-    db.query(
-      "SELECT * FROM user_account WHERE Email_Address = ?",
-      [email],
-      (err, result) => {
-        if (err) {
-          console.error("Database error:", err);
-          return res.status(500).json({ message: "Database error occurred" });
-        }
-        if (result.length === 0) {
-          return res.status(404).json({ message: "Please register first" });
-        }
+    const query = `SELECT * FROM user_account WHERE email_address = $1`;
+    const result = await db.query(query, [email]);
 
-        const user = result[0];
-        const token = jwt.sign(
-          {
-            id: user.ID,
-            role: 'user',
-            fullname: user.Full_Name,
-            email: user.Email_Address,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: "1h" },
-        );
-        res.json({ token });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Please register first" });
+    }
+
+    const user = result.rows[0];
+    const token = jwt.sign(
+      {
+        id: user.id,
+        role: "user",
+        fullname: user.full_name,
+        email: user.email_address,
       },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" },
     );
+
+    res.json({ token });
   } catch (err) {
     console.error("Google token verification failed:", err);
     res.status(400).json({ message: "Invalid Google authentication" });
   }
 });
+
 app.post("/usersignup", async (req, res) => {
   const { email, password } = req.body;
 
-  // Validate email domain
   if (!email.endsWith("@cvsu.edu.ph")) {
     return res.json({
       Status: "Error",
@@ -179,52 +171,34 @@ app.post("/usersignup", async (req, res) => {
 
   try {
     // Check if email already exists
-    const checkEmail = "SELECT * FROM user_account WHERE Email_Address = ?";
-    db.query(checkEmail, [email], async (err, result) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.json({
-          Status: "Error",
-          Message: "Database error occurred",
-        });
-      }
+    const checkEmailQuery = `SELECT * FROM user_account WHERE email_address = $1`;
+    const checkEmailResult = await db.query(checkEmailQuery, [email]);
 
-      if (result.length > 0) {
-        return res.json({ Status: "Email address already exists" });
-      }
+    if (checkEmailResult.rows.length > 0) {
+      return res.json({ Status: "Email address already exists" });
+    }
 
-      const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const username = email.split("@")[0];
 
-      const insertUser = `
-        INSERT INTO user_account (
-            Email_Address,
-            Password,
-            Username,
-            Account_Status,
-            Is_Email_Verified
-        ) VALUES (?, ?, ?, 'active', false)
-      `;
+    const insertQuery = `
+      INSERT INTO user_account (email_address, password, username, account_status, is_email_verified)
+      VALUES ($1, $2, $3, 'active', false)
+      RETURNING id
+    `;
+    const insertResult = await db.query(insertQuery, [
+      email,
+      hashedPassword,
+      username,
+    ]);
 
-      const username = email.split("@")[0];
+    const token = jwt.sign(
+      { id: insertResult.rows[0].id, role: "user", email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" },
+    );
 
-      db.query(insertUser, [email, hashedPassword, username], (err, result) => {
-        if (err) {
-          console.error("Insert error:", err);
-          return res.json({
-            Status: "Error",
-            Message: "Failed to create account",
-          });
-        }
-
-        const token = jwt.sign(
-          { id: result.insertId, role: 'user', email: email },
-          process.env.JWT_SECRET,
-          { expiresIn: "1h" },
-        );
-
-        res.json({ Status: "Success", token });
-      });
-    });
+    res.json({ Status: "Success", token });
   } catch (error) {
     console.error("Server error:", error);
     res.json({ Status: "Error", Message: "Server error occurred" });
@@ -232,33 +206,33 @@ app.post("/usersignup", async (req, res) => {
 });
 
 // EBA Store Page
-app.get("/storeinventory", (req, res) => {
-  const sql = "SELECT * FROM inventory";
-
-  db.query(sql, (err, rows) => {
-    if (err) return res.status(500).send(err);
+app.get("/storeinventory", async (req, res) => {
+  try {
+    const sql = "SELECT * FROM inventory";
+    const result = await db.query(sql);
+    const rows = result.rows;
 
     const SIZE_ORDER = ["Xtra Small", "Small", "Medium", "Large", "Xtra Large"];
 
     const products = {};
 
     rows.forEach((row) => {
-      const key = `${row.Item_Name}-${row.Variant}`;
+      const key = `${row.item_name}-${row.variant}`;
 
       if (!products[key]) {
         products[key] = {
-          Item_Name: row.Item_Name,
-          Category: row.Category,
-          Variant: row.Variant,
-          Image: row.Image,
-          Price: row.Price,
+          item_name: row.item_name,
+          category: row.category,
+          variant: row.variant,
+          image: row.image,
+          price: row.price,
           Sizes: [],
         };
       }
 
       products[key].Sizes.push({
-        Size: row.Size.trim(),
-        Quantity: row.Quantity,
+        Size: row.size?.trim(),
+        Quantity: row.quantity,
       });
     });
 
@@ -269,35 +243,42 @@ app.get("/storeinventory", (req, res) => {
     });
 
     res.json(Object.values(products));
-  });
+  } catch (err) {
+    console.error("Store inventory fetch failed:", err);
+    res.status(500).json({ error: "Failed to fetch inventory" });
+  }
 });
-app.get("/top-selling-product", (req, res) => {
-  const sql = `
-    SELECT 
-      i.*,
-      t.total_sold
-    FROM inventory i
-    JOIN (
-        SELECT 
-          Item_Name,
-          Variant,
-          Size,
-          SUM(Quantity) AS total_sold
-        FROM transaction
-        GROUP BY Item_Name, Variant, Size
-        ORDER BY total_sold DESC
-        LIMIT 4
-    ) t
-    ON i.Item_Name = t.Item_Name
-    AND i.Variant = t.Variant
-    AND i.Size = t.Size
-    ORDER BY t.total_sold DESC
-  `;
 
-  db.query(sql, (err, results) => {
-    if (err) return res.status(500).json(err);
-    res.json(results);
-  });
+app.get("/top-selling-product", async (req, res) => {
+  try {
+    const sql = `
+      SELECT 
+        i.*,
+        t.total_sold
+      FROM inventory i
+      JOIN (
+          SELECT 
+            item_name,
+            variant,
+            size,
+            SUM(quantity) AS total_sold
+          FROM transaction
+          GROUP BY item_name, variant, size
+          ORDER BY total_sold DESC
+          LIMIT 4
+      ) t
+      ON i.item_name = t.item_name
+      AND i.variant = t.variant
+      AND i.size = t.size
+      ORDER BY t.total_sold DESC
+    `;
+
+    const result = await db.query(sql);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Top-selling product query failed:", err);
+    res.status(500).json({ error: "Failed to fetch top-selling products" });
+  }
 });
 
 // EBA Cart Page
@@ -316,7 +297,7 @@ app.post("/addToCart", upload.single("transaction"), (req, res) => {
   try {
     let checkQuery = `
       SELECT * FROM item_cart 
-      WHERE User_ID = ? AND Category = ? AND Item_Name = ? AND Variant = ? AND Size = ?
+      WHERE user_id = $1 AND category = $2 AND item_name = $3 AND variant = $4 AND size = $5
     `;
 
     let checkParams = [UserID, Category, ItemName, Variant, Size];
@@ -329,12 +310,12 @@ app.post("/addToCart", upload.single("transaction"), (req, res) => {
 
       if (results.length > 0) {
         let existingItem = results[0];
-        let newQuantity = existingItem.Quantity + parseInt(Quantity, 10);
+        let newQuantity = existingItem.quantity + parseInt(Quantity, 10);
 
         let updateQuery = `
           UPDATE item_cart 
-          SET Quantity = ? 
-          WHERE User_ID = ? AND Category = ? AND Item_Name = ? AND Variant = ? AND Size = ?
+          SET quantity = $1 
+          WHERE user_id = $2 AND category = $3 AND item_name = $4 AND variant = $5 AND size = $6
         `;
 
         let updateParams = [
@@ -356,10 +337,10 @@ app.post("/addToCart", upload.single("transaction"), (req, res) => {
         });
       } else {
         let insertQuery = `
-					INSERT INTO item_cart 
-					(User_ID, Category, Image, Item_Name, Variant, Size, Quantity, Amount) 
-					VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-				`;
+          INSERT INTO item_cart 
+          (user_id, category, image, item_name, variant, size, quantity, amount) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `;
 
         let values = [
           UserID,
@@ -389,111 +370,132 @@ app.post("/addToCart", upload.single("transaction"), (req, res) => {
 });
 
 // Admin Dashboard
-app.get("/api/best-seller", (req, res) => {
-  const sql = `
-    SELECT Item_Name, Variant, Size, SUM(Quantity) AS total_quantity
-    FROM transaction
-    GROUP BY Item_Name, Variant, Size
-    ORDER BY total_quantity DESC
-    LIMIT 1
-  `;
+// Best seller
+app.get("/api/best-seller", async (req, res) => {
+  try {
+    const sql = `
+      SELECT item_name, variant, size, SUM(quantity) AS total_quantity
+      FROM "transaction"
+      GROUP BY item_name, variant, size
+      ORDER BY total_quantity DESC
+      LIMIT 1
+    `;
 
-  db.query(sql, (err, result) => {
-    if (err) return res.status(500).json(err);
-    res.json(result[0]);
-  });
+    const result = await db.query(sql);
+    res.json(result.rows[0] || {}); // return empty object if no data
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch best seller" });
+  }
 });
 
-app.get("/api/least-purchased", (req, res) => {
-  const sql = `
-    SELECT Item_Name, Variant, Size, SUM(Quantity) AS total_quantity
-    FROM transaction
-    GROUP BY Item_Name, Variant, Size
-    ORDER BY total_quantity ASC
-    LIMIT 1
-  `;
+// Least purchased
+app.get("/api/least-purchased", async (req, res) => {
+  try {
+    const sql = `
+      SELECT item_name, variant, size, SUM(quantity) AS total_quantity
+      FROM "transaction"
+      GROUP BY item_name, variant, size
+      ORDER BY total_quantity ASC
+      LIMIT 1
+    `;
 
-  db.query(sql, (err, result) => {
-    if (err) return res.status(500).json(err);
-    res.json(result[0]);
-  });
+    const result = await db.query(sql);
+    res.json(result.rows[0] || {});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch least purchased item" });
+  }
 });
+
 
 // BULLETIN PAGE
 // DISPLAY EVENT AND ANNOUNCEMENT
-app.get("/bulletin/count", (req, res) => {
-  db.query("SELECT COUNT(*) as count FROM bulletin", (err, result) => {
-    if (err) return res.status(500).send(err);
-    res.json({ total: result[0].count });
-  });
-});
-app.get("/bulletin", (req, res) => {
-  const order = req.query.order === "DESC" ? "ASC" : "DESC";
-  const page = parseInt(req.query.page) || 1; // default page 1
-  const limit = 4;
-  const offset = (page - 1) * limit;
-  
-  const sql = `
-    SELECT * FROM bulletin
-    ORDER BY announcementDate ${order}
-    LIMIT ? OFFSET ?
-  `;
-
-  db.query(sql, [limit, offset], (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
+// Get total count of bulletins
+app.get("/bulletin/count", async (req, res) => {
+  try {
+    const result = await db.query("SELECT COUNT(*) AS count FROM bulletin");
+    res.json({ total: parseInt(result.rows[0].count, 10) });
+  } catch (err) {
+    console.error("Database query failed:", err);
+    res.status(500).json({ error: "Database query failed" });
+  }
 });
 
-app.get("/search", (req, res) => {
+// Get paginated bulletins
+app.get("/bulletin", async (req, res) => {
+  try {
+    // Flip order for demonstration
+    const order = req.query.order === "DESC" ? "ASC" : "DESC";
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 4;
+    const offset = (page - 1) * limit;
+
+    const sql = `
+      SELECT * FROM bulletin
+      ORDER BY announcementdate ${order}
+      LIMIT $1 OFFSET $2
+    `;
+
+    const result = await db.query(sql, [limit, offset]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Database query failed:", err);
+    res.status(500).json({ error: "Database query failed" });
+  }
+});
+
+app.get("/search", async (req, res) => {
   const searchTerm = req.query.q || "";
 
   const sql = `
     SELECT *
     FROM transaction
-    WHERE Email_Address LIKE ?
-    ORDER BY Customer_Name
+    WHERE email_address ILIKE $1
+    ORDER BY customer_name
   `;
 
-  db.query(sql, [`%${searchTerm}%`], (err, results) => {
-    if (err) return res.status(500).json({ error: err });
+  try {
+    const result = await db.query(sql, [`%${searchTerm}%`]); // $1 replaced by parameter
+    const results = result.rows;
 
-    // Combine rows by Email_Address
     const grouped = {};
 
     results.forEach((row) => {
-      const email = row.Email_Address;
+      const email = row.email_address;
 
       if (!grouped[email]) {
         grouped[email] = {
-          Customer_Name: row.Customer_Name,
-          Email_Address: row.Email_Address,
-          Username: row.Username,
-          transactions: [],
+          Customer_Name: row.customer_name,
+          Email_Address: row.email_address,
+          Username: row.username,
+          transaction: [],
         };
       }
-      
-      grouped[email].transactions.push({
-        ID: row.ID,
-        OrderID: row.OrderID,
-        Customer_Name: row.Customer_Name,
-        Email_Address: row.Email_Address,
-        Item_Name: row.Item_Name,
-        Quantity: row.Quantity,
-        Variant: row.Variant,
-        Status: row.Status,
+
+      grouped[email].transaction.push({
+        ID: row.id,
+        OrderID: row.orderid,
+        Customer_Name: row.customer_name,
+        Email_Address: row.email_address,
+        Item_Name: row.item_name,
+        Quantity: row.quantity,
+        Variant: row.variant,
+        Status: row.status,
       });
     });
 
     res.json(Object.values(grouped));
-  });
+  } catch (err) {
+    console.error("Database query failed:", err);
+    res.status(500).json({ error: "Database query failed" });
+  }
 });
 
-
-app.get("/searchtransactionsbyemail/:email", (req, res) => {
+app.get("/searchtransactionbyemail/:email", (req, res) => {
   const email = req.params.email;
   db.query(
-    "SELECT * FROM transaction WHERE Email_Address = ?",
+    "SELECT * FROM transaction WHERE email_address = $1",
     [email],
     (err, results) => {
       if (err) {
@@ -514,15 +516,19 @@ app.get("/exclusive", (req, res) => {
     res.json(results);
   });
 });
-app.get("/categories", (req, res) => {
-  db.query("SELECT * FROM categories", (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
+app.get("/categories", async (req, res) => {
+  try {
+    const result = await db.query("SELECT * FROM categories");
+    res.json(result.rows); // ✅ send only the array
+  } catch (err) {
+    console.error("Categories fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch categories" });
+  }
 });
+
 app.get("/search", (req, res) => {
   const search = req.query.q;
-  const sql = `SELECT * FROM store WHERE Item_Name LIKE ?`;
+  const sql = `SELECT * FROM store WHERE item_name ILIKE $1`;
 
   db.query(sql, [`%${search}%`], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -539,7 +545,7 @@ app.get("/store/:itemId/variant", (req, res) => {
   const itemId = req.params.itemId;
 
   db.query(
-    "SELECT * FROM store_variant WHERE Store_ID = ?",
+    "SELECT * FROM store_variant WHERE store_id = $1",
     [itemId],
     (err, results) => {
       if (err) return res.status(500).send(err);
@@ -551,11 +557,11 @@ app.get("/store/:itemId/variant", (req, res) => {
 // EBA CART PAGE
 // FETCH ALL DATA IN CART AND DISPLAY TO CART PAGE
 
-app.get("/cartItem", verifyToken('user'), (req, res) => {
+app.get("/cartItem", verifyToken("user"), (req, res) => {
   const userId = req.userId;
 
   db.query(
-    "SELECT * FROM item_cart WHERE User_ID = ?",
+    "SELECT * FROM item_cart WHERE user_id = $1",
     [userId],
     (err, result) => {
       if (err) return res.status(500).json({ error: "Database error" });
@@ -572,7 +578,7 @@ app.get("/cartItem", verifyToken('user'), (req, res) => {
 app.put("/cart/:id", (req, res) => {
   const { id } = req.params;
   const { Quantity } = req.body;
-  const sql = `UPDATE item_cart SET Quantity = ? WHERE ID = ?`;
+  const sql = `UPDATE item_cart SET quantity = $1 WHERE id = $2`;
   db.query(sql, [Quantity, id], (err, result) => {
     if (err) return res.status(500).json({ Message: "Failed to update" });
     res.json({ Status: "Success" });
@@ -581,7 +587,7 @@ app.put("/cart/:id", (req, res) => {
 app.delete("/cart/:id", (req, res) => {
   const { id } = req.params;
 
-  db.query("DELETE FROM item_cart WHERE ID = ?", [id], (err, result) => {
+  db.query("DELETE FROM item_cart WHERE id = $1", [id], (err, result) => {
     if (err) return res.status(500).send(err);
     res.json({ message: "Cart deleted successfully." });
   });
@@ -604,23 +610,23 @@ app.post("/checkout", (req, res) => {
 
     const combineQuery = `
       SELECT
-        ic.Image,
-        ic.Item_Name,
-        ic.Variant,
-        ic.Size,
-        ic.Quantity,
-        ic.Amount,
-        ic.Date,
-        ua.Full_Name,
-        ua.Email_Address
+        ic.image,
+        ic.item_name,
+        ic.variant,
+        ic.size,
+        ic.quantity,
+        ic.amount,
+        ic.date,
+        ua.full_name,
+        ua.email_address
       FROM 
         user_account ua
       LEFT JOIN
         item_cart ic
       ON
-        ua.ID = ic.User_ID
+        ua.id = ic.user_id
       WHERE
-        ua.ID = ?;
+        ua.id = $1;
     `;
 
     db.query(combineQuery, [userId], (err, results) => {
@@ -631,7 +637,7 @@ app.post("/checkout", (req, res) => {
         );
       }
 
-      const cartItems = results.filter((row) => row.Item_Name !== null);
+      const cartItems = results.filter((row) => row.item_name !== null);
 
       if (cartItems.length === 0) {
         console.log("Your cart is empty");
@@ -645,97 +651,112 @@ app.post("/checkout", (req, res) => {
       // First insert placeholder without OrderID to get insertId
       const tempInsertQuery = `
         INSERT INTO transaction 
-        (OrderID, Image, Item_Name, Variant, Size, Quantity, Amount, Customer_Name, Email_Address, Date, Status) 
-        VALUES ?
+        (orderid, image, item_name, variant, size, quantity, amount, customer_name, email_address, date, status) 
+        VALUES
       `;
 
       // Temporarily put a placeholder for OrderID (will be updated after insertId is known)
       const values = cartItems.map((row) => [
-        null, // placeholder for OrderID
-        row.Image,
-        row.Item_Name,
-        row.Variant,
-        row.Size,
-        row.Quantity,
-        row.Amount * row.Quantity,
-        row.Full_Name,
-        row.Email_Address,
-        row.Date,
+        null, // placeholder for orderid
+        row.image,
+        row.item_name,
+        row.variant,
+        row.size,
+        row.quantity,
+        row.amount * row.quantity,
+        row.full_name,
+        row.email_address,
+        row.date,
         Pending,
       ]);
 
-      db.query(tempInsertQuery, [values], async (err, insertResult) => {
-        if (err) {
-          console.error("Insert Error:", err);
-          return db.rollback(() =>
-            res.status(500).json({ error: "Insert failed" }),
-          );
-        }
+      // Build parametrized insert statement
+      const placeholders = values
+        .map((_, i) => {
+          const offset = i * 11;
+          return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9}, $${offset + 10}, $${offset + 11})`;
+        })
+        .join(",");
 
-        // Generate order ID now (YearNow + 0 + transactionNumber)
-        const orderID = `${new Date().getFullYear()}0${insertResult.insertId}`;
+      const flatValues = values.flat();
 
-        // Update all inserted rows with the generated order ID
-        db.query(
-          `UPDATE transaction SET OrderID = ? WHERE id >= ? AND id < ?`,
-          [
-            orderID,
-            insertResult.insertId,
-            insertResult.insertId + cartItems.length,
-          ],
-          async (err) => {
-            if (err) {
-              console.error("OrderID Update Error:", err);
-              return db.rollback(() =>
-                res.status(500).json({ error: "OrderID update failed" }),
-              );
-            }
+      db.query(
+        tempInsertQuery + placeholders + " RETURNING id",
+        flatValues,
+        async (err, insertResult) => {
+          if (err) {
+            console.error("Insert Error:", err);
+            return db.rollback(() =>
+              res.status(500).json({ error: "Insert failed" }),
+            );
+          }
 
-            const currentDate = new Date();
-            const year = currentDate.getFullYear().toString().slice(-2);
-            const month = (currentDate.getMonth() + 1)
-              .toString()
-              .padStart(2, "0");
-            const day = currentDate.getDate().toString().padStart(2, "0");
-            const formattedDate = `${month}-${day}-${year}`;
+          // Generate order ID now (YearNow + 0 + transactionNumber)
+          const orderID = `${new Date().getFullYear()}0${insertResult.rows[0].id}`;
 
-            try {
-              const itemRowsHTML = cartItems
-                .map((row) => {
-                  const variantDisplay = row.Variant?.trim() ? row.Variant : "";
-                  const sizeDisplay = row.Size?.trim() ? row.Size : "";
-                  const productDisplay = [
-                    row.Item_Name,
-                    variantDisplay,
-                    sizeDisplay,
-                  ]
-                    .filter((part) => part)
-                    .join(" - ");
+          // Update all inserted rows with the generated order ID
+          db.query(
+            `UPDATE transaction SET orderid = $1 WHERE id >= $2 AND id < $3`,
+            [
+              orderID,
+              insertResult.rows[0].id,
+              insertResult.rows[0].id + cartItems.length,
+            ],
+            async (err) => {
+              if (err) {
+                console.error("OrderID Update Error:", err);
+                return db.rollback(() =>
+                  res.status(500).json({ error: "OrderID update failed" }),
+                );
+              }
 
-                  return `
+              const currentDate = new Date();
+              const year = currentDate.getFullYear().toString().slice(-2);
+              const month = (currentDate.getMonth() + 1)
+                .toString()
+                .padStart(2, "0");
+              const day = currentDate.getDate().toString().padStart(2, "0");
+              const formattedDate = `${month}-${day}-${year}`;
+
+              try {
+                const itemRowsHTML = cartItems
+                  .map((row) => {
+                    const variantDisplay = row.variant?.trim()
+                      ? row.variant
+                      : "";
+                    const sizeDisplay = row.size?.trim() ? row.size : "";
+                    const productDisplay = [
+                      row.item_name,
+                      variantDisplay,
+                      sizeDisplay,
+                    ]
+                      .filter((part) => part)
+                      .join(" - ");
+
+                    return `
                                     <tr>
                                         <td style="border: 1px solid gray; padding: 8px; text-align: center;">${productDisplay}</td>
                                         <td style="border: 1px solid gray; padding: 8px; text-align: center;">₱${
-                                          row.Amount
-                                        } x ${row.Quantity} = ₱${
-                                          row.Amount * row.Quantity
+                                          row.amount
+                                        } x ${row.quantity} = ₱${
+                                          row.amount * row.quantity
                                         }</td>
                                     </tr>
                                 `;
-                })
-                .join("");
+                  })
+                  .join("");
 
-              const totalAmount = cartItems.reduce(
-                (sum, row) => sum + row.Amount * row.Quantity,
-                0,
-              );
-              const user = cartItems[0];
+                const totalAmount = cartItems.reduce(
+                  (sum, row) => sum + row.amount * row.quantity,
+                  0,
+                );
+                const user = cartItems[0];
 
-              const mailOptions = {
-                from: "ebacvsutanza@gmail.com",
-                to: user.Email_Address,
-                subject: "Order Details",
-                html: `
+                const mailOptions = {
+                  from: "ebacvsutanza@gmail.com",
+                  to: user.email_address,
+                  subject: "Order Details",
+                  html: `
                                     <header style='height: 150px; background: #c1ff72; display: flex; flex-direction: column; gap: 10px;'>
                                         <img src="https://res.cloudinary.com/dfmnlcvbe/image/upload/v1744102780/logo_qy0g8a.png" style='width: 80px; height: 80px;'/>
                                         <h2>External Business and<br>Affairs</h2>
@@ -744,7 +765,7 @@ app.post("/checkout", (req, res) => {
                                     <br>
 
                                     <h3>Thank you for your order!</h3>
-                                    <p>${user.Full_Name}</p>
+                                    <p>${user.full_name}</p>
                                     <p>Your order was received! We're working to get it processed and ready to claim.</p>
 
                                     <br>
@@ -777,44 +798,45 @@ app.post("/checkout", (req, res) => {
                                     <p>Thank you for your purchase!</p>
                                     <p>Cavite State University - Tanza Campus</p>
                                 `,
-              };
+                };
 
-              await transporter.sendMail(mailOptions);
+                await transporter.sendMail(mailOptions);
 
-              db.query(
-                "DELETE FROM item_cart WHERE User_ID = ?",
-                [userId],
-                (err) => {
-                  if (err) {
-                    console.error("Cart Clear Error:", err);
-                    return db.rollback(() =>
-                      res.status(500).json({ error: "Failed to clear cart" }),
-                    );
-                  }
-
-                  db.commit((err) => {
+                db.query(
+                  "DELETE FROM item_cart WHERE user_id = $1",
+                  [userId],
+                  (err) => {
                     if (err) {
-                      console.error("Commit Error:", err);
+                      console.error("Cart Clear Error:", err);
                       return db.rollback(() =>
-                        res
-                          .status(500)
-                          .json({ error: "Transaction commit failed" }),
+                        res.status(500).json({ error: "Failed to clear cart" }),
                       );
                     }
 
-                    res.json({ Status: "Success" });
-                  });
-                },
-              );
-            } catch (emailError) {
-              console.error("Email Error:", emailError);
-              return db.rollback(() =>
-                res.status(500).json({ error: "Email sending failed" }),
-              );
-            }
-          },
-        );
-      });
+                    db.commit((err) => {
+                      if (err) {
+                        console.error("Commit Error:", err);
+                        return db.rollback(() =>
+                          res
+                            .status(500)
+                            .json({ error: "Transaction commit failed" }),
+                        );
+                      }
+
+                      res.json({ Status: "Success" });
+                    });
+                  },
+                );
+              } catch (emailError) {
+                console.error("Email Error:", emailError);
+                return db.rollback(() =>
+                  res.status(500).json({ error: "Email sending failed" }),
+                );
+              }
+            },
+          );
+        },
+      );
     });
   });
 });
@@ -847,82 +869,111 @@ app.post("/requestCancelOrder", (req, res) => {
     res.json({ message: "Verification email sent" });
   });
 });
-app.get("/verifyCancelOrder/:token", (req, res) => {
+
+app.get("/verifyCancelOrder/:token", async (req, res) => {
   const { token } = req.params;
 
-  jwt.verify(token, "yourSecretKey", (err, decoded) => {
+  jwt.verify(token, "yourSecretKey", async (err, decoded) => {
     if (err) return res.status(400).send("Invalid or expired token.");
 
     const { email, orderId } = decoded;
 
-    // Update DB to set status to "Cancelled"
-    db.query(
-      "UPDATE transaction SET status = 'Cancelled' WHERE OrderID = ? AND Email_Address = ?",
-      [orderId, email],
-      (err) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).send("Failed to cancel order.");
-        }
-        res.send("Your order has been successfully cancelled.");
-      },
-    );
+    try {
+      const updateQuery = `
+        UPDATE transaction
+        SET status = 'Cancelled'
+        WHERE orderid = $1 AND email_address = $2
+      `;
+      await db.query(updateQuery, [orderId, email]);
+      res.send("Your order has been successfully cancelled.");
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Failed to cancel order.");
+    }
   });
 });
 
 // ADMINPANEL
 // CHECK AND LOGIN THE ADMIN TO ACCESS ADMIN PANEL
-app.post("/adminlogin", (req, res) => {
+app.post("/adminlogin", async (req, res) => {
   const { email, password } = req.body;
 
-  db.query(
-    "SELECT * FROM admin_account WHERE Email_Address = ?",
-    [email],
-    (err, result) => {
-      if (err) throw err;
-      if (result.length === 0)
-        return res.status(404).json({ message: "Email address doesn't exist" });
+  try {
+    // Check if admin exists
+    const query = `
+      SELECT * 
+      FROM admin_account 
+      WHERE email_address = $1
+    `;
 
-      const user = result[0];
+    const result = await db.query(query, [email]);
 
-      bcrypt.compare(password, user.Password, (err, isMatch) => {
-        if (err) throw err;
-        if (!isMatch)
-          return res.status(400).json({ message: "Incorrect password" });
-
-        const token = jwt.sign(
-          {
-            id: user.ID,
-            role: user.Role,
-            image: user.Image,
-            username: user.Username,
-            email: user.Email_Address,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: "1h" },
-        );
-        res.json({ token });
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        message: "Email address doesn't exist",
       });
-    },
-  );
+    }
+
+    const admin = result.rows[0];
+
+    // Compare password
+    const isMatch = await bcrypt.compare(password, admin.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Incorrect password",
+      });
+    }
+
+    // Generate JWT
+    const token = jwt.sign(
+      {
+        id: admin.id,
+        role: admin.role,
+        image: admin.image,
+        username: admin.username,
+        email: admin.email_address,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" },
+    );
+
+    res.json({ token });
+  } catch (err) {
+    console.error("Admin login error:", err);
+    res.status(500).json({
+      message: "Server error occurred",
+    });
+  }
 });
 
-app.get("/adminpanel", verifyToken(['DEAN', 'EBA Staff', 'Admin']), (req, res) => {
-  const adminID = req.user.id;
 
-  const sql = `
-    SELECT Image, Username, Role, Email_Address 
-    FROM admin_account 
-    WHERE ID = ?
-  `;
+app.get(
+  "/adminpanel",
+  verifyToken(["DEAN", "EBA Staff", "Admin"]),
+  async (req, res) => {
+    const adminID = req.user.id;
 
-  db.query(sql, [adminID], (err, result) => {
-    if (err) return res.status(500).json(err);
-    if (!result.length) return res.sendStatus(404);
+    try {
+      const sql = `
+        SELECT image, username, role, email_address
+        FROM admin_account
+        WHERE id = $1
+      `;
 
-    res.json(result[0]);
-  });
-});
+      const result = await db.query(sql, [adminID]);
+
+      if (result.rows.length === 0) {
+        return res.sendStatus(404);
+      }
+
+      res.json(result.rows[0]);
+    } catch (err) {
+      console.error("Admin panel fetch error:", err);
+      res.status(500).json({ error: "Failed to fetch admin data" });
+    }
+  },
+);
 
 app.post("/adminchangepass", async (req, res) => {
   const { id, password } = req.body;
@@ -933,7 +984,7 @@ app.post("/adminchangepass", async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const query = "UPDATE admin_account SET Password = ? WHERE ID = ?";
+    const query = "UPDATE admin_account SET password = $1 WHERE id = $2";
 
     db.query(query, [hashedPassword, id], (err, result) => {
       if (err) {
@@ -949,103 +1000,105 @@ app.post("/adminchangepass", async (req, res) => {
 });
 
 // NOTIFICATION
-app.get("/notifications", (req, res) => {
-  const query = `
-		SELECT 
-		'transaction' AS type, 
-		ID, 
-		Item_Name, 
-		Variant, 
-		Size, 
-		Quantity, 
-		created_At AS time, 
-		Status 
-		FROM transaction 
-		WHERE Status = 'Pending'
-		
-		UNION ALL
-		
-		SELECT 
-		'low_stock' AS type, 
-		ID, 
-		Item_Name, 
-		Variant, 
-		Size, 
-		Quantity, 
-		NULL AS time, 
-		NULL AS Status 
-		FROM inventory 
-		WHERE Quantity <= 5
-		ORDER BY time DESC;
-	`;
+app.get("/notifications", async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        'transaction' AS type, 
+        id, 
+        item_name, 
+        variant, 
+        size, 
+        quantity, 
+        created_at AS time, 
+        status 
+      FROM transaction 
+      WHERE status = 'Pending'
+      
+      UNION ALL
+      
+      SELECT 
+        'low_stock' AS type, 
+        id, 
+        item_name, 
+        variant, 
+        size, 
+        quantity, 
+        NULL AS time, 
+        NULL AS status 
+      FROM inventory 
+      WHERE quantity <= 5
+      
+      ORDER BY time DESC NULLS LAST;
+    `;
 
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching notifications:", err);
-      return res.status(500).json({ error: "Database query error" });
-    }
-    res.json(results);
-  });
+    const result = await db.query(query);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching notifications:", err);
+    res.status(500).json({ error: "Database query error" });
+  }
 });
 
 // DASHBOARD PAGE
 app.get("/api/dashboard/all", (req, res) => {
   const queries = {
     totalSales: `
-            SELECT COALESCE(SUM(Amount), 0) as total_sales 
+            SELECT COALESCE(SUM(amount), 0) as total_sales 
             FROM transaction
-            WHERE Status IS NULL OR Status != 'Cancelled'
+            WHERE status IS NULL OR status != 'Cancelled'
         `,
     totalOrders: `
             SELECT COUNT(*) as total_orders 
             FROM transaction
-            WHERE Status IS NULL OR Status != 'Cancelled'
+            WHERE status IS NULL OR status != 'Cancelled'
         `,
     lowStock: `
             SELECT COUNT(*) as low_stock 
             FROM inventory 
-            WHERE Quantity < 10 AND Quantity > 0
+            WHERE quantity < 10 AND quantity > 0
         `,
     availableStocks: `
-            SELECT COALESCE(SUM(Quantity), 0) as total_stocks 
+            SELECT COALESCE(SUM(quantity), 0) as total_stocks 
             FROM inventory
-            WHERE Quantity > 0
+            WHERE quantity > 0
         `,
     newOrders: `
             SELECT COUNT(*) as new_orders 
             FROM transaction 
-            WHERE Date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-            AND (Status IS NULL OR Status != 'Cancelled')
+            WHERE date >= CURRENT_DATE - INTERVAL '7 days'
+            AND (status IS NULL OR status != 'Cancelled')
         `,
     fastMovingItems: `
             SELECT 
-                Item_Name,
+                item_name,
                 COUNT(*) as order_count
             FROM transaction
-            WHERE Status IS NULL OR Status != 'Cancelled'
-            GROUP BY Item_Name
+            WHERE status IS NULL OR status != 'Cancelled'
+            GROUP BY item_name
             ORDER BY order_count DESC
             LIMIT 5
         `,
     salesData: `
             SELECT 
-                DATE_FORMAT(Date, '%M') AS month, 
-                Item_Name as category, 
-                SUM(Amount) AS total_sales 
+                TO_CHAR(date, 'Month') AS month, 
+                item_name as category, 
+                SUM(amount) AS total_sales 
             FROM transaction 
-            WHERE Status IS NULL OR Status != 'Cancelled'
-            GROUP BY month, Item_Name 
-            ORDER BY MONTH(Date)
+            WHERE status IS NULL OR status != 'Cancelled'
+            GROUP BY TO_CHAR(date, 'Month'), item_name 
+            ORDER BY MIN(EXTRACT(MONTH FROM date))
         `,
     ordersData: `
             SELECT 
-                DATE_FORMAT(Date, '%M') AS month, 
-                Item_Name as category, 
+                TO_CHAR(date, 'Month') AS month, 
+                item_name as category, 
                 COUNT(*) AS total_orders 
             FROM transaction 
-            WHERE Status IS NULL OR Status != 'Cancelled'
-            GROUP BY month, Item_Name 
-            ORDER BY MONTH(Date)
+            WHERE status IS NULL OR status != 'Cancelled'
+            GROUP BY TO_CHAR(date, 'Month'), item_name 
+            ORDER BY MIN(EXTRACT(MONTH FROM date))
         `,
   };
 
@@ -1091,93 +1144,111 @@ app.get("/api/dashboard/all", (req, res) => {
     });
   });
 });
-app.get("/api/sales-data", (req, res) => {
-  const query = `
-		SELECT 
-			DATE_FORMAT(Date, '%M') AS month, 
-			Item_Name as category, 
-			SUM(Amount) AS total_sales 
-		FROM transaction 
-		GROUP BY month, Item_Name 
-		ORDER BY MONTH(Date);
-	`;
 
-  db.query(query, (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
+app.get("/api/sales-data", async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        EXTRACT(MONTH FROM date) AS month_number,
+        TO_CHAR(date, 'Month') AS month,
+        item_name AS category,
+        SUM(amount) AS total_sales
+      FROM transaction
+      GROUP BY month_number, month, item_name
+      ORDER BY month_number;
+    `;
+
+    const result = await db.query(query);
+    const rows = result.rows;
+
+    // Remove padded spaces from month names
+    rows.forEach((row) => {
+      row.month = row.month.trim();
+      row.total_sales = parseFloat(row.total_sales);
+    });
 
     const formattedData = {
-      labels: [...new Set(results.map((row) => row.month))],
+      labels: [...new Set(rows.map((row) => row.month))],
       datasets: [],
     };
 
-    const categories = [...new Set(results.map((row) => row.category))];
+    const categories = [...new Set(rows.map((row) => row.category))];
 
     categories.forEach((category) => {
       formattedData.datasets.push({
         label: category,
-        data: results
-          .filter((row) => row.category === category)
-          .map((row) => row.total_sales),
+        data: formattedData.labels.map((month) => {
+          const found = rows.find(
+            (row) => row.month === month && row.category === category,
+          );
+          return found ? found.total_sales : 0;
+        }),
       });
     });
 
     res.json(formattedData);
-  });
+  } catch (err) {
+    console.error("Sales data fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch sales data" });
+  }
 });
+app.get("/api/orders-data", async (req, res) => {
+  try {
+    const query = `
+      SELECT
+        EXTRACT(MONTH FROM created_at) AS month_number,
+        TO_CHAR(created_at, 'Month') AS month,
+        item_name AS category,
+        COUNT(*) AS total_orders
+      FROM transaction
+      GROUP BY month_number, month, item_name
+      ORDER BY month_number;
+    `;
 
-app.get("/api/orders-data", (req, res) => {
-  const query = `
-		SELECT 
-			DATE_FORMAT(Date, '%M') AS month, 
-			Item_Name as category, 
-			COUNT(*) AS total_orders 
-		FROM transaction 
-		GROUP BY month, Item_Name 
-		ORDER BY MONTH(Date);
-	`;
+    const result = await db.query(query);
+    const rows = result.rows;
 
-  db.query(query, (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
+    // Remove extra spaces from month names
+    rows.forEach((row) => (row.month = row.month.trim()));
 
-    const formattedData = {
-      labels: [...new Set(results.map((row) => row.month))],
-      datasets: [],
-    };
+    const labels = [...new Set(rows.map((row) => row.month))];
+    const categories = [...new Set(rows.map((row) => row.category))];
 
-    const categories = [...new Set(results.map((row) => row.category))];
+    const datasets = categories.map((category) => ({
+      label: category,
+      data: labels.map((month) => {
+        const found = rows.find(
+          (row) => row.month === month && row.category === category,
+        );
+        return found ? parseInt(found.total_orders, 10) : 0;
+      }),
+    }));
 
-    categories.forEach((category) => {
-      formattedData.datasets.push({
-        label: category,
-        data: results
-          .filter((row) => row.category === category)
-          .map((row) => row.total_orders),
-      });
-    });
-
-    res.json(formattedData);
-  });
+    res.json({ labels, datasets });
+  } catch (err) {
+    console.error("Orders data fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch orders data" });
+  }
 });
 
 app.get("/api/test/transaction", (req, res) => {
-  db.query("DESCRIBE transaction", (err, result) => {
-    if (err) {
-      console.error("Error describing transaction table:", err);
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(result);
-  });
+  db.query(
+    "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'transaction'",
+    (err, result) => {
+      if (err) {
+        console.error("Error describing transaction table:", err);
+        return res.status(500).json({ error: err.message });
+      }
+      res.json(result);
+    },
+  );
 });
 
 app.get("/api/dashboard/total-sales", (req, res) => {
   const query = `
-        SELECT COALESCE(SUM(Amount), 0) as total_sales 
+        SELECT COALESCE(SUM(amount), 0) as total_sales 
         FROM transaction
-        WHERE Status IS NULL OR Status != 'Cancelled'
+        WHERE status IS NULL OR status != 'Cancelled'
     `;
 
   db.query(query, (err, result) => {
@@ -1193,7 +1264,7 @@ app.get("/api/dashboard/total-orders", (req, res) => {
   const query = `
         SELECT COUNT(*) as total_orders 
         FROM transaction
-        WHERE Status IS NULL OR Status != 'Cancelled'
+        WHERE status IS NULL OR status != 'Cancelled'
     `;
 
   db.query(query, (err, result) => {
@@ -1209,7 +1280,7 @@ app.get("/api/dashboard/low-stock", (req, res) => {
   const query = `
         SELECT COUNT(*) as low_stock 
         FROM inventory 
-        WHERE Quantity < 10 AND Quantity > 0
+        WHERE quantity < 10 AND quantity > 0
     `;
 
   db.query(query, (err, result) => {
@@ -1223,9 +1294,9 @@ app.get("/api/dashboard/low-stock", (req, res) => {
 
 app.get("/api/dashboard/available-stocks", (req, res) => {
   const query = `
-        SELECT COALESCE(SUM(Quantity), 0) as total_stocks 
+        SELECT COALESCE(SUM(quantity), 0) as total_stocks 
         FROM inventory
-        WHERE Quantity > 0
+        WHERE quantity > 0
     `;
 
   db.query(query, (err, result) => {
@@ -1239,29 +1310,30 @@ app.get("/api/dashboard/available-stocks", (req, res) => {
 
 app.get("/api/dashboard/new-orders", (req, res) => {
   const query = `
-        SELECT COUNT(*) as new_orders 
-        FROM transaction 
-        WHERE Date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-        AND (Status IS NULL OR Status != 'Cancelled')
-    `;
+    SELECT COUNT(*) AS new_orders
+    FROM "transaction"
+    WHERE created_at >= NOW() - INTERVAL '7 days'
+      AND status ILIKE 'confirmed'
+  `;
 
   db.query(query, (err, result) => {
     if (err) {
       console.error("Error in new orders query:", err);
       return res.status(500).json({ error: err.message });
     }
-    res.json(result[0]);
+    console.log("Backend count result:", result.rows[0].new_orders); // debug
+    res.json({ new_orders: parseInt(result.rows[0].new_orders, 10) });
   });
 });
 
 app.get("/api/dashboard/fast-moving-items", (req, res) => {
   const query = `
         SELECT 
-            Item_Name,
+            item_name,
             COUNT(*) as order_count
         FROM transaction
-        WHERE Status IS NULL OR Status != 'Cancelled'
-        GROUP BY Item_Name
+        WHERE status IS NULL OR status != 'Cancelled'
+        GROUP BY item_name
         ORDER BY order_count DESC
         LIMIT 5
     `;
@@ -1277,32 +1349,40 @@ app.get("/api/dashboard/fast-moving-items", (req, res) => {
 
 // TRANSACTION PAGE
 // FETCH AND DISPLAY THE DATA
-app.get("/transaction/count", (req, res) => {
-  db.query("SELECT COUNT(*) as count FROM transaction", (err, result) => {
-    if (err) return res.status(500).send(err);
-    res.json({ total: result[0].count });
-  });
+app.get("/transaction/count", async (req, res) => {
+  try {
+    const result = await db.query("SELECT COUNT(*) AS count FROM transaction");
+
+    res.json({ total: parseInt(result.rows[0].count, 10) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to count transactions" });
+  }
+});
+app.get("/transaction", async (req, res) => {
+  try {
+    const order = req.query.order === "DESC" ? "DESC" : "ASC";
+    const page = parseInt(req.query.page) || 1;
+    const limit = 20;
+    const offset = (page - 1) * limit;
+
+    const sql = `
+      SELECT *
+      FROM "transaction"
+      ORDER BY created_at ${order}
+      LIMIT $1 OFFSET $2
+    `;
+
+    const result = await db.query(sql, [limit, offset]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch transactions" });
+  }
 });
 
-app.get("/transaction", (req, res) => {
-  const order = req.query.order === "DESC" ? "ASC" : "DESC";
-  const page = parseInt(req.query.page) || 1; // default page 1
-  const limit = 20;
-  const offset = (page - 1) * limit;
-
-  const sql = `
-    SELECT * FROM transaction
-    ORDER BY created_At ${order}
-    LIMIT ? OFFSET ?
-  `;
-
-  db.query(sql, [limit, offset], (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
 // EDIT TRANSACTION
-app.put("/transaction/:id", (req, res) => {
+app.put("/transaction/:id", async (req, res) => {
   const { id } = req.params;
   const {
     itemName,
@@ -1316,35 +1396,52 @@ app.put("/transaction/:id", (req, res) => {
     amount,
   } = req.body;
 
-  db.query(
-    "UPDATE transaction SET Item_Name = ?, Variant = ?, Size = ?, Quantity = ?, Customer_Name = ?, Email_Address = ?, Payment_Method = ?, Amount = ? WHERE ID = ?",
-    [
-      itemName,
-      variant,
-      size,
-      quantity,
-      name,
-      email,
-      phone,
-      payment,
-      amount,
-      id,
-    ],
-    (err, results) => {
-      if (err) return res.status(500).send(err);
-      res.json({ message: "Transaction updated successfully." });
-    },
-  );
-});
-// DELETE TRANSACTION
-app.delete("/transaction/:id", (req, res) => {
-  const { id } = req.params;
-  db.query("DELETE FROM transaction WHERE ID = ?", [id], (err, result) => {
-    if (err) return res.status(500).send(err);
-    res.json({ message: "Transaction deleted successfully." });
-  });
+  try {
+    await db.query(
+      `UPDATE transaction 
+       SET item_name = $1,
+           variant = $2,
+           size = $3,
+           quantity = $4,
+           customer_name = $5,
+           email_address = $6,
+           phone = $7,
+           payment_method = $8,
+           amount = $9
+       WHERE id = $10`,
+      [
+        itemName,
+        variant,
+        size,
+        quantity,
+        name,
+        email,
+        phone,
+        payment,
+        amount,
+        id,
+      ],
+    );
+
+    res.json({ message: "Transaction updated successfully." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Update failed" });
+  }
 });
 
+// DELETE TRANSACTION
+app.delete("/transaction/:id", async (req, res) => {
+  try {
+    await db.query("DELETE FROM transaction WHERE id = $1", [req.params.id]);
+    res.json({ message: "Transaction deleted successfully." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Delete failed" });
+  }
+});
+
+// BULK CONFIRMATION & CANCELLATION
 app.post("/bulk-confirm", async (req, res) => {
   const { orderIds } = req.body;
 
@@ -1352,112 +1449,67 @@ app.post("/bulk-confirm", async (req, res) => {
     return res.status(400).json({ message: "No orders selected" });
   }
 
+  const client = await db.connect();
+
   try {
-    // 1️⃣ Get all pending transactions
-    const transactions = await new Promise((resolve, reject) => {
-      db.query(
-        `SELECT *
-         FROM \`transaction\`
-         WHERE ID IN (?) AND Status = 'Pending'`,
-        [orderIds],
-        (err, result) => (err ? reject(err) : resolve(result)),
-      );
-    });
+    await client.query("BEGIN");
 
-    if (transactions.length === 0) {
-      return res.status(400).json({ message: "No pending orders to confirm" });
+    const placeholders = orderIds.map((_, i) => `$${i + 1}`).join(",");
+
+    const txnResult = await client.query(
+      `SELECT * FROM transaction
+       WHERE id IN (${placeholders}) AND status = 'Pending'`,
+      orderIds,
+    );
+
+    if (txnResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: "No pending orders" });
     }
 
-    // 2️⃣ Deduct inventory
-    for (const txn of transactions) {
-      const inventory = await new Promise((resolve, reject) => {
-        db.query(
-          `SELECT Quantity
-           FROM inventory
-           WHERE Item_Name = ? AND Variant = ? AND Size = ?`,
-          [txn.Item_Name, txn.Variant, txn.Size],
-          (err, result) => (err ? reject(err) : resolve(result[0])),
-        );
-      });
+    for (const txn of txnResult.rows) {
+      const inventoryResult = await client.query(
+        `SELECT quantity FROM inventory
+         WHERE item_name = $1 AND variant = $2 AND size = $3
+         FOR UPDATE`,
+        [txn.item_name, txn.variant, txn.size],
+      );
 
-      if (!inventory || inventory.Quantity < txn.Quantity) {
+      if (
+        inventoryResult.rows.length === 0 ||
+        inventoryResult.rows[0].quantity < txn.quantity
+      ) {
         throw new Error(
-          `Out of stock: ${txn.Item_Name} (${txn.Variant}, ${txn.Size})`,
+          `Out of stock: ${txn.item_name} (${txn.variant}, ${txn.size})`,
         );
       }
 
-      await new Promise((resolve, reject) => {
-        db.query(
-          `UPDATE inventory
-           SET Quantity = Quantity - ?
-           WHERE Item_Name = ? AND Variant = ? AND Size = ?`,
-          [txn.Quantity, txn.Item_Name, txn.Variant, txn.Size],
-          (err) => (err ? reject(err) : resolve()),
-        );
-      });
-    }
-
-    // 3️⃣ Update transaction status
-    await new Promise((resolve, reject) => {
-      db.query(
-        `UPDATE \`transaction\`
-         SET Status = 'Confirmed'
-         WHERE ID IN (?) AND Status = 'Pending'`,
-        [orderIds],
-        (err) => (err ? reject(err) : resolve()),
+      await client.query(
+        `UPDATE inventory
+         SET quantity = quantity - $1
+         WHERE item_name = $2 AND variant = $3 AND size = $4`,
+        [txn.quantity, txn.item_name, txn.variant, txn.size],
       );
-    });
-
-    // 4️⃣ Group transactions per customer
-    const customers = {};
-
-    transactions.forEach((txn) => {
-      if (!customers[txn.Email_Address]) {
-        customers[txn.Email_Address] = {
-          name: txn.Customer_Name,
-          orders: [],
-        };
-      }
-
-      customers[txn.Email_Address].orders.push(txn);
-    });
-
-    // 5️⃣ Send one email per customer
-    for (const [email, customer] of Object.entries(customers)) {
-      const { name, orders } = customer;
-
-      const orderDetails = orders
-        .map(
-          (txn) =>
-            `• Order #${txn.OrderID}: ${txn.Variant} ${txn.Item_Name} - ${txn.Size}`,
-        )
-        .join("\n");
-
-      await transporter.sendMail({
-        from: "ebacvsutanza@gmail.com",
-        to: email,
-        subject: "Your Orders Have Been Confirmed",
-        text: `Hello ${name}!
-
-Your order(s) have been confirmed:
-
-${orderDetails}
-
-We appreciate your purchase!
-`,
-      });
     }
+
+    await client.query(
+      `UPDATE transaction
+       SET status = 'Confirmed'
+       WHERE id IN (${placeholders})`,
+      orderIds,
+    );
+
+    await client.query("COMMIT");
 
     res.json({ message: "Bulk orders confirmed successfully" });
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error(error);
-    res.status(500).json({
-      message: "Bulk confirm failed",
-      error: error.message,
-    });
+    res.status(500).json({ message: error.message });
+  } finally {
+    client.release();
   }
 });
-
 app.post("/bulk-cancel", async (req, res) => {
   const { orderIds } = req.body;
 
@@ -1466,213 +1518,159 @@ app.post("/bulk-cancel", async (req, res) => {
   }
 
   try {
-    // 1️⃣ Get all pending transactions
-    const transactions = await new Promise((resolve, reject) => {
-      db.query(
-        `SELECT *
-         FROM \`transaction\`
-         WHERE ID IN (?) AND Status = 'Pending'`,
-        [orderIds],
-        (err, result) => (err ? reject(err) : resolve(result)),
-      );
-    });
+    const placeholders = orderIds.map((_, i) => `$${i + 1}`).join(",");
 
-    if (transactions.length === 0) {
-      return res.status(400).json({ message: "No pending orders to cancel" });
-    }
-
-    // 2️⃣ Update transaction statuses
-    await new Promise((resolve, reject) => {
-      db.query(
-        `UPDATE \`transaction\`
-         SET Status = 'Cancelled'
-         WHERE ID IN (?) AND Status = 'Pending'`,
-        [orderIds],
-        (err) => (err ? reject(err) : resolve()),
-      );
-    });
-
-    // 3️⃣ Group transactions per customer
-    const customers = {};
-
-    transactions.forEach((txn) => {
-      if (!customers[txn.Email_Address]) {
-        customers[txn.Email_Address] = {
-          name: txn.Customer_Name,
-          orders: [],
-        };
-      }
-
-      customers[txn.Email_Address].orders.push(txn);
-    });
-
-    // 4️⃣ Send one email per customer with item details
-    for (const [email, customer] of Object.entries(customers)) {
-      const { name, orders } = customer;
-
-      const orderDetails = orders
-        .map(
-          (txn) =>
-            `• Order #${txn.OrderID}: ${txn.Variant} ${txn.Item_Name} - ${txn.Size}`,
-        )
-        .join("\n");
-
-      await transporter.sendMail({
-        from: "ebacvsutanza@gmail.com",
-        to: email,
-        subject: "Your Orders Have Been Cancelled",
-        text: `Hello ${name},
-
-The following order(s) have been cancelled:
-
-${orderDetails}
-
-If you have any questions, please contact us.
-`,
-      });
-    }
+    await db.query(
+      `UPDATE transaction
+       SET status = 'Cancelled'
+       WHERE id IN (${placeholders}) AND status = 'Pending'`,
+      orderIds,
+    );
 
     res.json({ message: "Bulk orders cancelled successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: "Bulk cancel failed",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Bulk cancel failed" });
   }
 });
 
 // CONFIRM OR CANCEL ORDER
-app.post("/confirm-order", (req, res) => {
+app.post("/confirm-order", async (req, res) => {
   const { id, orderId, name, customerEmail } = req.body;
 
-  const getTransactionQuery =
-    "SELECT Item_Name, Variant, Size, Quantity FROM transaction WHERE ID = ?";
+  try {
+    // Get transaction details
+    const transactionResult = await db.query(
+      'SELECT item_name, variant, size, quantity FROM "transaction" WHERE id = $1',
+      [id],
+    );
 
-  db.query(getTransactionQuery, [id], (err, transactionResult) => {
-    if (err || transactionResult.length === 0) {
-      return res
-        .status(500)
-        .json({ message: "Failed to retrieve order details" });
+    if (transactionResult.rows.length === 0) {
+      return res.status(404).json({ message: "Transaction not found" });
     }
 
-    const { Item_Name, Variant, Size, Quantity } = transactionResult[0];
+    const { item_name, variant, size, quantity } = transactionResult.rows[0];
 
-    const getInventoryQuery = `
-			SELECT Quantity FROM inventory 
-			WHERE Item_Name = ? AND Variant = ? AND Size = ?
-		`;
-
-    db.query(
-      getInventoryQuery,
-      [Item_Name, Variant, Size],
-      (err, inventoryResult) => {
-        if (err || inventoryResult.length === 0) {
-          return res
-            .status(500)
-            .json({ message: "Item not found in inventory" });
-        }
-
-        const currentStock = inventoryResult[0].Quantity;
-
-        if (currentStock < Quantity) {
-          return res.status(400).json({ message: "This item is out of stock" });
-        }
-
-        const updateInventoryQuery = `
-				UPDATE inventory 
-				SET Quantity = Quantity - ? 
-				WHERE Item_Name = ? AND Variant = ? AND Size = ?
-			`;
-
-        db.query(
-          updateInventoryQuery,
-          [Quantity, Item_Name, Variant, Size],
-          (err, updateResult) => {
-            if (err || updateResult.affectedRows === 0) {
-              return res
-                .status(500)
-                .json({ message: "Failed to update inventory" });
-            }
-
-            db.query(
-              "UPDATE transaction SET Status = ? WHERE ID = ?",
-              ["Confirmed", id],
-              (err, result) => {
-                if (err)
-                  return res
-                    .status(500)
-                    .json({ message: "Failed to update order status" });
-
-                const mailOptions = {
-                  from: "ebacvsutanza@gmail.com",
-                  to: customerEmail,
-                  subject: "Your Order Has Been Confirmed",
-                  text: `Hello ${name}! Your order number ${orderId}, ${Variant} ${Item_Name} - ${Size} has been confirmed. We appreciate your purchase!`,
-                };
-
-                transporter.sendMail(mailOptions, (error, info) => {
-                  if (error) {
-                    console.error(error);
-                    return res.status(500).json({
-                      message: "Order confirmed but failed to send email",
-                    });
-                  }
-
-                  res
-                    .status(200)
-                    .json({ message: "Order confirmed and inventory updated" });
-                });
-              },
-            );
-          },
-        );
-      },
+    // Get inventory
+    const inventoryResult = await db.query(
+      `SELECT quantity FROM inventory WHERE item_name = $1 AND variant = $2 AND size = $3`,
+      [item_name, variant, size],
     );
-  });
-});
-app.post("/cancel-order", (req, res) => {
-  const { id, orderId, itemName, variant, size, name, customerEmail } = req.body;
 
-  db.query(
-    "UPDATE transaction SET Status = ? WHERE ID = ?",
-    ["Cancelled", id],
-    (err, result) => {
-      if (err)
+    if (inventoryResult.rows.length === 0) {
+      return res.status(404).json({ message: "Item not found in inventory" });
+    }
+
+    const currentStock = inventoryResult.rows[0].quantity;
+
+    if (currentStock < quantity) {
+      return res.status(400).json({ message: "This item is out of stock" });
+    }
+
+    // Update inventory
+    await db.query(
+      `UPDATE inventory SET quantity = quantity - $1 WHERE item_name = $2 AND variant = $3 AND size = $4`,
+      [quantity, item_name, variant, size],
+    );
+
+    // Update transaction status
+    await db.query(`UPDATE "transaction" SET status = $1 WHERE id = $2`, [
+      "Confirmed",
+      id,
+    ]);
+
+    // Send confirmation email
+    const mailOptions = {
+      from: "ebacvsutanza@gmail.com",
+      to: customerEmail,
+      subject: "Your Order Has Been Confirmed",
+      text: `Hello ${name}! Your order number ${orderId}, ${variant} ${item_name} - ${size} has been confirmed. We appreciate your purchase!`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error(error);
         return res
           .status(500)
-          .json({ message: "Failed to update order status" });
+          .json({ message: "Order confirmed but failed to send email" });
+      }
 
-      const mailOptions = {
-        from: "ebacvsutanza@gmail.com",
-        to: customerEmail,
-        subject: "Your Order Has Been Cancelled",
-        text: `Hello ${name}! Your order number ${orderId}, ${variant} ${itemName} - ${size} has been cancelled. We appreciate your purchase!`,
-      };
+      res
+        .status(200)
+        .json({ message: "Order confirmed and inventory updated" });
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to confirm order" });
+  }
+});
+app.post("/cancel-order", async (req, res) => {
+  const { id, orderId, itemName, variant, size, name, customerEmail } =
+    req.body;
 
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error(error);
-          return res
-            .status(500)
-            .json({ message: "Failed to send email notification" });
-        }
-        res.status(200).json({ message: "Order cancelled" });
-      });
-    },
-  );
+  try {
+    // Fetch the transaction first
+    const transactionResult = await db.query(
+      'SELECT status, quantity FROM "transaction" WHERE id = $1',
+      [id],
+    );
+
+    if (transactionResult.rows.length === 0) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    const { status, quantity } = transactionResult.rows[0];
+
+    // If it’s already cancelled, no need to do anything
+    if (status === "Cancelled") {
+      return res.status(400).json({ message: "Order is already cancelled" });
+    }
+
+    // Update transaction status
+    await db.query('UPDATE "transaction" SET status = $1 WHERE id = $2', [
+      "Cancelled",
+      id,
+    ]);
+
+    // Restore inventory
+    await db.query(
+      `UPDATE inventory SET quantity = quantity + $1 WHERE item_name = $2 AND variant = $3 AND size = $4`,
+      [quantity, itemName, variant, size],
+    );
+
+    // Send cancellation email
+    const mailOptions = {
+      from: "ebacvsutanza@gmail.com",
+      to: customerEmail,
+      subject: "Your Order Has Been Cancelled",
+      text: `Hello ${name}! Your order number ${orderId}, ${variant} ${itemName} - ${size} has been cancelled. We appreciate your purchase!`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error(error);
+        return res
+          .status(500)
+          .json({ message: "Order cancelled but failed to send email" });
+      }
+      res.status(200).json({ message: "Order cancelled successfully" });
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to cancel order" });
+  }
 });
 
 // EVENTS & ANNOUNCEMENT PAGE
 // ADD EVENT/ANNOUNCEMENT
 app.post("/announcement", (req, res) => {
-  const { Title, Details, FacultyName, announcementDate } = req.body;
+  const { title, details, facultyname, announcementdate } = req.body;
 
   const insertQuery =
-    "INSERT INTO bulletin (Title, Details, Faculty_Staff, announcementDate) VALUES (?, ?, ?, ?)";
+    "INSERT INTO bulletin (title, details, faculty_staff, announcementdate) VALUES ($1, $2, $3, $4)";
   db.query(
     insertQuery,
-    [Title, Details, FacultyName, announcementDate],
+    [title, details, facultyname, announcementdate],
     (err, result) => {
       if (err) {
         console.error("Error inserting data:", err);
@@ -1689,7 +1687,7 @@ app.put("/announcement/:id", (req, res) => {
   const { Title, Details, FacultyName, announcementDate } = req.body;
 
   db.query(
-    "UPDATE bulletin SET Title = ?, Details = ?, Faculty_Staff = ?, announcementDate = ? WHERE ID = ?",
+    "UPDATE bulletin SET title = $1, details = $2, faculty_staff = $3, announcementdate = $4 WHERE id = $5",
     [Title, Details, FacultyName, announcementDate, id],
     (err, results) => {
       if (err) return res.status(500).send(err);
@@ -1700,35 +1698,41 @@ app.put("/announcement/:id", (req, res) => {
 // DELETE EVENT/ANNOUNCEMENT
 app.delete("/announcement/:id", (req, res) => {
   const { id } = req.params;
-  db.query("DELETE FROM bulletin WHERE ID = ?", [id], (err, result) => {
+  db.query("DELETE FROM bulletin WHERE id = $1", [id], (err, result) => {
     if (err) return res.status(500).send(err);
     res.json({ message: "Announcement deleted successfully." });
   });
 });
 
 // INVENTORY PAGE
-app.get("/inventory/count", (req, res) => {
-  db.query("SELECT COUNT(*) as count FROM inventory", (err, result) => {
-    if (err) return res.status(500).send(err);
-    res.json({ total: result[0].count });
-  });
+app.get("/inventory/count", async (req, res) => {
+  try {
+    const result = await db.query("SELECT COUNT(*) AS count FROM inventory");
+    res.json({ total: parseInt(result.rows[0].count, 10) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to get inventory count" });
+  }
 });
-app.get("/inventory", (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 20;
-  const offset = (page - 1) * limit;
+app.get("/inventory", async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
 
-  const sql = `
-    SELECT *
-    FROM inventory
-    ORDER BY ID DESC
-    LIMIT ? OFFSET ?
-  `;
+    const sql = `
+      SELECT *
+      FROM inventory
+      ORDER BY id DESC
+      LIMIT $1 OFFSET $2
+    `;
 
-  db.query(sql, [limit, offset], (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
+    const result = await db.query(sql, [limit, offset]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch inventory" });
+  }
 });
 
 // ADD INVENTORY
@@ -1736,7 +1740,7 @@ app.post("/inventory", itemupload.single("inventory"), (req, res) => {
   const image = req.file.filename;
   const { category, itemName, variant, size, quantity, price } = req.body;
   const insertQuery =
-    "INSERT INTO inventory (Image, Category, Item_Name, Variant, Size, Quantity, Price) VALUES ( ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO inventory (image, category, item_name, variant, size, quantity, price) VALUES ( $1, $2, $3, $4, $5, $6, $7)";
 
   db.query(
     insertQuery,
@@ -1754,37 +1758,64 @@ app.post("/inventory", itemupload.single("inventory"), (req, res) => {
 // EDIT INVENTORY
 app.put("/inventory/:id", itemupload.single("inventory"), (req, res) => {
   const { id } = req.params;
-
-  let image = null;
-  if (req.file) {
-    image = req.file.filename;
-  }
   const { category, itemName, variant, size, quantity, price } = req.body;
 
-  if (image) {
-    db.query(
-      "UPDATE inventory SET Image = ?, Category = ?, Item_Name = ?, Variant = ?, Size = ?, Quantity = ?, Price = ? WHERE ID = ?",
-      [image, category, itemName, variant, size, quantity, price, id],
-      (err, results) => {
-        if (err) return res.status(500).send(err);
-        res.json({ message: "Inventory updated successfully." });
-      },
-    );
-  } else {
-    db.query(
-      "UPDATE inventory SET Category = ?, Item_Name = ?, Variant = ?, Size = ?, Quantity = ?, Price = ? WHERE ID = ?",
-      [category, itemName, variant, size, quantity, price, id],
-      (err, results) => {
-        if (err) return res.status(500).send(err);
-        res.json({ message: "Inventory updated successfully." });
-      },
-    );
+  if (!category || !itemName || !variant || !size || !quantity || !price) {
+    return res
+      .status(400)
+      .json({ message: "All fields except image are required." });
   }
+
+  const numericQuantity = parseInt(quantity, 10);
+  const numericPrice = parseFloat(price);
+
+  if (isNaN(numericQuantity) || isNaN(numericPrice)) {
+    return res
+      .status(400)
+      .json({ message: "Quantity and price must be valid numbers." });
+  }
+
+  // Build query dynamically based on whether an image was uploaded
+  const fields = [
+    "category",
+    "item_name",
+    "variant",
+    "size",
+    "quantity",
+    "price",
+  ];
+  const values = [
+    category,
+    itemName,
+    variant,
+    size,
+    numericQuantity,
+    numericPrice,
+  ];
+
+  let query = `UPDATE inventory SET ${fields.map((f, i) => `${f} = $${i + 1}`).join(", ")}`;
+
+  if (req.file) {
+    query += `, image = $${values.length + 1}`;
+    values.push(req.file.filename);
+  }
+
+  query += ` WHERE id = $${values.length + 1}`;
+  values.push(id);
+
+  db.query(query, values, (err, results) => {
+    if (err)
+      return res.status(500).json({ message: "Database error", error: err });
+    if (results.rowCount === 0)
+      return res.status(404).json({ message: "Inventory item not found" });
+    res.json({ message: "Inventory updated successfully." });
+  });
 });
+
 // DELETE INVENTORY
 app.delete("/inventory/:id", (req, res) => {
   const { id } = req.params;
-  db.query("DELETE FROM inventory WHERE ID = ?", [id], (err, result) => {
+  db.query("DELETE FROM inventory WHERE id = $1", [id], (err, result) => {
     if (err) return res.status(500).send(err);
     res.json({ message: "Inventory deleted successfully." });
   });
@@ -1793,13 +1824,17 @@ app.delete("/inventory/:id", (req, res) => {
 // ------------------------ GET TOTAL COUNT ------------------------
 app.get("/manageadmin/count", async (req, res) => {
   try {
-    const [result] = await db.promise().query("SELECT COUNT(*) as count FROM admin_account");
-    res.json({ total: result[0].count });
+    const result = await db.query(
+      "SELECT COUNT(*) AS count FROM admin_account",
+    );
+    const total = parseInt(result.rows[0].count, 10); // convert string to number
+    res.json({ total });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ Message: "Server error" });
+    res.status(500).json({ message: "Server error" }); // lowercase 'message' for consistency
   }
 });
+
 
 // ------------------------ GET ADMINS WITH PAGINATION ------------------------
 app.get("/manageadmin", async (req, res) => {
@@ -1808,11 +1843,11 @@ app.get("/manageadmin", async (req, res) => {
   const offset = (page - 1) * limit;
 
   try {
-    const [results] = await db.promise().query(
-      "SELECT * FROM admin_account ORDER BY ID ASC LIMIT ? OFFSET ?",
-      [limit, offset]
+    const results = await db.query(
+      "SELECT * FROM admin_account ORDER BY id ASC LIMIT $1 OFFSET $2",
+      [limit, offset],
     );
-    res.json(results);
+    res.json(results.rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ Message: "Server error" });
@@ -1830,11 +1865,11 @@ app.post("/manageadmin", upload.single("manageadmin"), async (req, res) => {
 
   try {
     // Check if username or email exists
-    const [existing] = await db.promise().query(
-      "SELECT * FROM admin_account WHERE Username = ? OR Email_Address = ?",
-      [Username, Email_Address]
+    const existing = await db.query(
+      "SELECT * FROM admin_account WHERE username = $1 OR email_address = $2",
+      [Username, Email_Address],
     );
-    if (existing.length > 0) {
+    if (existing.rows.length > 0) {
       return res.json({ Status: "Username or Email already exists" });
     }
 
@@ -1842,9 +1877,9 @@ app.post("/manageadmin", upload.single("manageadmin"), async (req, res) => {
     const hashedPassword = await bcrypt.hash(Password.toString(), salt);
 
     // Insert new admin
-    await db.promise().query(
-      "INSERT INTO admin_account (Image, Username, Role, Email_Address, Password) VALUES (?, ?, ?, ?, ?)",
-      [image, Username, Role, Email_Address, hashedPassword]
+    await db.query(
+      "INSERT INTO admin_account (image, username, role, email_address, password) VALUES ($1, $2, $3, $4, $5)",
+      [image, Username, Role, Email_Address, hashedPassword],
     );
 
     res.json({ Status: "Success" });
@@ -1862,43 +1897,49 @@ app.put("/manageadmin/:id", upload.single("manageadmin"), async (req, res) => {
 
   try {
     // Get current admin
-    const [admins] = await db.promise().query("SELECT * FROM admin_account WHERE ID = ?", [id]);
-    if (admins.length === 0) {
+    const admins = await db.query("SELECT * FROM admin_account WHERE id = $1", [
+      id,
+    ]);
+    if (admins.rows.length === 0) {
       return res.status(404).json({ Status: "Admin not found" });
     }
 
-    const currentAdmin = admins[0];
+    const currentAdmin = admins.rows[0];
 
     // Prepare fields to update
     const fields = [];
     const values = [];
+    let paramNum = 1;
 
     if (Username) {
-      fields.push("Username = ?");
+      fields.push(`username = $${paramNum++}`);
       values.push(Username);
     }
 
     if (Role) {
-      fields.push("Role = ?");
+      fields.push(`role = $${paramNum++}`);
       values.push(Role);
     }
 
     if (Email_Address) {
-      fields.push("Email_Address = ?");
+      fields.push(`email_address = $${paramNum++}`);
       values.push(Email_Address);
     }
 
     if (image) {
-      fields.push("Image = ?");
+      fields.push(`image = $${paramNum++}`);
       values.push(image);
     }
 
     // Only update password if provided and different
     if (Password) {
-      const isSamePassword = await bcrypt.compare(Password, currentAdmin.Password);
+      const isSamePassword = await bcrypt.compare(
+        Password,
+        currentAdmin.password,
+      );
       if (!isSamePassword) {
         const hashedPassword = await bcrypt.hash(Password.toString(), salt);
-        fields.push("Password = ?");
+        fields.push(`password = $${paramNum++}`);
         values.push(hashedPassword);
       }
     }
@@ -1907,10 +1948,10 @@ app.put("/manageadmin/:id", upload.single("manageadmin"), async (req, res) => {
       return res.json({ Status: "No changes provided" });
     }
 
-    const sql = `UPDATE admin_account SET ${fields.join(", ")} WHERE ID = ?`;
     values.push(id);
+    const sql = `UPDATE admin_account SET ${fields.join(", ")} WHERE id = $${paramNum}`;
 
-    await db.promise().query(sql, values);
+    await db.query(sql, values);
     res.json({ Status: "Success" });
   } catch (err) {
     console.error(err);
@@ -1922,7 +1963,7 @@ app.put("/manageadmin/:id", upload.single("manageadmin"), async (req, res) => {
 app.delete("/manageadmin/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    await db.promise().query("DELETE FROM admin_account WHERE ID = ?", [id]);
+    await db.query("DELETE FROM admin_account WHERE id = $1", [id]);
     res.json({ Status: "Admin deleted successfully" });
   } catch (err) {
     console.error(err);
@@ -1934,7 +1975,8 @@ app.delete("/manageadmin/:id", async (req, res) => {
 app.post("/addexclusive", itemupload.single("store"), (req, res) => {
   const image = req.file.filename;
   const { ItemName } = req.body;
-  const insertQuery = "INSERT INTO exclusive (Image, Item_Name) VALUES ( ?, ?)";
+  const insertQuery =
+    "INSERT INTO exclusive (image, item_name) VALUES ( $1, $2)";
 
   db.query(insertQuery, [image, ItemName], (err, result) => {
     if (err) {
@@ -1949,7 +1991,7 @@ app.post("/addcategories", itemupload.single("store"), (req, res) => {
   const image = req.file.filename;
   const { ItemName } = req.body;
   const insertQuery =
-    "INSERT INTO categories (Image, Item_Name) VALUES ( ?, ?)";
+    "INSERT INTO categories (image, item_name) VALUES ( $1, $2)";
 
   db.query(insertQuery, [image, ItemName], (err, result) => {
     if (err) {
@@ -1964,7 +2006,7 @@ app.post("/addstore", itemupload.single("store"), (req, res) => {
   const image = req.file.filename;
   const { ItemName, Price } = req.body;
   const insertQuery =
-    "INSERT INTO store (Image, Item_Name, Price) VALUES ( ?, ?, ?)";
+    "INSERT INTO store (image, item_name, price) VALUES ( $1, $2, $3)";
 
   db.query(insertQuery, [image, ItemName, Price], (err, result) => {
     if (err) {
@@ -1987,7 +2029,7 @@ app.put("/exclusive/:id", itemupload.single("store"), (req, res) => {
 
   if (image) {
     db.query(
-      "UPDATE exclusive SET Image = ?, Item_Name = ? WHERE ID = ?",
+      "UPDATE exclusive SET image = $1, item_name = $2 WHERE id = $3",
       [image, itemName, id],
       (err, results) => {
         if (err) return res.status(500).send(err);
@@ -1996,7 +2038,7 @@ app.put("/exclusive/:id", itemupload.single("store"), (req, res) => {
     );
   } else {
     db.query(
-      "UPDATE exclusive SET Item_Name = ? WHERE ID = ?",
+      "UPDATE exclusive SET item_name = $1 WHERE id = $2",
       [itemName, id],
       (err, results) => {
         if (err) return res.status(500).send(err);
@@ -2016,7 +2058,7 @@ app.put("/categories/:id", itemupload.single("store"), (req, res) => {
 
   if (image) {
     db.query(
-      "UPDATE categories SET Image = ?, Item_Name = ? WHERE ID = ?",
+      "UPDATE categories SET image = $1, item_name = $2 WHERE id = $3",
       [image, itemName, id],
       (err, results) => {
         if (err) return res.status(500).send(err);
@@ -2025,7 +2067,7 @@ app.put("/categories/:id", itemupload.single("store"), (req, res) => {
     );
   } else {
     db.query(
-      "UPDATE categories SET Item_Name = ? WHERE ID = ?",
+      "UPDATE categories SET item_name = $1 WHERE id = $2",
       [itemName, id],
       (err, results) => {
         if (err) return res.status(500).send(err);
@@ -2045,7 +2087,7 @@ app.put("/store/:id", itemupload.single("store"), (req, res) => {
 
   if (image) {
     db.query(
-      "UPDATE store SET Image = ?, Item_Name = ?, Price = ? WHERE ID = ?",
+      "UPDATE store SET image = $1, item_name = $2, price = $3 WHERE id = $4",
       [image, itemName, price, id],
       (err, results) => {
         if (err) return res.status(500).send(err);
@@ -2054,7 +2096,7 @@ app.put("/store/:id", itemupload.single("store"), (req, res) => {
     );
   } else {
     db.query(
-      "UPDATE store SET Item_Name = ?, Price = ? WHERE ID = ?",
+      "UPDATE store SET item_name = $1, price = $2 WHERE id = $3",
       [itemName, price, id],
       (err, results) => {
         if (err) return res.status(500).send(err);
@@ -2067,7 +2109,7 @@ app.put("/store/:id", itemupload.single("store"), (req, res) => {
 app.delete("/exclusive/:id", (req, res) => {
   const { id } = req.params;
 
-  db.query("DELETE FROM exclusive WHERE ID = ?", [id], (err, result) => {
+  db.query("DELETE FROM exclusive WHERE id = $1", [id], (err, result) => {
     if (err) return res.status(500).send(err);
     res.json({ message: "Item deleted successfully." });
   });
@@ -2075,7 +2117,7 @@ app.delete("/exclusive/:id", (req, res) => {
 app.delete("/categories/:id", (req, res) => {
   const { id } = req.params;
 
-  db.query("DELETE FROM categories WHERE ID = ?", [id], (err, result) => {
+  db.query("DELETE FROM categories WHERE id = $1", [id], (err, result) => {
     if (err) return res.status(500).send(err);
     res.json({ message: "Item deleted successfully." });
   });
@@ -2083,7 +2125,7 @@ app.delete("/categories/:id", (req, res) => {
 app.delete("/store/:id", (req, res) => {
   const { id } = req.params;
 
-  db.query("DELETE FROM store WHERE ID = ?", [id], (err, result) => {
+  db.query("DELETE FROM store WHERE id = $1", [id], (err, result) => {
     if (err) return res.status(500).send(err);
     res.json({ message: "Item deleted successfully." });
   });
@@ -2107,90 +2149,61 @@ app.post("/auth/google", async (req, res) => {
     }
 
     // Check if user exists
-    db.query(
-      "SELECT * FROM user_account WHERE Email_Address = ?",
-      [email],
-      async (err, result) => {
-        if (err) {
-          return res.status(500).json({ message: "Database error" });
-        }
+    const selectQuery = `SELECT * FROM user_account WHERE email_address = $1`;
+    const selectResult = await db.query(selectQuery, [email]);
 
-        let userId;
-        if (result.length === 0) {
-          // Create new user
-          const username = email.split("@")[0];
-          const insertQuery = `
-                    INSERT INTO user_account (
-                        Email_Address,
-                        Username,
-                        Full_Name,
-                        Profile_Picture,
-                        Google_ID,
-                        Is_Email_Verified,
-                        Account_Status
-                    ) VALUES (?, ?, ?, ?, ?, true, 'active')
-                `;
+    let userId;
 
-          db.query(
-            insertQuery,
-            [email, username, name, picture, googleId],
-            (err, result) => {
-              if (err) {
-                console.error("Insert error:", err);
-                return res
-                  .status(500)
-                  .json({ message: "Could not create user" });
-              }
-              userId = result.insertId;
+    if (selectResult.rows.length === 0) {
+      // Create new user
+      const username = email.split("@")[0];
+      const insertQuery = `
+        INSERT INTO user_account (
+          email_address,
+          username,
+          full_name,
+          profile_picture,
+          google_id,
+          is_email_verified,
+          account_status
+        )
+        VALUES ($1, $2, $3, $4, $5, true, 'active')
+        RETURNING id
+      `;
+      const insertResult = await db.query(insertQuery, [
+        email,
+        username,
+        name,
+        picture,
+        googleId,
+      ]);
+      userId = insertResult.rows[0].id;
+    } else {
+      // Update existing user's information
+      userId = selectResult.rows[0].id;
+      const updateQuery = `
+        UPDATE user_account
+        SET full_name = $1,
+            profile_picture = $2,
+            last_login = CURRENT_TIMESTAMP,
+            is_email_verified = true
+        WHERE id = $3
+      `;
+      await db.query(updateQuery, [name, picture, userId]);
+    }
 
-              // Generate JWT token
-              const token = jwt.sign(
-                { id: userId, email, name },
-                process.env.JWT_SECRET,
-                { expiresIn: "1h" },
-              );
-
-              res.json({
-                Status: "Success",
-                token,
-                user: { id: userId, email, name, picture },
-              });
-            },
-          );
-        } else {
-          // Update existing user's information
-          userId = result[0].ID;
-          const updateQuery = `
-                    UPDATE user_account 
-                    SET Full_Name = ?,
-                        Profile_Picture = ?,
-                        Last_Login = CURRENT_TIMESTAMP,
-                        Is_Email_Verified = true
-                    WHERE ID = ?
-                `;
-
-          db.query(updateQuery, [name, picture, userId], (err) => {
-            if (err) {
-              console.error("Update error:", err);
-              return res.status(500).json({ message: "Could not update user" });
-            }
-
-            // Generate JWT token
-            const token = jwt.sign(
-              { id: userId, email, name },
-              process.env.JWT_SECRET,
-              { expiresIn: "1h" },
-            );
-
-            res.json({
-              Status: "Success",
-              token,
-              user: { id: userId, email, name, picture },
-            });
-          });
-        }
-      },
+    // Generate JWT token
+    const jwtToken = jwt.sign(
+      { id: userId, email, name },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" },
     );
+
+    res.json({
+      Status: "Success",
+      token: jwtToken,
+      user: { id: userId, email, name, picture },
+    });
   } catch (error) {
     console.error("Google auth error:", error);
     res.status(401).json({ message: "Invalid Google token" });
@@ -2203,7 +2216,6 @@ app.post("/set-password", verifyToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // Validate password
     if (!password || password.length < 6) {
       return res.status(400).json({
         Status: "Error",
@@ -2211,29 +2223,18 @@ app.post("/set-password", verifyToken, async (req, res) => {
       });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Update user's password
     const updateQuery = `
-            UPDATE user_account 
-            SET Password = ?
-            WHERE ID = ?
-        `;
+      UPDATE user_account
+      SET password = $1
+      WHERE id = $2
+    `;
+    await db.query(updateQuery, [hashedPassword, userId]);
 
-    db.query(updateQuery, [hashedPassword, userId], (err, result) => {
-      if (err) {
-        console.error("Password update error:", err);
-        return res.status(500).json({
-          Status: "Error",
-          Message: "Failed to update password",
-        });
-      }
-
-      res.json({
-        Status: "Success",
-        Message: "Password set successfully",
-      });
+    res.json({
+      Status: "Success",
+      Message: "Password set successfully",
     });
   } catch (error) {
     console.error("Server error:", error);
@@ -2244,71 +2245,57 @@ app.post("/set-password", verifyToken, async (req, res) => {
   }
 });
 
-// Add login endpoint that supports both Google and password authentication
+// Password login endpoint
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Check if user exists
-    db.query(
-      "SELECT * FROM user_account WHERE Email_Address = ?",
-      [email],
-      async (err, result) => {
-        if (err) {
-          return res
-            .status(500)
-            .json({ Status: "Error", Message: "Database error" });
-        }
+    const selectQuery = `SELECT * FROM user_account WHERE email_address = $1`;
+    const selectResult = await db.query(selectQuery, [email]);
 
-        if (result.length === 0) {
-          return res
-            .status(401)
-            .json({ Status: "Error", Message: "User not found" });
-        }
+    if (selectResult.rows.length === 0) {
+      return res
+        .status(401)
+        .json({ Status: "Error", Message: "User not found" });
+    }
 
-        const user = result[0];
+    const user = selectResult.rows[0];
 
-        // If user has no password set (Google-only account)
-        if (!user.Password) {
-          return res.status(401).json({
-            Status: "Error",
-            Message: "Please use Google Sign-In or set a password first",
-          });
-        }
+    if (!user.password) {
+      return res.status(401).json({
+        Status: "Error",
+        Message: "Please use Google Sign-In or set a password first",
+      });
+    }
 
-        // Verify password
-        const validPassword = await bcrypt.compare(password, user.Password);
-        if (!validPassword) {
-          return res
-            .status(401)
-            .json({ Status: "Error", Message: "Invalid password" });
-        }
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res
+        .status(401)
+        .json({ Status: "Error", Message: "Invalid password" });
+    }
 
-        // Generate JWT token
-        const token = jwt.sign(
-          { id: user.ID, email: user.Email_Address },
-          process.env.JWT_SECRET,
-          { expiresIn: "1h" },
-        );
-
-        // Update last login
-        db.query(
-          "UPDATE user_account SET Last_Login = CURRENT_TIMESTAMP WHERE ID = ?",
-          [user.ID],
-        );
-
-        res.json({
-          Status: "Success",
-          token,
-          user: {
-            id: user.ID,
-            email: user.Email_Address,
-            name: user.Full_Name,
-            picture: user.Profile_Picture,
-          },
-        });
-      },
+    // Generate JWT token
+    const jwtToken = jwt.sign(
+      { id: user.id, email: user.email_address },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" },
     );
+
+    // Update last login
+    const updateLoginQuery = `UPDATE user_account SET last_login = CURRENT_TIMESTAMP WHERE id = $1`;
+    await db.query(updateLoginQuery, [user.id]);
+
+    res.json({
+      Status: "Success",
+      token: jwtToken,
+      user: {
+        id: user.id,
+        email: user.email_address,
+        name: user.full_name,
+        picture: user.profile_picture,
+      },
+    });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ Status: "Error", Message: "Server error occurred" });

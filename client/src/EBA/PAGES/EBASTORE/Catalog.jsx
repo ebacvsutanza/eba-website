@@ -190,19 +190,19 @@ export default function Catalog() {
                 >
                   <div className="aspect-square rounded-xl bg-gray-200 overflow-hidden flex items-center justify-center">
                     <img
-                      src={`http://localhost:3000/ITEMS/${product.Image}`}
-                      alt={product.Item_Name}
+                      src={`http://localhost:3000/ITEMS/${product.image}`}
+                      alt={product.item_name}
                       className="w-full h-full object-cover"
                     />
                   </div>
 
                   <div className="h-[130px] py-2 relative flex flex-col justify-between">
                     <h3 className="font-bold text-lg mb-5 line-clamp-2">
-                      {product.Item_Name}
+                      {product.item_name}
                     </h3>
 
                     <div className="flex items-center justify-between">
-                      <p className="mr-18">Starts at PHP {product.Price}</p>
+                      <p className="mr-18">Starts at PHP {product.price}</p>
 
                       <button
                         onClick={(e) => handleOpenModal(e, product)}

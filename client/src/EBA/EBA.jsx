@@ -50,7 +50,7 @@ const EBA = () => {
         setOpenStatus={setOpenStatus}
       />
 
-      <div class="min-h-screen overflow-x-hidden">
+      <div className="min-h-screen overflow-x-hidden">
         <div className="h-screen flex items-center">
           <div className="lg:w-1/2 p-10 space-y-10">
             <div className="text-[.4in] lg:text-[.5in] font-semibold">
@@ -151,7 +151,7 @@ const EBA = () => {
         </div>
 
         <div className="min-h-screen py-10 center-flex flex-col relative">
-          <div class="space-y-5 text-center">
+          <div className="space-y-5 text-center">
             <h1 className="font-bold font-heading text-4xl text-(--secondary-text)">
               Help Center
             </h1>

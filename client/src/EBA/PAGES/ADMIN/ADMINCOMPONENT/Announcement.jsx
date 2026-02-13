@@ -42,10 +42,10 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
   /* ---------------- CREATE ---------------- */
   const createAnnouncement = async () => {
     await axios.post("http://localhost:3000/announcement", {
-      Title: title,
-      Details: details,
-      FacultyName: facultyName,
-      announcementDate: startDate.toISOString(),
+      title: title,
+      details: details,
+      facultyname: facultyName,
+      announcementdate: startDate.toISOString(),
     });
 
     resetForm();
@@ -97,17 +97,17 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
 
   /* ---------------- CALENDAR EVENTS ---------------- */
   const events = announcements.map((a) => {
-    const date = new Date(a.announcementDate);
+    const date = new Date(a.announcementdate);
     date.setHours(12, 0, 0, 0); // prevent timezone shifting
 
     return {
-      id: a.ID,
-      title: a.Title,
+      id: a.id,
+      title: a.title,
       start: date,
       end: date,
       allDay: true,
-      desc: a.Details,
-      facultyName: a.Faculty_Staff || "",
+      desc: a.details,
+      facultyname: a.faculty_staff || "",
     };
   });
 
@@ -130,7 +130,7 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
     setSelectedEvent(event);
     setTitle(event.title);
     setDetails(event.desc);
-    setFacultyName(event.facultyName);
+    setFacultyName(event.facultyname);
     setStartDate(new Date(event.start));
     setShowModal(true);
   };

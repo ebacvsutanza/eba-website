@@ -64,7 +64,7 @@ const News = () => {
                   className="min-h-[300px] lg:min-h-[400px] p-5 bg-(--secondary-bg) rounded-lg shadow-[0_0_5px_rgba(0,0,0,0.3)] flex flex-col gap-5"
                 >
                   <p className="text-(--secondary-text) font-medium">
-                    {new Date(bulletin.announcementDate).toLocaleDateString(
+                    {new Date(bulletin.announcementdate).toLocaleDateString(
                       "en-US",
                       {
                         month: "long",
@@ -75,12 +75,12 @@ const News = () => {
                   </p>
 
                   <div>
-                    <h3 className='text-lg font-semibold'>{bulletin.Title}</h3>
-                    <small>Posted by {bulletin.Faculty_Staff}</small>
+                    <h3 className='text-lg font-semibold'>{bulletin.title}</h3>
+                    <small>Posted by {bulletin.faculty_staff}</small>
                   </div>
 
                   <p className='mt-5'>
-                    {bulletin.Details}
+                    {bulletin.details}
                   </p>
                 </div>
               ))}
