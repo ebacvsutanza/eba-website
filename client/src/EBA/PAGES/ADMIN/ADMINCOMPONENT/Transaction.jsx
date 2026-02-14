@@ -80,17 +80,19 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
           await bulkConfirmOrders(selected);
 
           const updated = transactions.map((txn) =>
-            selected.includes(txn.ID) ? { ...txn, Status: "Confirmed" } : txn,
+            selected.includes(txn.id) ? { ...txn, status: "Confirmed" } : txn,
           );
           setTransactions(statusSorted ? sortStatusList(updated) : updated);
+          flashMessage("Transaction confirmed successfully");
         } else {
           setCancelling(true);
           await bulkCancelOrders(selected);
 
           const updated = transactions.map((txn) =>
-            selected.includes(txn.ID) ? { ...txn, Status: "Cancelled" } : txn,
+            selected.includes(txn.id) ? { ...txn, status: "Cancelled" } : txn,
           );
           setTransactions(statusSorted ? sortStatusList(updated) : updated);
+          flashMessage("Transaction cancelled successfully");
         }
 
         setSelected([]);
@@ -121,7 +123,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
   const [activeTransaction, setActiveTransaction] = useState(null);
   const handleStatus = (transaction) => {
     setActiveTransaction(
-      activeTransaction === transaction.ID ? null : transaction.ID,
+      activeTransaction === transaction.id ? null : transaction.id,
     );
   };
   const [confirming, setConfirming] = useState(false);
@@ -137,7 +139,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
       });
 
       const updated = transactions.map((txn) =>
-        txn.ID === transaction.ID ? { ...txn, Status: "Confirmed" } : txn,
+        txn.id === transaction.id ? { ...txn, status: "Confirmed" } : txn,
       );
       setTransactions(statusSorted ? sortStatusList(updated) : updated);
       setActiveTransaction(null);
@@ -167,7 +169,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
       });
 
       const updated = transactions.map((txn) =>
-        txn.ID === transaction.ID ? { ...txn, Status: "Cancelled" } : txn,
+        txn.id === transaction.id ? { ...txn, status: "Cancelled" } : txn,
       );
       setTransactions(statusSorted ? sortStatusList(updated) : updated);
       setActiveTransaction(null);
@@ -185,7 +187,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
   };
   const sortStatusList = (list) => {
     const priority = { Confirmed: 1, Pending: 2, Cancelled: 3 };
-    return [...list].sort((a, b) => priority[a.Status] - priority[b.Status]);
+    return [...list].sort((a, b) => priority[a.status] - priority[b.status]);
   };
 
   const [filter, setFilter] = useState(false);
@@ -198,7 +200,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
   const sortByStatus = () => {
     const statusPriority = { Confirmed: 1, Pending: 2, Cancelled: 3 };
     const sorted = [...transactions].sort((a, b) => {
-      return statusPriority[a.Status] - statusPriority[b.Status];
+      return statusPriority[a.status] - statusPriority[b.status];
     });
     setTransactions(sorted);
     setStatusSorted(true);
@@ -333,14 +335,14 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                     className={`
                       mb-3 p-3 grid place-items-center shadow rounded-lg text-center border transition-all
                       ${!table ? "grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]" : "grid-cols-[minmax(100px,1fr)_repeat(6,minmax(100px,1fr))]"} 
-                      ${selected.includes(transaction.ID) ? "bg-(--accent)/15 border-transparent" : "bg-(--primary-bg) border-gray-400"}
+                      ${selected.includes(transaction.id) ? "bg-(--accent)/15 border-transparent" : "bg-(--primary-bg) border-gray-400"}
                     `}
                     key={index}
                   >
                     <input
                       type="checkbox"
-                      checked={selected.includes(transaction.ID)}
-                      onChange={() => toggleSelect(transaction.ID)}
+                      checked={selected.includes(transaction.id)}
+                      onChange={() => toggleSelect(transaction.id)}
                       className="cursor-pointer"
                     />
                     <div>{transaction.orderid}</div>
@@ -352,7 +354,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                             src={`http://localhost:3000/ITEMS/${transaction.image}`}
                             alt=""
                             className="w-14 h-14 object-contain mx-auto rounded"
-                          />  
+                          />
                         </div>
 
                         <div className="line-clamp-2 lg:line-clamp-1 font-medium">
@@ -382,13 +384,13 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                     <div className="relative">
                       <button
                         onClick={() => handleStatus(transaction)}
-                        disabled={role === 'Admin'}
+                        disabled={role === "Admin"}
                         className="p-2 cursor-pointer"
                       >
                         <HiDotsVertical size={18} />
                       </button>
 
-                      {activeTransaction === transaction.ID && (
+                      {activeTransaction === transaction.id && (
                         <div className="p-2 absolute bottom-0 right-[70%] bg-white border border-gray-200 shadow-lg rounded-md z-50 w-45">
                           <button
                             onClick={() => handleConfirm(true, transaction)}

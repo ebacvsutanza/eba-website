@@ -337,7 +337,11 @@ const Cart = () => {
             <button
               type="button"
               onClick={handleCheckout}
-              className="w-full mt-10 py-3 rounded-lg cursor-pointer text-white bg-(--primary-btn)"
+              disabled={isLoading}
+              className={`
+                w-full mt-10 py-3 rounded-lg cursor-pointer text-white bg-(--primary-btn)
+                ${isLoading && 'opacity-80'}
+              `}
             >
               {isLoading ? (
                 <div className="loading">
