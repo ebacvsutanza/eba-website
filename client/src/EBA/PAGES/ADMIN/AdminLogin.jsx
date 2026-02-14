@@ -62,7 +62,7 @@ const Login = () => {
     <div className="h-screen bg-[linear-gradient(to_bottom,rgba(0,0,0,0.6),rgba(0,0,0,0.6)),url('/cvsuback.jpg')] bg-cover bg-center center-flex">
       <form
         onSubmit={loginAdmin}
-        className="w-1/3 h-3/5 p-8 bg-(--primary-bg) rounded-xl flex flex-col justify-between"
+        className="w-full lg:w-1/3 h-3/5 m-3 lg:m-0 p-8 bg-(--primary-bg) rounded-xl flex flex-col justify-between"
       >
         <div className="space-y-3 text-center">
           <div className="relative">
