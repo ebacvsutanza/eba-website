@@ -29,7 +29,7 @@ const News = () => {
   const [bulletin, setBulletin] = useState([]);
   const fetchBulletin = async (page = currentPage) => {
     const response = await axios.get(
-      `http://localhost:3000/bulletin?&page=${page}`,
+      `https://capstone-cxej.onrender.com/bulletin?&page=${page}`,
     );
     setBulletin(response.data);
   };
