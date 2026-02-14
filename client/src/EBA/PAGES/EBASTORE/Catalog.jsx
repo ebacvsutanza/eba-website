@@ -73,12 +73,12 @@ export default function Catalog() {
   const filteredProducts = products
     .filter(
       (product) =>
-        product.Category === selectedCategory &&
-        product.Item_Name.toLowerCase().includes(searchTerm.toLowerCase())
+        product.category === selectedCategory &&
+        product.item_name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
-      if (sortBy === "low-to-high") return a.Price - b.Price;
-      if (sortBy === "high-to-low") return b.Price - a.Price;
+      if (sortBy === "low-to-high") return a.price - b.price;
+      if (sortBy === "high-to-low") return b.price - a.price;
       return 0;
     });
 

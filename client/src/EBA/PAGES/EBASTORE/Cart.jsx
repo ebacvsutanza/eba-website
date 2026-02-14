@@ -59,13 +59,13 @@ const Cart = () => {
 
   const getTotal = (data) => {
     const sum = data.reduce(
-      (acc, item) => acc + item.Amount * item.Quantity,
+      (acc, item) => acc + item.amount * item.quantity,
       0,
     );
     setTotalSum(sum);
   };
   const getQuantity = (data) => {
-    const sum = data.reduce((acc, item) => acc + item.Quantity, 0);
+    const sum = data.reduce((acc, item) => acc + item.quantity, 0);
     setTotalQuantity(sum);
   };
 
@@ -105,7 +105,7 @@ const Cart = () => {
 
   const handleRemove = async (id) => {
     await axios.delete(`http://localhost:3000/cart/${id}`);
-    setCart(carts.filter((cart) => cart.ID !== id));
+    setCart(carts.filter((cart) => cart.id !== id));
 
     setMessage("Cart item deleted successfully");
     setTimeout(() => {
@@ -127,25 +127,25 @@ const Cart = () => {
   };
 
   const groupedCarts = carts.reduce((acc, item) => {
-    const key = `${item.Item_Name}-${item.Variant}`;
+    const key = `${item.item_Name}-${item.variant}`;
 
     if (!acc[key]) {
       acc[key] = {
-        Item_Name: item.Item_Name,
-        Variant: item.Variant,
-        Category: item.Category,
+        item_name: item.item_name,
+        variant: item.variant,
+        category: item.category,
         totalQuantity: 0,
         sizes: {},
       };
     }
 
-    acc[key].totalQuantity += item.Quantity;
+    acc[key].totalQuantity += item.quantity;
 
-    if (!acc[key].sizes[item.Size]) {
-      acc[key].sizes[item.Size] = 0;
+    if (!acc[key].sizes[item.size]) {
+      acc[key].sizes[item.size] = 0;
     }
 
-    acc[key].sizes[item.Size] += item.Quantity;
+    acc[key].sizes[item.size] += item.quantity;
 
     return acc;
   }, {});
@@ -184,7 +184,7 @@ const Cart = () => {
                     >
                       <div className="h-full aspect-square bg-white rounded-lg p-2 center-flex">
                         <img
-                          src={`http://localhost:3000/ITEMS/${cart.Image}`}
+                          src={`http://localhost:3000/ITEMS/${cart.image}`}
                           alt="Item Image"
                           className="w-3/4 m-auto object-contain"
                         />
@@ -194,24 +194,24 @@ const Cart = () => {
                         <div className="flex flex-col justify-between flex-1">
                           <div>
                             <p className="text-(--secondary-text) font-semibold md:text-lg line-clamp-2">
-                              {cart.Item_Name}
+                              {cart.item_name}
 
-                              {cart.Variant && " - "}
-                              {cart.Variant}
+                              {cart.variant && " - "}
+                              {cart.variant}
                             </p>
 
                             <p className="text-gray-500 hidden md:block">
-                              {cart.Category === "Capstone Manual" ||
-                              cart.Category === "Module" ? (
+                              {cart.category === "Capstone Manual" ||
+                              cart.category === "Module" ? (
                                 ""
                               ) : (
-                                <>Size: {cart.Size}</>
+                                <>Size: {cart.size}</>
                               )}
                             </p>
                           </div>
 
                           <p className="text-gray-500 lg:text-lg">
-                            PHP {cart.Amount * cart.Quantity}
+                            PHP {cart.amount * cart.quantity}
                           </p>
                         </div>
 
@@ -223,18 +223,18 @@ const Cart = () => {
                           <div className="flex items-center gap-3">
                             <button
                               onClick={() =>
-                                handleDecrease(cart.ID, cart.Quantity)
+                                handleDecrease(cart.id, cart.quantity)
                               }
                               className="cursor-pointer"
                             >
                               <FontAwesomeIcon icon={faChevronLeft} />
                             </button>
                             <p className="py-1 px-4 border border-gray-300 rounded-md">
-                              {cart.Quantity}
+                              {cart.quantity}
                             </p>
                             <button
                               onClick={() =>
-                                handleIncrease(cart.ID, cart.Quantity)
+                                handleIncrease(cart.id, cart.quantity)
                               }
                               className="cursor-pointer"
                             >
@@ -245,16 +245,16 @@ const Cart = () => {
 
                         <div className="flex justify-between items-center">
                           <p className="text-gray-500 md:hidden">
-                            {cart.Category === "Capstone Manual" ||
-                            cart.Category === "Module" ? (
+                            {cart.category === "Capstone Manual" ||
+                            cart.category === "Module" ? (
                               ""
                             ) : (
-                              <>Size: {cart.Size}</>
+                              <>Size: {cart.size}</>
                             )}
                           </p>
 
                           <button
-                            onClick={() => handleRemove(cart.ID)}
+                            onClick={() => handleRemove(cart.id)}
                             className="text-(--error) mt-auto text-lg cursor-pointer lg:relative"
                           >
                             {<FontAwesomeIcon icon={faTrash} />}
@@ -308,13 +308,13 @@ const Cart = () => {
                 <div key={index} className="pb-2">
                   <div className="flex justify-between font-semibold">
                     <p>
-                      {item.Item_Name} {item.Variant && "-"} {item.Variant}
+                      {item.item_name} {item.variant && "-"} {item.variant}
                     </p>
                     <p>{item.totalQuantity}</p>
                   </div>
 
                   <div
-                    className={`ml-4 mt-1 space-y-1 text-sm text-gray-600 ${item.Category === "Capstone Manual" || item.Category === "Module" ? "hidden" : ""}`}
+                    className={`ml-4 mt-1 space-y-1 text-sm text-gray-600 ${item.category === "Capstone Manual" || item.category === "Module" ? "hidden" : ""}`}
                   >
                     {Object.entries(item.sizes).map(([size, qty]) => (
                       <div key={size} className="flex gap-1 max-w-xs">

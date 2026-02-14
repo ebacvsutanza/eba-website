@@ -28,8 +28,8 @@ const CartModal = ({
     if (size.length === 0) {
       setMessage("Select Size");
       if (
-        product.Category === "Capstone Manual" ||
-        product.Category === "Module"
+        product.category === "Capstone Manual" ||
+        product.category === "Module"
       ) {
         addToCartItem();
         setOpenToast(true);
@@ -51,8 +51,8 @@ const CartModal = ({
     if (size.length === 0) {
       setMessage("Select Size");
       if (
-        product.Category === "Capstone Manual" ||
-        product.Category === "Module"
+        product.category === "Capstone Manual" ||
+        product.category === "Module"
       ) {
         addToCartItem();
         window.location.href = "/ebacart";
@@ -70,16 +70,16 @@ const CartModal = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          transaction: product.Image,
+          transaction: product.image,
           UserID: userId,
-          Category: product.Category,
-          ItemName: product.Item_Name,
-          Variant: product.Variant,
+          Category: product.category,
+          ItemName: product.item_name,
+          Variant: product.variant,
           Size: size,
           Quantity: 1,
           CustomerName: fullName,
           EmailAddress: emailAddress,
-          Amount: product.Price,
+          Amount: product.price,
         }),
       });
 
@@ -99,14 +99,14 @@ const CartModal = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          transaction: product.Image,
+          transaction: product.image,
           UserID: userId,
-          Category: product.Category,
-          ItemName: product.Item_Name,
+          Category: product.category,
+          ItemName: product.item_name,
           Quantity: 1,
           CustomerName: fullName,
           EmailAddress: emailAddress,
-          Amount: product.Price,
+          Amount: product.price,
         }),
       });
 
@@ -135,8 +135,8 @@ const CartModal = ({
         <div className="w-full h-auto md:h-[90%] md:px-5 flex gap-5 flex-col md:flex-row">
           <aside className="md:w-[300px] h-full md:my-auto bg-gray-200 center-flex rounded-lg">
             <img
-              src={`http://localhost:3000/ITEMS/${product.Image}`}
-              alt={product.Item_Name}
+              src={`http://localhost:3000/ITEMS/${product.image}`}
+              alt={product.item_name}
               className="aspect-square w-full"
             />
           </aside>
@@ -144,16 +144,16 @@ const CartModal = ({
           <main className="h-auto flex-1 flex flex-col justify-between space-y-3">
             <div>
               <h1 className="flex justify-between font-bold text-2xl font-heading">
-                <span className="flex-1">{product.Item_Name}</span>
+                <span className="flex-1">{product.item_name}</span>
                 <span className="font-family text-2xl">
-                  PHP {product.Price}
+                  PHP {product.price}
                 </span>
               </h1>
-              <p className="text-[#7d7d7d]">{product.Variant}</p>
+              <p className="text-[#7d7d7d]">{product.variant}</p>
             </div>
 
             <div>
-              {product.Variant && (
+              {product.variant && (
                 <>
                   <p className="mt-10">Select Size</p>
                   <div className="mt-3 relative">
@@ -200,7 +200,7 @@ const CartModal = ({
               </div>
             </div>
 
-            {product.Variant && (
+            {product.variant && (
               <footer>
                 <h3 className="font-medium text-lg">Don’t know your size?</h3>
                 <p>
