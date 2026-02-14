@@ -16,7 +16,7 @@ const News = () => {
 
   const fetchTotalPages = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/bulletin/count");
+      const res = await axios.get("https://capstone-cxej.onrender.com/bulletin/count");
       setTotalPages(Math.ceil(res.data.total / rowsPerPage));
     } catch (err) {
       console.error(err);
