@@ -13,11 +13,13 @@ const salt = 10;
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: 'https://capstone-eba.vercel.app'
+}));
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-const PORT = 3000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
