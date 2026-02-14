@@ -141,7 +141,7 @@ const AdminSidebar = ({
               </button>
             </div>
           ) : notification.length === 0 ? (
-            <p className="w-full max-w-70 h-full max-h-100 overflow-auto no-scrollbar p-2 text-center absolute md:left-[105%] bottom-18 md:bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
+            <p className="w-full max-w-70 h-100 overflow-auto no-scrollbar p-2 text-center absolute md:left-[105%] bottom-18 md:bottom-0 bg-(--primary-bg) shadow-lg rounded-lg space-y-2 z-50">
               No new notification.
             </p>
           ) : (
