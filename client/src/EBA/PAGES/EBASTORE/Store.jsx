@@ -11,7 +11,7 @@ const Store = () => {
   const [carts, setCart] = useState([]);
   const fetchCart = () => {
     axios
-      .get("http://localhost:3000/cartItem", {
+      .get("https://capstone-cxej.onrender.com/cartItem", {
         headers: {
           Authorization: token,
         },
@@ -71,7 +71,7 @@ const Store = () => {
   
   const [products, setProducts] = useState([]);
   const fetchProduct = async () => {
-    const res1 = await axios.get("http://localhost:3000/top-selling-product");
+    const res1 = await axios.get("https://capstone-cxej.onrender.com/top-selling-product");
     setProducts(res1.data);
   };
 
@@ -139,7 +139,7 @@ const Store = () => {
             >
               <div className="img-block">
                 <img
-                  src={`http://localhost:3000/ITEMS/${product.image}`}
+                  src={`https://capstone-cxej.onrender.com/ITEMS/${product.image}`}
                   alt="Item Image"
                   className="aspect-square p-5 border border-gray-400 rounded-lg"
                 />

@@ -20,7 +20,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
 
   const fetchTotalPages = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/inventory/count");
+      const res = await axios.get("https://capstone-cxej.onrender.com/inventory/count");
       setTotalPages(Math.ceil(res.data.total / rowsPerPage));
     } catch (err) {
       console.error(err);
@@ -35,10 +35,10 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
   const [categories, setCategories] = useState([]);
   const fetchInventories = async (page = currentPage) => {
     const response = await axios.get(
-      `http://localhost:3000/inventory?page=${page}`,
+      `https://capstone-cxej.onrender.com/inventory?page=${page}`,
     );
     setInventories(response.data);
-    const categoryResponse = await axios.get("http://localhost:3000/categories");
+    const categoryResponse = await axios.get("https://capstone-cxej.onrender.com/categories");
     setCategories(categoryResponse.data);
   };
 
@@ -110,11 +110,11 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
 
     try {
       if (mode === "add") {
-        await axios.post("http://localhost:3000/inventory", formdata);
+        await axios.post("https://capstone-cxej.onrender.com/inventory", formdata);
         setMessage("Item added successfully");
       } else {
         await axios.put(
-          `http://localhost:3000/inventory/${editingInventory.id}`,
+          `https://capstone-cxej.onrender.com/inventory/${editingInventory.id}`,
           formdata,
         );
         setMessage("Item edited successfully");
@@ -167,7 +167,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
   };
 
   const handleRemove = async (id) => {
-    await axios.delete(`http://localhost:3000/inventory/${id}`);
+    await axios.delete(`https://capstone-cxej.onrender.com/inventory/${id}`);
     setInventories(inventories.filter((inventory) => inventory.id !== id));
 
     setMessage("Item removed successfully");
@@ -279,7 +279,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                 >
                   <div>
                     <img
-                      src={`http://localhost:3000/ITEMS/${inventory.image}`}
+                      src={`https://capstone-cxej.onrender.com/ITEMS/${inventory.image}`}
                       alt=""
                       className="w-14 h-14 object-contain mx-auto rounded"
                     />

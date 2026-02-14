@@ -17,7 +17,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
 
   const fetchTotalPages = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/transaction/count");
+      const res = await axios.get("https://capstone-cxej.onrender.com/transaction/count");
       setTotalPages(Math.ceil(res.data.total / rowsPerPage));
     } catch (err) {
       console.error(err);
@@ -34,7 +34,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
 
   const fetchTransactions = async (order = sortOrder, page = currentPage) => {
     const response = await axios.get(
-      `http://localhost:3000/transaction?order=${order}&page=${page}`,
+      `https://capstone-cxej.onrender.com/transaction?order=${order}&page=${page}`,
     );
     setTransactions(response.data);
     setStatusSorted(false);
@@ -109,12 +109,12 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
     resetForm()
   };
   const bulkConfirmOrders = async (ids) => {
-    return axios.post("http://localhost:3000/bulk-confirm", {
+    return axios.post("https://capstone-cxej.onrender.com/bulk-confirm", {
       orderIds: ids,
     });
   };
   const bulkCancelOrders = async (ids) => {
-    return axios.post("http://localhost:3000/bulk-cancel", {
+    return axios.post("https://capstone-cxej.onrender.com/bulk-cancel", {
       orderIds: ids,
     });
   };
@@ -131,7 +131,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
   const confirmOrder = async (transaction) => {
     setConfirming(true);
     try {
-      const response = await axios.post("http://localhost:3000/confirm-order", {
+      const response = await axios.post("https://capstone-cxej.onrender.com/confirm-order", {
         id: transaction.id,
         orderId: transaction.orderid,
         name: transaction.customer_name,
@@ -158,7 +158,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
   const cancelOrder = async (transaction) => {
     setCancelling(true);
     try {
-      const response = await axios.post("http://localhost:3000/cancel-order", {
+      const response = await axios.post("https://capstone-cxej.onrender.com/cancel-order", {
         id: transaction.id,
         orderId: transaction.orderid,
         itemName: transaction.item_name,
@@ -351,7 +351,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                       <>
                         <div>
                           <img
-                            src={`http://localhost:3000/ITEMS/${transaction.image}`}
+                            src={`https://capstone-cxej.onrender.com/ITEMS/${transaction.image}`}
                             alt=""
                             className="w-14 h-14 object-contain mx-auto rounded"
                           />

@@ -28,7 +28,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
 
     const delayDebounce = setTimeout(() => {
       axios
-        .get(`http://localhost:3000/search?q=${query}`)
+        .get(`https://capstone-cxej.onrender.com/search?q=${query}`)
         .then((res) => setResults(res.data))
         .catch((err) => console.error(err));
     }, 300);
@@ -49,7 +49,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
 
     try {
       axios
-        .post("http://localhost:3000/requestCancelOrder", {
+        .post("https://capstone-cxej.onrender.com/requestCancelOrder", {
           email,
           orderId,
           item,

@@ -44,11 +44,11 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
   const fetchData = async () => {
     try {
       const responseTransaction = await axios.get(
-        "http://localhost:3000/transaction",
+        "https://capstone-cxej.onrender.com/transaction",
       );
       const transactionsData = responseTransaction.data;
       const responseInventory = await axios.get(
-        "http://localhost:3000/inventory",
+        "https://capstone-cxej.onrender.com/inventory",
       );
 
       const inventoriesData = responseInventory.data.map((inventory) => ({
@@ -82,10 +82,10 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
   const [leastPurchased, setLeastPurchased] = useState(null);
   useEffect(() => {
     axios
-      .get("http://localhost:3000/api/best-seller")
+      .get("https://capstone-cxej.onrender.com/api/best-seller")
       .then((res) => setBestSeller(res.data));
     axios
-      .get("http://localhost:3000/api/least-purchased")
+      .get("https://capstone-cxej.onrender.com/api/least-purchased")
       .then((res) => setLeastPurchased(res.data));
   }, []);
 
@@ -95,7 +95,7 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
     const fetchNewOrders = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/dashboard/new-orders",
+          "https://capstone-cxej.onrender.com/api/dashboard/new-orders",
         );
         setNewOrdersThisWeek(response.data.new_orders);
       } catch (error) {
