@@ -9,11 +9,18 @@ const nodemailer = require('nodemailer');
 const emailTracker = {};
 
 const sender = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
-        user: 'ebacvsutanza@gmail.com', 
-        pass: 'vogn dzxy xwof uztp'      
-    }
+        user: "ebacvsutanza@gmail.com",
+        pass: "vogn dzxy xwof uztp",
+    },
+    // ADD THIS: Increase the timeout for the email connection
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
 });
 
 async function processPhotoRequest(targetEmail, base64Image) {

@@ -25,9 +25,9 @@ app.listen(PORT, () => {
 });
 
 
-const { processPhotoRequest } = require("./arSendCopyImageMailer");
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
-app.use(express.json({ limit: "50mb" }));
+// const { processPhotoRequest } = require("./arSendCopyImageMailer");
+// app.use(express.urlencoded({ limit: "50mb", extended: true }));
+// app.use(express.json({ limit: "50mb" }));
 
 
 const uploadStorage = multer.diskStorage({
@@ -2271,17 +2271,17 @@ app.post("/login", async (req, res) => {
 
 
 
-// "send-captured-screen-image-of-virtual-try-on" dont remove this
-app.post('/send-captured-screen-image-of-virtual-try-on', async (req, res) => {
-    // req.body contains the fields from Unity's WWWForm
-    const { email, image } = req.body;
+// // "send-captured-screen-image-of-virtual-try-on" dont remove this
+// app.post('/send-captured-screen-image-of-virtual-try-on', async (req, res) => {
+//     // req.body contains the fields from Unity's WWWForm
+//     const { email, image } = req.body;
     
-    console.log("Request for email:", email); // This helps you debug "No recipients defined"
+//     console.log("Request for email:", email); // This helps you debug "No recipients defined"
 
-    if (!email) {
-        return res.status(400).send("Error: No email provided.");
-    }
+//     if (!email) {
+//         return res.status(400).send("Error: No email provided.");
+//     }
 
-    const message = await processPhotoRequest(email, image);
-    res.send(message);
-});
+//     const message = await processPhotoRequest(email, image);
+//     res.send(message);
+// });
