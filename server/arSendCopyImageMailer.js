@@ -16,7 +16,6 @@ const sender = nodemailer.createTransport({
     }
 });
 
-
 async function processPhotoRequest(targetEmail, base64Image) {
     const today = new Date().toDateString();
 

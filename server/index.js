@@ -9,6 +9,12 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 
+
+const { processPhotoRequest } = require("./arSendCopyImageMailer");
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
+app.use(express.json({ limit: "50mb" }));
+
+
 const salt = 10;
 const app = express();
 
@@ -2262,9 +2268,8 @@ app.post("/login", async (req, res) => {
 });
 
 
-const { processPhotoRequest } = require('./arSendCopyImageMailer');
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use(express.json({ limit: '50mb' }));
+
+
 
 // "send-captured-screen-image-of-virtual-try-on" dont remove this
 app.post('/send-captured-screen-image-of-virtual-try-on', async (req, res) => {
