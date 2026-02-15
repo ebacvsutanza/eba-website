@@ -15,7 +15,7 @@ const app = express();
 
 app.use(express.json());
 app.use(cors(
-  // {origin: 'https://capstone-eba.vercel.app'}
+  {origin: 'https://capstone-eba.vercel.app'}
 ));
 app.use(bodyParser.json());
 app.use(express.static("public"));
