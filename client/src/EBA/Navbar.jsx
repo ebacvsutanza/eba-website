@@ -28,7 +28,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
 
     const delayDebounce = setTimeout(() => {
       axios
-        .get(`https://capstone-cxej.onrender.com/search?q=${query}`)
+        .get(`https://capstone-cxej.onrender.com/searchcustomer?q=${query}`)
         .then((res) => setResults(res.data))
         .catch((err) => console.error(err));
     }, 300);
@@ -36,7 +36,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
     return () => clearTimeout(delayDebounce);
   }, [query]);
 
-  const [selectedTransactions, setSelectedTransactions] = useState([]); // store multiple transactions
+  const [selectedTransaction, setSelectedTransaction] = useState([]); // store multiple transactions
   const [cancelModal, setCancelModal] = useState(false);
   const [cancelData, setCancelData] = useState(null);
 
@@ -71,7 +71,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
     setCancelModal(false);
     setCancellingOrderId(null);
     setQuery("");
-    setSelectedTransactions([]);
+    setSelectedTransaction([]);
   };
 
   return (
@@ -212,7 +212,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
                           key={student.Email_Address}
                           className="w-full cursor-pointer"
                           onClick={() =>
-                            setSelectedTransactions(student.transactions)
+                            setSelectedTransaction(student.transaction)
                           }
                         >
                           <p className="p-2 border border-gray-500 rounded">
@@ -230,8 +230,8 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
                       </h3>
 
                       <div className="min-h-[300px] p-2 border border-(--outline) rounded flex flex-col">
-                        {selectedTransactions.length > 0 ? (
-                          selectedTransactions
+                        {selectedTransaction.length > 0 ? (
+                          selectedTransaction
                             .filter(
                               (transaction) => transaction.Status === "Pending",
                             )
@@ -276,7 +276,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
                               </div>
                             ))
                         ) : (
-                          <p>No transactions found.</p>
+                          <p>No transaction found.</p>
                         )}
                       </div>
                     </div>

@@ -13,13 +13,13 @@ const salt = 10;
 const app = express();
 
 app.use(express.json());
-app.use(cors({
-  origin: 'https://capstone-eba.vercel.app'
-}));
+app.use(cors(
+  {origin: 'https://capstone-eba.vercel.app'}
+));
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-const PORT = process.env.PORT;
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
@@ -458,7 +458,7 @@ app.get("/bulletin", async (req, res) => {
   }
 });
 
-app.get("/search", async (req, res) => {
+app.get("/searchcustomer", async (req, res) => {
   const searchTerm = req.query.q || "";
 
   const sql = `
@@ -487,14 +487,14 @@ app.get("/search", async (req, res) => {
       }
 
       grouped[email].transaction.push({
-        ID: row.id,
-        OrderID: row.orderid,
-        Customer_Name: row.customer_name,
-        Email_Address: row.email_address,
-        Item_Name: row.item_name,
-        Quantity: row.quantity,
-        Variant: row.variant,
-        Status: row.status,
+        id: row.id,
+        orderid: row.orderid,
+        customer_name: row.customer_name,
+        email_address: row.email_address,
+        item_name: row.item_name,
+        quantity: row.quantity,
+        variant: row.variant,
+        status: row.status,
       });
     });
 
@@ -813,7 +813,7 @@ app.post("/requestCancelOrder", (req, res) => {
     expiresIn: "1h",
   });
 
-  const cancelLink = `http://localhost:3000/verifyCancelOrder/${token}`;
+  const cancelLink = `https://capstone-cxej.onrender.com/verifyCancelOrder/${token}`;
 
   const mailOptions = {
     from: "ebacvsutanza@gmail.com",
@@ -1286,7 +1286,6 @@ app.get("/api/dashboard/new-orders", (req, res) => {
       console.error("Error in new orders query:", err);
       return res.status(500).json({ error: err.message });
     }
-    console.log("Backend count result:", result.rows[0].new_orders); // debug
     res.json({ new_orders: parseInt(result.rows[0].new_orders, 10) });
   });
 });
