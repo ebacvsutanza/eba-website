@@ -9,12 +9,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 
-
-const { processPhotoRequest } = require("./arSendCopyImageMailer");
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
-app.use(express.json({ limit: "50mb" }));
-
-
 const salt = 10;
 const app = express();
 
@@ -29,6 +23,12 @@ const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+
+const { processPhotoRequest } = require("./arSendCopyImageMailer");
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
+app.use(express.json({ limit: "50mb" }));
+
 
 const uploadStorage = multer.diskStorage({
   destination: (req, file, cb) => {
