@@ -8,6 +8,7 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
+const SibApiV3Sdk = require("sib-api-v3-sdk");
 
 const salt = 10;
 const app = express();
@@ -24,11 +25,15 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-
 // const { processPhotoRequest } = require("./arSendCopyImageMailer");
 // app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // app.use(express.json({ limit: "50mb" }));
 
+
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+const apiKey = defaultClient.authentications["api-key"];
+apiKey.apiKey = process.env.BREVO_API_KEY;
+const transporter = new SibApiV3Sdk.TransactionalEmailsApi();
 
 const uploadStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -609,13 +614,7 @@ app.delete("/cart/:id", (req, res) => {
     res.json({ message: "Cart deleted successfully." });
   });
 });
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "ebacvsutanza@gmail.com",
-    pass: "vogn dzxy xwof uztp",
-  },
-});
+
 app.post("/checkout", async (req, res) => {
   const { userId } = req.body;
   const client = await db.connect();
@@ -817,10 +816,10 @@ app.post("/requestCancelOrder", async (req, res) => {
     const cancelLink = `https://capstone-cxej.onrender.com/verifyCancelOrder/${token}`;
 
     const mailOptions = {
-      from: "ebacvsutanza@gmail.com",
-      to: email,
+      sender: { name: "EBA", email: "ebacvsutanza@gmail.com" },
+      to: [{ email: email }],
       subject: "Order Cancellation Verification",
-      html: `
+      htmlContent: `
         <p>We received a request to cancel your order number <strong>${orderId}, ${item} - ${variant}</strong></p>
         <p>If this was you, please confirm by clicking the link below:</p>
         <a href="${cancelLink}">Confirm Cancellation</a>
@@ -828,7 +827,7 @@ app.post("/requestCancelOrder", async (req, res) => {
     };
 
     // Send email using async/await
-    await transporter.sendMail(mailOptions);
+    await transporter.sendTransacEmail(mailOptions);
 
     // Always respond to frontend
     res.json({ message: "Verification email sent" });
