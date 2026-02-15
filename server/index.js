@@ -14,9 +14,13 @@ const salt = 10;
 const app = express();
 
 app.use(express.json());
-app.use(cors(
-  {origin: 'https://capstone-eba.vercel.app'}
-));
+app.use(
+  cors({
+    origin: "https://capstone-eba.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  }),
+);
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
