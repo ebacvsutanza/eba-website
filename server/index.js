@@ -487,14 +487,14 @@ app.get("/searchcustomer", async (req, res) => {
       }
 
       grouped[email].transaction.push({
-        id: row.id,
-        orderid: row.orderid,
-        customer_name: row.customer_name,
-        email_address: row.email_address,
-        item_name: row.item_name,
-        quantity: row.quantity,
-        variant: row.variant,
-        status: row.status,
+        ID: row.id,
+        OrderID: row.orderid,
+        Customer_Name: row.customer_name,
+        Email_Address: row.email_address,
+        Item_Name: row.item_name,
+        Quantity: row.quantity,
+        Variant: row.variant,
+        Status: row.status,
       });
     });
 
