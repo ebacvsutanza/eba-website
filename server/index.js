@@ -14,7 +14,7 @@ const app = express();
 
 app.use(express.json());
 app.use(cors(
-  {origin: 'https://capstone-eba.vercel.app'}
+  // {origin: 'https://capstone-eba.vercel.app'}
 ));
 app.use(bodyParser.json());
 app.use(express.static("public"));
@@ -805,35 +805,39 @@ app.post("/checkout", async (req, res) => {
   }
 });
 
-app.post("/requestCancelOrder", (req, res) => {
+app.post("/requestCancelOrder", async (req, res) => {
   const { email, orderId, item, variant } = req.body;
 
-  // Generate a verification token
-  const token = jwt.sign({ email, orderId }, "yourSecretKey", {
-    expiresIn: "1h",
-  });
+  try {
+    // Generate a verification token
+    const token = jwt.sign({ email, orderId }, "yourSecretKey", {
+      expiresIn: "1h",
+    });
 
-  const cancelLink = `https://capstone-cxej.onrender.com/verifyCancelOrder/${token}`;
+    const cancelLink = `https://capstone-cxej.onrender.com/verifyCancelOrder/${token}`;
 
-  const mailOptions = {
-    from: "ebacvsutanza@gmail.com",
-    to: email,
-    subject: "Order Cancellation Verification",
-    html: `
-            <p>We received a request to cancel your order number <strong>${orderId}, ${item} - ${variant}</strong></p>
-            <p>If this was you, please confirm by clicking the link below:</p>
-            <a href="${cancelLink}">Confirm Cancellation</a>
-        `,
-  };
+    const mailOptions = {
+      from: "ebacvsutanza@gmail.com",
+      to: email,
+      subject: "Order Cancellation Verification",
+      html: `
+        <p>We received a request to cancel your order number <strong>${orderId}, ${item} - ${variant}</strong></p>
+        <p>If this was you, please confirm by clicking the link below:</p>
+        <a href="${cancelLink}">Confirm Cancellation</a>
+      `,
+    };
 
-  transporter.sendMail(mailOptions, (err, info) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Failed to send email" });
-    }
+    // Send email using async/await
+    await transporter.sendMail(mailOptions);
+
+    // Always respond to frontend
     res.json({ message: "Verification email sent" });
-  });
+  } catch (err) {
+    console.error("Failed to send cancellation email:", err);
+    res.status(500).json({ message: "Failed to send email" });
+  }
 });
+
 
 app.get("/verifyCancelOrder/:token", async (req, res) => {
   const { token } = req.params;
