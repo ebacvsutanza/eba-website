@@ -1428,9 +1428,11 @@ app.post("/bulk-confirm", async (req, res) => {
 
     const placeholders = orderIds.map((_, i) => `$${i + 1}`).join(",");
 
+    // 1️⃣ Get pending transactions
     const txnResult = await client.query(
       `SELECT * FROM transaction
-       WHERE id IN (${placeholders}) AND status = 'Pending'`,
+       WHERE id IN (${placeholders}) 
+       AND status = 'Pending'`,
       orderIds,
     );
 
@@ -1439,10 +1441,13 @@ app.post("/bulk-confirm", async (req, res) => {
       return res.status(400).json({ message: "No pending orders" });
     }
 
+    // 2️⃣ Check & update inventory
     for (const txn of txnResult.rows) {
       const inventoryResult = await client.query(
         `SELECT quantity FROM inventory
-         WHERE item_name = $1 AND variant = $2 AND size = $3
+         WHERE item_name = $1 
+         AND variant = $2 
+         AND size = $3
          FOR UPDATE`,
         [txn.item_name, txn.variant, txn.size],
       );
@@ -1459,11 +1464,14 @@ app.post("/bulk-confirm", async (req, res) => {
       await client.query(
         `UPDATE inventory
          SET quantity = quantity - $1
-         WHERE item_name = $2 AND variant = $3 AND size = $4`,
+         WHERE item_name = $2 
+         AND variant = $3 
+         AND size = $4`,
         [txn.quantity, txn.item_name, txn.variant, txn.size],
       );
     }
 
+    // 3️⃣ Update transaction status
     await client.query(
       `UPDATE transaction
        SET status = 'Confirmed'
@@ -1473,15 +1481,38 @@ app.post("/bulk-confirm", async (req, res) => {
 
     await client.query("COMMIT");
 
+    // 4️⃣ Send confirmation emails (AFTER COMMIT)
+    for (const txn of txnResult.rows) {
+      try {
+        const msg = {
+          to: txn.email_address,
+          from: "ebacvsutanza@gmail.com",
+          subject: "Your Order Has Been Confirmed",
+          text: `Hello ${txn.customer_name}! Your order number ${txn.orderid}, ${txn.variant} ${txn.item_name} ${txn.variant ? "-" : ""} ${txn.size} has been confirmed. We appreciate your purchase!`,
+          html: `<p>Hello <strong>${txn.customer_name}</strong>!</p>
+             <p>Your order <strong>#${txn.orderid}</strong>, ${txn.variant} ${txn.item_name} ${txn.variant ? "-" : ""} ${txn.size} has been confirmed.</p>
+             <p>We appreciate your purchase!</p>`,
+        };
+
+        await sgMail.send(msg);
+      } catch (emailError) {
+        console.error(
+          `Email failed for order ${txn.orderid}:`,
+          emailError.message,
+        );
+      }
+    }
+
     res.json({ message: "Bulk orders confirmed successfully" });
   } catch (error) {
     await client.query("ROLLBACK");
-    console.error(error);
+    console.error("Bulk confirm error:", error);
     res.status(500).json({ message: error.message });
   } finally {
     client.release();
   }
 });
+
 app.post("/bulk-cancel", async (req, res) => {
   const { orderIds } = req.body;
 
