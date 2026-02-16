@@ -38,6 +38,13 @@ app.listen(PORT, () => {
 // app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // app.use(express.json({ limit: "50mb" }));
 
+const decodedHeader = JSON.parse(
+  Buffer.from(token.split(".")[1], "base64").toString(),
+);
+
+console.log("RAW TOKEN AUD:", decodedHeader.aud);
+console.log("BACKEND EXPECTS:", process.env.GOOGLE_CLIENT_ID);
+
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
