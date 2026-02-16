@@ -1520,22 +1520,70 @@ app.post("/bulk-cancel", async (req, res) => {
     return res.status(400).json({ message: "No orders selected" });
   }
 
+  const client = await db.connect();
+
   try {
+    await client.query("BEGIN");
+
     const placeholders = orderIds.map((_, i) => `$${i + 1}`).join(",");
 
-    await db.query(
-      `UPDATE transaction
-       SET status = 'Cancelled'
-       WHERE id IN (${placeholders}) AND status = 'Pending'`,
+    // 1️⃣ Get pending orders first
+    const txnResult = await client.query(
+      `SELECT * FROM transaction
+       WHERE id IN (${placeholders})
+       AND status = 'Pending'
+       FOR UPDATE`,
       orderIds,
     );
 
+    if (txnResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: "No pending orders found" });
+    }
+
+    // 2️⃣ Update status to Cancelled
+    await client.query(
+      `UPDATE transaction
+       SET status = 'Cancelled'
+       WHERE id IN (${placeholders})
+       AND status = 'Pending'`,
+      orderIds,
+    );
+
+    await client.query("COMMIT");
+
+    // 3️⃣ Send cancellation emails AFTER commit
+    for (const txn of txnResult.rows) {
+      try {
+        const msg = {
+          to: txn.email_address,
+          from: "ebacvsutanza@gmail.com",
+          subject: "Your Order Has Been Cancelled",
+          text: `Hello ${txn.customer_name}! Your order number ${txn.orderid}, ${txn.variant} ${txn.item_name} ${txn.variant ? "-" : ""} ${txn.size} has been cancelled. We appreciate your purchase!`,
+          html: `<p>Hello <strong>${txn.customer_name}</strong>!</p>
+             <p>Your order <strong>#${txn.orderid}</strong>, ${txn.variant} ${txn.item_name} ${txn.variant ? "-" : ""} ${txn.size} has been cancelled.</p>
+             <p>We appreciate your purchase!</p>`,
+        };
+
+        await sgMail.send(msg);
+      } catch (emailError) {
+        console.error(
+          `Email failed for cancelled order ${txn.orderid}:`,
+          emailError.message,
+        );
+      }
+    }
+
     res.json({ message: "Bulk orders cancelled successfully" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Bulk cancel failed" });
+    await client.query("ROLLBACK");
+    console.error("Bulk cancel error:", error);
+    res.status(500).json({ message: error.message });
+  } finally {
+    client.release();
   }
 });
+
 
 // CONFIRM OR CANCEL ORDER
 app.post("/confirm-order", async (req, res) => {
