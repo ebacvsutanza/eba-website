@@ -240,10 +240,6 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
                         key={index}
                         className="w-full p-3 space-y-2 border-b border-gray-400"
                       >
-                        <p>
-                          {transaction.Item_Name}
-                          {transaction.Variant}
-                        </p>
                         <div className="flex gap-1">
                           <p className="font-medium">Order Number:</p>
                           <span>{transaction.OrderID}</span>
