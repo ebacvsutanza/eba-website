@@ -55,10 +55,10 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
         ...inventory,
       }));
 
-      const totalSales = transactionsData.reduce(
-        (acc, transaction) => acc + transaction.amount,
-        0,
-      );
+      const totalSales = transactionsData
+        .filter((transaction) => transaction.status === "Confirmed")
+        .reduce((acc, transaction) => acc + transaction.amount, 0);
+
       setTransactionAmount(totalSales);
       const totalOrders = transactionsData.reduce(
         (acc, transaction) => acc + transaction.quantity,

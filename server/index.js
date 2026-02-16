@@ -796,7 +796,17 @@ app.post("/checkout", async (req, res) => {
 app.post("/requestCancelOrder", async (req, res) => {
   const { email, orderId, item, variant } = req.body;
 
+  
   try {
+    const checkOrder = await db.query(
+      "SELECT * FROM transaction WHERE orderid = $1 AND email_address = $2",
+      [orderId, email],
+    );
+  
+    if (checkOrder.rowCount === 0) {
+      return res.status(404).send("Order not found.");
+    }
+
     // Generate a verification token
     const token = jwt.sign(
       { email, orderId, item, variant },
@@ -804,16 +814,16 @@ app.post("/requestCancelOrder", async (req, res) => {
       { expiresIn: "1h" },
     );
 
-    const cancelLink = `https://capstone-eba.vercel.app/verifycancelorder?token=${token}`;
+    const cancelLink = `https://capstone-cxej.onrender.com/verifyCancelOrder/${token}`;
 
     // Compose the email
     const msg = {
       to: email,
-      from: "ebacvsutanza@gmail.com", // Must be a verified sender in SendGrid
+      from: "ebacvsutanza@gmail.com",
       subject: "Order Cancellation Verification",
       html: `
         <p>We received a request to cancel your order number 
-        <strong>${orderId}, ${item} - ${variant}</strong></p>
+        <strong>${orderId}, ${item} ${variant ? `- ${variant}` : ""}</strong></p>
 
         <p>If this was you, please confirm by clicking the link below:</p>
 
@@ -831,32 +841,29 @@ app.post("/requestCancelOrder", async (req, res) => {
     res.status(500).json({ message: "Failed to send email" });
   }
 });
-
-
-
-
 app.get("/verifyCancelOrder/:token", async (req, res) => {
   const { token } = req.params;
 
-  jwt.verify(token, "yourSecretKey", async (err, decoded) => {
-    if (err) return res.status(400).send("Invalid or expired token.");
-
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const { email, orderId } = decoded;
 
-    try {
-      const updateQuery = `
-        UPDATE transaction
-        SET status = 'Cancelled'
-        WHERE orderid = $1 AND email_address = $2
-      `;
-      await db.query(updateQuery, [orderId, email]);
-      res.send("Your order has been successfully cancelled.");
-    } catch (err) {
-      console.error(err);
-      res.status(500).send("Failed to cancel order.");
-    }
-  });
+    const updateQuery = `
+      UPDATE transaction
+      SET status = 'Cancelled'
+      WHERE orderid = $1 AND email_address = $2
+    `;
+
+    await db.query(updateQuery, [orderId, email]);
+
+    // ✅ Redirect to your frontend Thank You page
+    res.redirect("https://capstone-eba.vercel.app/verifycancelorder");
+  } catch (err) {
+    console.error("Verification failed:", err);
+    res.status(400).send("Invalid or expired token.");
+  }
 });
+
 
 
 // ADMINPANEL
@@ -1276,10 +1283,10 @@ app.get("/api/dashboard/available-stocks", (req, res) => {
 
 app.get("/api/dashboard/new-orders", (req, res) => {
   const query = `
-    SELECT COUNT(*) AS new_orders
-    FROM "transaction"
-    WHERE created_at >= NOW() - INTERVAL '7 days'
-      AND status ILIKE 'confirmed'
+    SELECT COUNT(*)::int AS new_orders
+    FROM transaction
+    WHERE status = 'Confirmed'
+      AND created_at >= NOW()::timestamp - INTERVAL '7 days';
   `;
 
   db.query(query, (err, result) => {
@@ -1549,9 +1556,9 @@ app.post("/confirm-order", async (req, res) => {
       to: customerEmail,
       from: "ebacvsutanza@gmail.com", // Must be verified in SendGrid
       subject: "Your Order Has Been Confirmed",
-      text: `Hello ${name}! Your order number ${orderId}, ${variant} ${item_name} - ${size} has been confirmed. We appreciate your purchase!`,
+      text: `Hello ${name}! Your order number ${orderId}, ${variant} ${item_name} ${variant ? "-" : ''} ${size} has been confirmed. We appreciate your purchase!`,
       html: `<p>Hello <strong>${name}</strong>!</p>
-             <p>Your order <strong>#${orderId}</strong>, ${variant} ${item_name} - ${size} has been confirmed.</p>
+             <p>Your order <strong>#${orderId}</strong>, ${variant} ${item_name} ${variant ? "-" : ''} ${size} has been confirmed.</p>
              <p>We appreciate your purchase!</p>`,
     };
 
@@ -1595,19 +1602,19 @@ app.post("/cancel-order", async (req, res) => {
     ]);
 
     // Restore inventory
-    await db.query(
-      `UPDATE inventory SET quantity = quantity + $1 WHERE item_name = $2 AND variant = $3 AND size = $4`,
-      [quantity, itemName, variant, size],
-    );
+    // await db.query(
+    //   `UPDATE inventory SET quantity = quantity + $1 WHERE item_name = $2 AND variant = $3 AND size = $4`,
+    //   [quantity, itemName, variant, size],
+    // );
 
     // Send cancellation email using SendGrid
     const msg = {
       to: customerEmail,
       from: "ebacvsutanza@gmail.com", // Must be verified in SendGrid
       subject: "Your Order Has Been Cancelled",
-      text: `Hello ${name}! Your order number ${orderId}, ${variant} ${itemName} - ${size} has been cancelled. We appreciate your purchase!`,
+      text: `Hello ${name}! Your order number ${orderId}, ${variant} ${itemName} ${variant ? "-" : ""} ${size} has been cancelled. We appreciate your purchase!`,
       html: `<p>Hello <strong>${name}</strong>!</p>
-             <p>Your order <strong>#${orderId}</strong>, ${variant} ${itemName} - ${size} has been cancelled.</p>
+             <p>Your order <strong>#${orderId}</strong>, ${variant} ${itemName} ${variant ? "-" : ""} ${size} has been cancelled.</p>
              <p>We appreciate your purchase!</p>`,
     };
 
