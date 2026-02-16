@@ -821,8 +821,8 @@ app.post("/requestCancelOrder", async (req, res) => {
 
     // Send email using Resend
     await resend.emails.send({
-      from: "EBA <onboarding@resend.dev>", // required for free account
-      to: 'ebacvsutanza@gmail.com',
+      from: "EBA <noreply@cvsu.edu.ph>", // required for free account
+      to: 'email',
       subject: "Order Cancellation Verification",
       html: `
         <p>We received a request to cancel your order number 
