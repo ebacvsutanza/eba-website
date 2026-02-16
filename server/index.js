@@ -38,12 +38,6 @@ app.listen(PORT, () => {
 // app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // app.use(express.json({ limit: "50mb" }));
 
-const decodedHeader = JSON.parse(
-  Buffer.from(token.split(".")[1], "base64").toString(),
-);
-
-console.log("RAW TOKEN AUD:", decodedHeader.aud);
-console.log("BACKEND EXPECTS:", process.env.GOOGLE_CLIENT_ID);
 
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -72,6 +66,18 @@ const itemStorage = multer.diskStorage({
 });
 const upload = multer({ storage: uploadStorage });
 const itemupload = multer({ storage: itemStorage });
+
+
+const token = req.body.googleToken; // or however you receive it
+const decoded = JSON.parse(
+  Buffer.from(token.split(".")[1], "base64").toString(),
+);
+
+console.log("Received token:", token);
+console.log("Token aud:", decoded.aud);
+console.log("Backend expects:", process.env.GOOGLE_CLIENT_ID);
+
+
 
 // Google OAuth configuration
 if (!process.env.GOOGLE_CLIENT_ID) {
