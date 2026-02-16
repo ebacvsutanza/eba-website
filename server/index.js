@@ -68,17 +68,6 @@ const upload = multer({ storage: uploadStorage });
 const itemupload = multer({ storage: itemStorage });
 
 
-const token = req.body.googleToken; // or however you receive it
-const decoded = JSON.parse(
-  Buffer.from(token.split(".")[1], "base64").toString(),
-);
-
-console.log("Received token:", token);
-console.log("Token aud:", decoded.aud);
-console.log("Backend expects:", process.env.GOOGLE_CLIENT_ID);
-
-
-
 // Google OAuth configuration
 if (!process.env.GOOGLE_CLIENT_ID) {
   console.error("GOOGLE_CLIENT_ID environment variable is not set");
