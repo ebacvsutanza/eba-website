@@ -20,6 +20,7 @@ import Adminpanel from './EBA/PAGES/ADMIN/AdminPanel';
 import StaffAdminpanel from './EBA/PAGES/ADMIN/StaffAdminPanel';
 
 import './App.css';
+import VerifyCancel from './EBA/VerifyCancel';
 
 function App() {
 	return (
@@ -33,6 +34,7 @@ function App() {
           <Route path="/news" element={<News />}></Route>
           <Route path="/abouteba" element={<AboutEBA />}></Route>
           <Route path="/aboutdeveloper" element={<AboutDeveloper />}></Route>
+          <Route path="/verifycancelorder" element={<VerifyCancel />}></Route>
 
           {/* EBA STORE PAGE */}
           <Route path="/userlogin" element={<EBAUserLogin />}></Route>

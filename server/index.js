@@ -8,19 +8,20 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
-const SibApiV3Sdk = require("sib-api-v3-sdk");
+const { Resend } = require("resend");
+
 
 const salt = 10;
 const app = express();
 
 app.use(express.json());
-app.use(
-  cors({
+app.use(cors(
+  {
     origin: "https://capstone-eba.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
-  }),
-);
+  }
+));
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
@@ -34,10 +35,7 @@ app.listen(PORT, () => {
 // app.use(express.json({ limit: "50mb" }));
 
 
-const defaultClient = SibApiV3Sdk.ApiClient.instance;
-const apiKey = defaultClient.authentications["api-key"];
-apiKey.apiKey = process.env.BREVO_API_KEY;
-const transporter = new SibApiV3Sdk.TransactionalEmailsApi();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const uploadStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -813,27 +811,29 @@ app.post("/requestCancelOrder", async (req, res) => {
 
   try {
     // Generate a verification token
-    const token = jwt.sign({ email, orderId }, "yourSecretKey", {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { email, orderId, item, variant },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" },
+    );
 
-    const cancelLink = `https://capstone-cxej.onrender.com/verifyCancelOrder/${token}`;
+    const cancelLink = `https://capstone-eba.vercel.app/verifycancelorder?token=${token}`;
 
-    const mailOptions = {
-      sender: { name: "EBA", email: "ebacvsutanza@gmail.com" },
-      to: [{ email: email }],
+    // Send email using Resend
+    await resend.emails.send({
+      from: "EBA <onboarding@resend.dev>", // required for free account
+      to: email,
       subject: "Order Cancellation Verification",
-      htmlContent: `
-        <p>We received a request to cancel your order number <strong>${orderId}, ${item} - ${variant}</strong></p>
+      html: `
+        <p>We received a request to cancel your order number 
+        <strong>${orderId}, ${item} - ${variant}</strong></p>
+
         <p>If this was you, please confirm by clicking the link below:</p>
+
         <a href="${cancelLink}">Confirm Cancellation</a>
       `,
-    };
+    });
 
-    // Send email using async/await
-    await transporter.sendTransacEmail(mailOptions);
-
-    // Always respond to frontend
     res.json({ message: "Verification email sent" });
   } catch (err) {
     console.error("Failed to send cancellation email:", err);
@@ -864,6 +864,7 @@ app.get("/verifyCancelOrder/:token", async (req, res) => {
     }
   });
 });
+
 
 // ADMINPANEL
 // CHECK AND LOGIN THE ADMIN TO ACCESS ADMIN PANEL
