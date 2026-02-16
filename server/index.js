@@ -9,10 +9,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const { Resend } = require("resend");
-const mailjet = require("node-mailjet").connect(
-  process.env.MAILJET_API_KEY,
-  process.env.MAILJET_API_SECRET,
-);
+// const mailjet = require("node-mailjet").connect(
+//   process.env.MAILJET_API_KEY,
+//   process.env.MAILJET_API_SECRET,
+// );
 
 
 const salt = 10;
