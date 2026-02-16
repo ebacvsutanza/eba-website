@@ -652,7 +652,6 @@ app.post("/checkout", async (req, res) => {
     `;
 
     const { rows } = await client.query(combineQuery, [userId]);
-
     const cartItems = rows.filter((row) => row.item_name !== null);
 
     if (cartItems.length === 0) {
@@ -695,122 +694,104 @@ app.post("/checkout", async (req, res) => {
 
     const insertResult = await client.query(
       tempInsertQuery + placeholders + " RETURNING id",
-      flatValues
+      flatValues,
     );
 
     const firstId = insertResult.rows[0].id;
-
     const orderID = `${new Date().getFullYear()}0${firstId}`;
 
     await client.query(
       `UPDATE transaction SET orderid = $1 WHERE id >= $2 AND id < $3`,
-      [
-        orderID,
-        firstId,
-        firstId + cartItems.length,
-      ]
+      [orderID, firstId, firstId + cartItems.length],
     );
 
     const currentDate = new Date();
     const year = currentDate.getFullYear().toString().slice(-2);
-    const month = (currentDate.getMonth() + 1)
-      .toString()
-      .padStart(2, "0");
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, "0");
     const day = currentDate.getDate().toString().padStart(2, "0");
     const formattedDate = `${month}-${day}-${year}`;
 
-    try {
-      const itemRowsHTML = cartItems
-        .map((row) => {
-          const variantDisplay = row.variant?.trim() ? row.variant : "";
-          const sizeDisplay = row.size?.trim() ? row.size : "";
+    // Compose email HTML
+    const itemRowsHTML = cartItems
+      .map((row) => {
+        const variantDisplay = row.variant?.trim() ? row.variant : "";
+        const sizeDisplay = row.size?.trim() ? row.size : "";
+        const productDisplay = [row.item_name, variantDisplay, sizeDisplay]
+          .filter(Boolean)
+          .join(" - ");
 
-          const productDisplay = [
-            row.item_name,
-            variantDisplay,
-            sizeDisplay,
-          ]
-            .filter((part) => part)
-            .join(" - ");
+        return `
+          <tr>
+            <td style="border: 1px solid gray; padding: 8px; text-align: center;">
+              ${productDisplay}
+            </td>
+            <td style="border: 1px solid gray; padding: 8px; text-align: center;">
+              ₱${row.amount} x ${row.quantity} = ₱${row.amount * row.quantity}
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
 
-          return `
-            <tr>
-              <td style="border: 1px solid gray; padding: 8px; text-align: center;">
-                ${productDisplay}
-              </td>
-              <td style="border: 1px solid gray; padding: 8px; text-align: center;">
-                ₱${row.amount} x ${row.quantity} = ₱${row.amount * row.quantity}
-              </td>
-            </tr>
-          `;
-        })
-        .join("");
+    const totalAmount = cartItems.reduce(
+      (sum, row) => sum + row.amount * row.quantity,
+      0,
+    );
 
-      const totalAmount = cartItems.reduce(
-        (sum, row) => sum + row.amount * row.quantity,
-        0
-      );
+    const user = cartItems[0];
 
-      const user = cartItems[0];
+    // Send email using SendGrid
+    const msg = {
+      to: user.email_address,
+      from: "ebacvsutanza@gmail.com", // Must be verified in SendGrid
+      subject: "Order Details",
+      html: `
+        <header style='height: 150px; background: #c1ff72; display: flex; flex-direction: column; gap: 10px;'>
+          <img src="https://res.cloudinary.com/dfmnlcvbe/image/upload/v1744102780/logo_qy0g8a.png" style='width: 80px; height: 80px;'/>
+          <h2>External Business and<br>Affairs</h2>
+        </header>
 
-      const mailOptions = {
-        from: "ebacvsutanza@gmail.com",
-        to: user.email_address,
-        subject: "Order Details",
-        html: `
-          <header style='height: 150px; background: #c1ff72; display: flex; flex-direction: column; gap: 10px;'>
-            <img src="https://res.cloudinary.com/dfmnlcvbe/image/upload/v1744102780/logo_qy0g8a.png" style='width: 80px; height: 80px;'/>
-            <h2>External Business and<br>Affairs</h2>
-          </header>
+        <h3>Thank you for your order!</h3>
+        <p>${user.full_name}</p>
+        <p>Your order was received! We're working to get it processed and ready to claim.</p>
 
-          <h3>Thank you for your order!</h3>
-          <p>${user.full_name}</p>
-          <p>Your order was received! We're working to get it processed and ready to claim.</p>
+        <div>
+          <p>Order Number: #${orderID}</p>
+          <p>Order Date: ${formattedDate}</p>
+        </div>
 
-          <div>
-            <p>Order Number: #${orderID}</p>
-            <p>Order Date: ${formattedDate}</p>
-          </div>
+        <table style="border: 1px solid gray; border-collapse: collapse; width: 100%;">
+          <tr>
+            <th style="border: 1px solid gray; padding: 8px;">PRODUCT</th>
+            <th style="border: 1px solid gray; padding: 8px;">PRICE</th>
+          </tr>
+          ${itemRowsHTML}
+          <tr>
+            <td></td>
+            <td><strong>Total: ₱${totalAmount}</strong></td>
+          </tr>
+        </table>
+      `,
+    };
 
-          <table style="border: 1px solid gray; border-collapse: collapse; width: 100%;">
-            <tr>
-              <th style="border: 1px solid gray; padding: 8px;">PRODUCT</th>
-              <th style="border: 1px solid gray; padding: 8px;">PRICE</th>
-            </tr>
-            ${itemRowsHTML}
-            <tr>
-              <td></td>
-              <td><strong>Total: ₱${totalAmount}</strong></td>
-            </tr>
-          </table>
-        `,
-      };
+    await sgMail.send(msg);
 
-      await transporter.sendMail(mailOptions);
+    // Clear the cart
+    await client.query("DELETE FROM item_cart WHERE user_id = $1", [userId]);
+    await client.query("COMMIT");
 
-      await client.query(
-        "DELETE FROM item_cart WHERE user_id = $1",
-        [userId]
-      );
-
-      await client.query("COMMIT");
-
-      res.json({ Status: "Success" });
-
-    } catch (emailError) {
-      await client.query("ROLLBACK");
-      console.error("Email Error:", emailError);
-      res.status(500).json({ error: "Email sending failed" });
-    }
-
+    res.json({ Status: "Success" });
   } catch (err) {
     await client.query("ROLLBACK");
     console.error("Checkout Error:", err);
-    res.status(500).json({ error: "Transaction failed" });
+    res
+      .status(500)
+      .json({ error: "Transaction failed or email sending failed" });
   } finally {
     client.release();
   }
 });
+
 
 app.post("/requestCancelOrder", async (req, res) => {
   const { email, orderId, item, variant } = req.body;
@@ -1563,37 +1544,34 @@ app.post("/confirm-order", async (req, res) => {
       id,
     ]);
 
-    // Send confirmation email
-    const mailOptions = {
-      from: "ebacvsutanza@gmail.com",
+    // Send confirmation email using SendGrid
+    const msg = {
       to: customerEmail,
+      from: "ebacvsutanza@gmail.com", // Must be verified in SendGrid
       subject: "Your Order Has Been Confirmed",
       text: `Hello ${name}! Your order number ${orderId}, ${variant} ${item_name} - ${size} has been confirmed. We appreciate your purchase!`,
+      html: `<p>Hello <strong>${name}</strong>!</p>
+             <p>Your order <strong>#${orderId}</strong>, ${variant} ${item_name} - ${size} has been confirmed.</p>
+             <p>We appreciate your purchase!</p>`,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error(error);
-        return res
-          .status(500)
-          .json({ message: "Order confirmed but failed to send email" });
-      }
+    await sgMail.send(msg);
 
-      res
-        .status(200)
-        .json({ message: "Order confirmed and inventory updated" });
-    });
+    res
+      .status(200)
+      .json({ message: "Order confirmed, inventory updated, and email sent" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to confirm order" });
+    console.error("Confirm Order Error:", err);
+    res.status(500).json({ message: "Failed to confirm order or send email" });
   }
 });
+
 app.post("/cancel-order", async (req, res) => {
   const { id, orderId, itemName, variant, size, name, customerEmail } =
     req.body;
 
   try {
-    // Fetch the transaction first
+    // Fetch the transaction
     const transactionResult = await db.query(
       'SELECT status, quantity FROM "transaction" WHERE id = $1',
       [id],
@@ -1605,12 +1583,12 @@ app.post("/cancel-order", async (req, res) => {
 
     const { status, quantity } = transactionResult.rows[0];
 
-    // If it’s already cancelled, no need to do anything
+    // If already cancelled
     if (status === "Cancelled") {
       return res.status(400).json({ message: "Order is already cancelled" });
     }
 
-    // Update transaction status
+    // Update transaction status to Cancelled
     await db.query('UPDATE "transaction" SET status = $1 WHERE id = $2', [
       "Cancelled",
       id,
@@ -1622,28 +1600,28 @@ app.post("/cancel-order", async (req, res) => {
       [quantity, itemName, variant, size],
     );
 
-    // Send cancellation email
-    const mailOptions = {
-      from: "ebacvsutanza@gmail.com",
+    // Send cancellation email using SendGrid
+    const msg = {
       to: customerEmail,
+      from: "ebacvsutanza@gmail.com", // Must be verified in SendGrid
       subject: "Your Order Has Been Cancelled",
       text: `Hello ${name}! Your order number ${orderId}, ${variant} ${itemName} - ${size} has been cancelled. We appreciate your purchase!`,
+      html: `<p>Hello <strong>${name}</strong>!</p>
+             <p>Your order <strong>#${orderId}</strong>, ${variant} ${itemName} - ${size} has been cancelled.</p>
+             <p>We appreciate your purchase!</p>`,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error(error);
-        return res
-          .status(500)
-          .json({ message: "Order cancelled but failed to send email" });
-      }
-      res.status(200).json({ message: "Order cancelled successfully" });
-    });
+    await sgMail.send(msg);
+
+    res
+      .status(200)
+      .json({ message: "Order cancelled successfully and email sent" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to cancel order" });
+    console.error("Cancel Order Error:", err);
+    res.status(500).json({ message: "Failed to cancel order or send email" });
   }
 });
+
 
 // EVENTS & ANNOUNCEMENT PAGE
 // ADD EVENT/ANNOUNCEMENT
