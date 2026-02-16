@@ -828,7 +828,7 @@ app.post("/requestCancelOrder", async (req, res) => {
     // Compose the email
     const msg = {
       to: email,
-      from: "noreply@cvsu.edu.ph", // Must be a verified sender in SendGrid
+      from: "ebacvsutanza@gmail.com", // Must be a verified sender in SendGrid
       subject: "Order Cancellation Verification",
       html: `
         <p>We received a request to cancel your order number 
