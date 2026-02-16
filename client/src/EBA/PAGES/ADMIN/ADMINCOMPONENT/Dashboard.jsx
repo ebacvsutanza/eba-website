@@ -60,11 +60,12 @@ const Dashboard = ({ activeAdmin, openSidebar }) => {
         .reduce((acc, transaction) => acc + transaction.amount, 0);
 
       setTransactionAmount(totalSales);
-      const totalOrders = transactionsData.reduce(
-        (acc, transaction) => acc + transaction.quantity,
-        0,
-      );
+      const totalOrders = transactionsData
+        .filter(transaction => transaction.status === "Confirmed")
+        .reduce((acc, transaction) => acc + Number(transaction.quantity || 0), 0);
+
       setTransactionQuantity(totalOrders);
+      
       const lowStock = inventoriesData.filter((item) => item.quantity < 11);
       setLowStockItems(lowStock);
       const totalInventory = inventoriesData.reduce(
