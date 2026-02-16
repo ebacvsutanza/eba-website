@@ -9,10 +9,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const { Resend } = require("resend");
-// const mailjet = require("node-mailjet").connect(
-//   process.env.MAILJET_API_KEY,
-//   process.env.MAILJET_API_SECRET,
-// );
+const sgMail = require('@sendgrid/mail');
+
+// Set API key from environment variable
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 
 const salt = 10;
@@ -825,39 +825,32 @@ app.post("/requestCancelOrder", async (req, res) => {
 
     const cancelLink = `https://capstone-eba.vercel.app/verifycancelorder?token=${token}`;
 
-    // Send email using Mailjet
-    const request = await mailjet.post("send", { version: "v3.1" }).request({
-      Messages: [
-        {
-          From: {
-            Email: "noreply@cvsu.edu.ph",
-            Name: "EBA",
-          },
-          To: [
-            {
-              Email: email,
-            },
-          ],
-          Subject: "Order Cancellation Verification",
-          HTMLPart: `
-              <p>We received a request to cancel your order number 
-              <strong>${orderId}, ${item} - ${variant}</strong></p>
+    // Compose the email
+    const msg = {
+      to: email,
+      from: "noreply@cvsu.edu.ph", // Must be a verified sender in SendGrid
+      subject: "Order Cancellation Verification",
+      html: `
+        <p>We received a request to cancel your order number 
+        <strong>${orderId}, ${item} - ${variant}</strong></p>
 
-              <p>If this was you, please confirm by clicking the link below:</p>
+        <p>If this was you, please confirm by clicking the link below:</p>
 
-              <a href="${cancelLink}">Confirm Cancellation</a>
-            `,
-        },
-      ],
-    });
+        <a href="${cancelLink}">Confirm Cancellation</a>
+      `,
+    };
 
-    console.log("Mailjet response:", request.body);
+    // Send the email
+    await sgMail.send(msg);
+
+    console.log("SendGrid email sent to:", email);
     res.json({ message: "Verification email sent" });
   } catch (err) {
     console.error("Failed to send cancellation email:", err);
     res.status(500).json({ message: "Failed to send email" });
   }
 });
+
 
 
 
