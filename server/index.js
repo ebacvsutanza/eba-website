@@ -1783,25 +1783,80 @@ app.get("/inventory", async (req, res) => {
 });
 
 // ADD INVENTORY
-app.post("/inventory", itemupload.single("inventory"), (req, res) => {
-  const image = req.file.filename;
-  const { category, itemName, variant, size, quantity, price } = req.body;
-  const insertQuery =
-    "INSERT INTO inventory (image, category, item_name, variant, size, quantity, price) VALUES ( $1, $2, $3, $4, $5, $6, $7)";
+app.post("/inventory", itemupload.single("inventory"), async (req, res) => {
+  const client = await db.connect();
 
-  db.query(
-    insertQuery,
-    [image, category, itemName, variant, size, quantity, price],
-    (err, result) => {
-      if (err) {
-        console.error("Error inserting data:", err);
-        return res.status(500).json({ Message: "Error inserting data" });
-      }
+  try {
+    const image = req.file ? req.file.filename : null;
+    const { category, itemName, variant, size, quantity, price } = req.body;
 
-      return res.json({ Status: "Success" });
-    },
-  );
+    await client.query("BEGIN");
+
+    // 1️⃣ Check if item exists
+    const checkQuery = `
+      SELECT id, quantity 
+      FROM inventory 
+      WHERE category = $1 
+        AND item_name = $2 
+        AND variant = $3 
+        AND size = $4
+      LIMIT 1
+    `;
+
+    const checkResult = await client.query(checkQuery, [
+      category,
+      itemName,
+      variant,
+      size,
+    ]);
+
+    if (checkResult.rows.length > 0) {
+      // 2️⃣ If exists → UPDATE quantity
+      const existing = checkResult.rows[0];
+
+      const updateQuery = `
+        UPDATE inventory
+        SET quantity = $1,
+            price = $2
+        WHERE id = $3
+      `;
+
+      await client.query(updateQuery, [
+        existing.quantity + parseInt(quantity),
+        price,
+        existing.id,
+      ]);
+    } else {
+      // 3️⃣ If not exists → INSERT
+      const insertQuery = `
+        INSERT INTO inventory 
+        (image, category, item_name, variant, size, quantity, price)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `;
+
+      await client.query(insertQuery, [
+        image,
+        category,
+        itemName,
+        variant,
+        size,
+        quantity,
+        price,
+      ]);
+    }
+
+    await client.query("COMMIT");
+
+    return res.json({ Status: "Success" });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Error processing inventory:", err);
+    return res.status(500).json({ Message: "Error saving inventory" });
+  } finally {
+    client.release();
+  }
 });
+
 // EDIT INVENTORY
 app.put("/inventory/:id", itemupload.single("inventory"), (req, res) => {
   const { id } = req.params;

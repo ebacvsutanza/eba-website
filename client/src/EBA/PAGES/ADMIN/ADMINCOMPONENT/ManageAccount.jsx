@@ -173,6 +173,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
         resetForm();
       } else {
         setFormMessage(res.data.Status || "Error processing request");
+        setShowConfirm(false);
       }
 
       setTimeout(() => setMessage(""), 2000);
