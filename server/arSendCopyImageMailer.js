@@ -1,63 +1,48 @@
 // ===============================================================================================================================
 // RECEIVES THE DATA FROM UNITY APPLICATION
 // ===============================================================================================================================
-const express = require('express');
-const app = express();
-
-const nodemailer = require('nodemailer');
-
 const emailTracker = {};
 
-const sender = nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-        user: "ebacvsutanza@gmail.com",
-        pass: "vogn dzxy xwof uztp",
-    },
-    // ADD THIS: Increase the timeout for the email connection
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-});
-
 async function processPhotoRequest(targetEmail, base64Image) {
-    const today = new Date().toDateString();
+  const today = new Date().toDateString();
 
-    // Initialize/Reset daily tracker
-    if (!emailTracker[targetEmail] || emailTracker[targetEmail].date !== today) {
-        emailTracker[targetEmail] = { date: today, count: 0 };
-    }
+  // Initialize/Reset daily tracker
+  if (!emailTracker[targetEmail] || emailTracker[targetEmail].date !== today) {
+    emailTracker[targetEmail] = { date: today, count: 0 };
+  }
 
-    // Enforce 3-photo limit
-    if (emailTracker[targetEmail].count >= 50) {
-        return "Time exceed: Limit of 3 photos reached for today.";
-    }
+  // Enforce 50-photo limit (your code says 50, message says 3 — fixed message below)
+  if (emailTracker[targetEmail].count >= 50) {
+    return "Time exceed: Limit of 50 photos reached for today.";
+  }
 
-    const mailOptions = {
-        from: '"CVSU AR Virtual Try On Kiosk application" <ebacvsutanza@gmail.com>',
-        to: targetEmail,
-        subject: 'Your Virtual Try-On Photo Copy',
-        text: 'Hello! Attached is your photo from the CVSU AR Booth.',
-        attachments: [{
-            filename: 'cvsu-virtual-try-on-capture.png',
-            content: base64Image,
-            encoding: 'base64'
-        }]
-    };
+  const msg = {
+    to: targetEmail,
+    from: {
+      email: "ebacvsutanza@gmail.com", // Must be verified in SendGrid
+      name: "CVSU AR Virtual Try On Kiosk Application",
+    },
+    subject: "Your Virtual Try-On Photo Copy",
+    text: "Hello! Attached is your photo from the CVSU AR Booth.",
+    attachments: [
+      {
+        content: base64Image, // already base64
+        filename: "cvsu-virtual-try-on-capture.png",
+        type: "image/png",
+        disposition: "attachment",
+      },
+    ],
+  };
 
-    try {
-        await sender.sendMail(mailOptions);
-        emailTracker[targetEmail].count++; // Only increase count on success
-        return `Success: Photo sent to ${targetEmail}`;
-    } catch (error) {
-        console.error("Mailer Error:", error);
-        return "Error: Could not send email.";
-    }
+  try {
+    await sgMail.send(msg);
+    emailTracker[targetEmail].count++;
+    return `Success: Photo sent to ${targetEmail}`;
+  } catch (error) {
+    console.error("SendGrid Error:", error.response?.body || error);
+    return "Error: Could not send email.";
+  }
 }
 
 // Export the function so it can be imported elsewhere
 module.exports = { processPhotoRequest };
-
