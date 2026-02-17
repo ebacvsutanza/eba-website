@@ -34,10 +34,9 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-// const { processPhotoRequest } = require("./arSendCopyImageMailer");
-// app.use(express.urlencoded({ limit: "50mb", extended: true }));
-// app.use(express.json({ limit: "50mb" }));
-
+const { processPhotoRequest, validateEmail } = require('./arSendCopyImageMailer');
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '50mb' }));
 
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -2351,20 +2350,58 @@ app.post("/login", async (req, res) => {
 });
 
 
+app.post("/api/validate-email", async (req, res) => {
+  const { email } = req.body;
+  const result = await validateEmail(email);
 
+  if (!result.valid) {
+    return res.status(400).json({ success: false, message: result.reason });
+  }
+  return res.json({ success: true, email: result.email });
+});
 
+app.post("/api/unity-capture", async (req, res) => {
+  const { email, image } = req.body;
 
-// // "send-captured-screen-image-of-virtual-try-on" dont remove this
-// app.post('/send-captured-screen-image-of-virtual-try-on', async (req, res) => {
-//     // req.body contains the fields from Unity's WWWForm
-//     const { email, image } = req.body;
-    
-//     console.log("Request for email:", email); // This helps you debug "No recipients defined"
+  // Guard: both fields required
+  if (!email || !image) {
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: "Both email and image data are required.",
+      });
+  }
 
-//     if (!email) {
-//         return res.status(400).send("Error: No email provided.");
-//     }
+  // Validate domain (@cvsu.edu.ph) + DNS MX
+  const emailCheck = await validateEmail(email);
+  if (!emailCheck.valid) {
+    return res.status(400).json({ success: false, message: emailCheck.reason });
+  }
 
-//     const message = await processPhotoRequest(email, image);
-//     res.send(message);
-// });
+  // Process and send
+  const message = await processPhotoRequest(emailCheck.email, image);
+  const isSuccess = message.startsWith("Success");
+
+  return res
+    .status(isSuccess ? 200 : 500)
+    .json({ success: isSuccess, message });
+});
+
+app.post("/send-captured-screen-image-of-virtual-try-on", async (req, res) => {
+  const { email, image } = req.body;
+
+  console.log("Request for email:", email);
+
+  if (!email) {
+    return res.status(400).send("Error: No email provided.");
+  }
+
+  const emailCheck = await validateEmail(email);
+  if (!emailCheck.valid) {
+    return res.status(400).send("Error: " + emailCheck.reason);
+  }
+
+  const message = await processPhotoRequest(emailCheck.email, image);
+  res.send(message);
+});
