@@ -9,8 +9,6 @@ const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const nodemailer = require("nodemailer");
 const sgMail = require('@sendgrid/mail');
-const session = require("express-session");
-const passport = require("passport");
 
 // Set API key from environment variable
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -22,31 +20,16 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: "https://ebacvsu-website.vercel.app",
+    origin: "https://eba-website.onrender.com",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   }),
 );
 app.use(bodyParser.json());
 app.use(express.static("public"));
-app.use(
-  session({
-    secret: "your_secret_key",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: true,
-      sameSite: "none",
-    },
-  }),
-);
-
-app.use(passport.initialize());
-app.use(passport.session());
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log("CLIENT ID:", process.env.GOOGLE_CLIENT_ID);
   console.log(`Server running on port ${PORT}`);
 });
 
@@ -96,19 +79,6 @@ if (!process.env.GOOGLE_CLIENT_ID) {
   process.exit(1);
 }
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-app.get(
-  "/auth/google/callback",
-  passport.authenticate("google", {
-    failureRedirect: "/userlogin",
-  }),
-  (req, res) => {
-    res.redirect("https://ebacvsu-website.vercel.app");
-  }
-);
-app.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] }),
-);
 
 // Middleware to verify JWT token
 const verifyToken =
@@ -139,9 +109,10 @@ const verifyToken =
 
 // test connection to database
 app.get("/api/test-users", async (req, res) => {
-  const users = await db.query("SELECT * FROM admin_account");
+  const users = await pool.query("SELECT * FROM users");
   res.json(users.rows);
 });
+
 // Test endpoint for JWT
 app.post("/api/test-jwt", (req, res) => {
   try {
