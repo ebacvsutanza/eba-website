@@ -107,6 +107,12 @@ const verifyToken =
     }
   };
 
+// test connection to database
+app.get("/api/test-users", async (req, res) => {
+  const users = await pool.query("SELECT * FROM admin_account");
+  res.json(users.rows);
+});
+
 // Test endpoint for JWT
 app.post("/api/test-jwt", (req, res) => {
   try {
