@@ -139,9 +139,9 @@ const verifyToken =
 // test connection to database
 app.get("/api/test-users", async (req, res) => {
   const users = await db.query("SELECT * FROM admin_account");
+  console.log("CLIENT ID:", process.env.GOOGLE_CLIENT_ID);
   res.json(users.rows);
 });
-console.log("CLIENT ID:", process.env.GOOGLE_CLIENT_ID);
 // Test endpoint for JWT
 app.post("/api/test-jwt", (req, res) => {
   try {
