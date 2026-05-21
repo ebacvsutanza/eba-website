@@ -28,6 +28,8 @@ app.use(
 );
 app.use(bodyParser.json());
 app.use(express.static("public"));
+app.use(passport.initialize());
+app.use(passport.session());
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
@@ -88,6 +90,10 @@ app.get(
   (req, res) => {
     res.redirect("https://ebacvsu-website.vercel.app");
   }
+);
+app.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] }),
 );
 
 // Middleware to verify JWT token
