@@ -109,7 +109,7 @@ const verifyToken =
 
 // test connection to database
 app.get("/api/test-users", async (req, res) => {
-  const users = await pool.query("SELECT * FROM admin_account");
+  const users = await db.query("SELECT * FROM admin_account");
   res.json(users.rows);
 });
 
