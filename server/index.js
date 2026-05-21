@@ -42,7 +42,7 @@ app.use(express.json({ limit: '50mb' }));
 
 
 const uploadStorage = new CloudinaryStorage({
-  cloudinary,
+  cloudinary: cloudinary,
   params: async (req, file) => ({
     folder: "UPLOADS",
     public_id: file.fieldname + "_" + Date.now(),
@@ -51,11 +51,10 @@ const uploadStorage = new CloudinaryStorage({
 });
 
 const itemStorage = new CloudinaryStorage({
-  cloudinary,
+  cloudinary: cloudinary,
   params: async (req, file) => ({
     folder: "ITEMS",
-    public_id: file.fieldname + "_" + Date.now(),
-    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
   }),
 });
 const upload = multer({ storage: uploadStorage });
