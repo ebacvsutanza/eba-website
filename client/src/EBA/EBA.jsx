@@ -68,9 +68,6 @@ const EBA = () => {
                 without the need to wear the clothing physically. See how it
                 would fit before you buy.
               </p>
-              <button className="bg-(--primary-btn) text-(--primary-text) font-bold py-2 px-4 rounded hover:bg-(--accent) transition cursor-pointer">
-                Try It Now
-              </button>
             </div>
           </div>
           <div className="hero-image hidden lg:flex">
