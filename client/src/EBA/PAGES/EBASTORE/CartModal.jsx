@@ -140,7 +140,7 @@ const CartModal = ({
             <img
               src={product.image}
               alt={product.item_name}
-              className="aspect-square w-full"
+              className="aspect-square w-full object-contain"
             />
           </aside>
 

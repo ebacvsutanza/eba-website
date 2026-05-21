@@ -462,10 +462,15 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                     <option value="" disabled>
                       Select Size
                     </option>
-                    <option value="Small">Small</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Large">Large</option>
-                    <option value="Extra Large">Extra Large</option>
+                    <option value="XS">Extra Small</option>
+                    <option value="S">Small</option>
+                    <option value="M">Medium</option>
+                    <option value="L">Large</option>
+                    <option value="XL">Extra Large</option>
+                    <option value="2XL">2 Extra Large</option>
+                    <option value="3XL">3 Extra Large</option>
+                    <option value="4XL">4 Extra Large</option>
+                    <option value="5XL">5 Extra Large</option>
                   </select>
                 </div>
               </>
