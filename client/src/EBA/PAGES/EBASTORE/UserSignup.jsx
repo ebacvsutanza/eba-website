@@ -5,6 +5,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 
 import './CSS/Preloader.css';
+import { HiArrowLeft } from 'react-icons/hi';
 
 const UserSignin = () => {
 	const navigateTo = useNavigate();
@@ -61,7 +62,8 @@ const UserSignin = () => {
 	return (
     <div className="h-screen p-3 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.6),rgba(0,0,0,0.6)),url('/cvsuback.jpg')] bg-cover bg-center center-flex">
       <div className="lg:w-3/4 xl:w-3/5 h-3/4 bg-(--primary-bg) rounded-xl flex overflow-hidden relative">
-        <div class="md:w-1/2 px-5 py-10 text-center flex justify-around flex-col">
+        <div class="md:w-1/2 px-5 py-10 text-center flex justify-around flex-col relative">
+					<HiArrowLeft className="text-lg cursor-pointer absolute top-5 left-5" onClick={() => navigateTo("/")} />
           <div className="center-flex flex-col gap-3">
             <img
               src="/logo.png"

@@ -403,6 +403,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                           "Student Uniform",
                           "Department Shirt",
                           "Organizational Shirt",
+                          "NTSP T-Shirt",
                         ].includes(category.category);
                       }
                     } else {
@@ -410,6 +411,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                         "Student Uniform",
                         "Department Shirt",
                         "Organizational Shirt",
+                        "NTSP T-Shirt",
                         "Module",
                         "Capstone Manual",
                       ].includes(category.category);
