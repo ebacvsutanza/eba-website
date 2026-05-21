@@ -21,6 +21,7 @@
     "chart.js": "^4.4.9",
     "jwt-decode": "^4.0.0",
     "react": "^19.1.0",
+    "react-big-calendar": "^1.19.4",
     "react-calendar": "^5.1.0",
     "react-chartjs-2": "^5.3.0",
     "react-datepicker": "^8.3.0",
