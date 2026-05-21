@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const nodemailer = require("nodemailer");
 const sgMail = require('@sendgrid/mail');
+const passport = require("passport");
 
 // Set API key from environment variable
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
