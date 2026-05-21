@@ -53,7 +53,7 @@ const uploadStorage = new CloudinaryStorage({
 const itemStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => ({
-    folder: "ITEMS"a,
+    folder: "ITEMS",
     allowed_formats: ["jpg", "png", "jpeg", "webp"],
   }),
 });
