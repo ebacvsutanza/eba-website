@@ -46,6 +46,7 @@ app.use(passport.session());
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+  console.log("CLIENT ID:", process.env.GOOGLE_CLIENT_ID);
   console.log(`Server running on port ${PORT}`);
 });
 
@@ -139,7 +140,6 @@ const verifyToken =
 // test connection to database
 app.get("/api/test-users", async (req, res) => {
   const users = await db.query("SELECT * FROM admin_account");
-  console.log("CLIENT ID:", process.env.GOOGLE_CLIENT_ID);
   res.json(users.rows);
 });
 // Test endpoint for JWT
