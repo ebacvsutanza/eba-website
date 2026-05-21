@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const nodemailer = require("nodemailer");
 const sgMail = require('@sendgrid/mail');
+const session = require("express-session");
 const passport = require("passport");
 
 // Set API key from environment variable
@@ -28,6 +29,18 @@ app.use(
 );
 app.use(bodyParser.json());
 app.use(express.static("public"));
+app.use(
+  session({
+    secret: "your_secret_key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: true,
+      sameSite: "none",
+    },
+  }),
+);
+
 app.use(passport.initialize());
 app.use(passport.session());
 
