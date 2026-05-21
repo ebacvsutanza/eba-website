@@ -29,7 +29,7 @@ const UserLogin = () => {
 
 			// Send token to backend
 			console.log('Sending token to backend...');
-			const response = await axios.post('https://capstone-cxej.onrender.com/userlogin', {
+			const response = await axios.post('http://localhost:3000/userlogin', {
 				googleToken: credentialResponse.credential
 			});
 

@@ -30,7 +30,7 @@ const SetPassword = () => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.post(
-                'https://capstone-cxej.onrender.com/set-password',
+                'http://localhost:3000/set-password',
                 { password },
                 {
                     headers: {

@@ -32,7 +32,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
 
     const delayDebounce = setTimeout(() => {
       axios
-        .get(`https://capstone-cxej.onrender.com/searchcustomer?q=${query}`)
+        .get(`http://localhost:3000/searchcustomer?q=${query}`)
         .then((res) => setResults(res.data || []))
         .catch((err) => console.error(err));
     }, 300);
@@ -48,7 +48,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
     });
 
     axios
-      .post("https://capstone-cxej.onrender.com/requestCancelOrder", {
+      .post("http://localhost:3000/requestCancelOrder", {
         email,
         orderId,
         item,
@@ -177,7 +177,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
         {/* Check Status Modal */}
         {openStatus && !cancelModal && (
           <div className="h-screen fixed inset-0 bg-black/50 center-flex z-30">
-            <div className="bg-(--primary-bg) m-3 p-6 rounded w-full lg:w-3/7 min-h-3/5 space-y-5 overflow-y-auto no-scrollbar">
+            <div className="bg-(--primary-bg) m-3 p-6 rounded w-full lg:w-3/5 min-h-3/5 space-y-5 overflow-y-auto no-scrollbar">
               <div className="flex justify-between items-center">
                 <h2 className="font-bold text-2xl text-(--secondary-text)">
                   Check Status

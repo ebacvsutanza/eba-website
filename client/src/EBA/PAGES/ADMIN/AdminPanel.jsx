@@ -29,7 +29,7 @@ const AdminPanel = () => {
 
 	const fetchAdmin = async (token) => {
 		try {
-			const res = await fetch("https://capstone-cxej.onrender.com/adminpanel", {
+			const res = await fetch("http://localhost:3000/adminpanel", {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
@@ -71,7 +71,7 @@ const AdminPanel = () => {
 	const [notification, setNotifications] = useState([])
 	const fetchNotifications = async () => {
 		try {
-			const response = await axios.get('https://capstone-cxej.onrender.com/notifications');
+			const response = await axios.get('http://localhost:3000/notifications');
 			setNotifications(response.data);
 			} catch (err) {
 			console.error('Error fetching notifications:', err);

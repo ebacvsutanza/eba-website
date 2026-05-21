@@ -28,7 +28,7 @@ const SalesChart = () => {
   const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
-    axios.get("https://capstone-cxej.onrender.com/api/sales-data")
+    axios.get("http://localhost:3000/api/sales-data")
       .then((response) => {
         setChartData({
           labels: response.data.labels,

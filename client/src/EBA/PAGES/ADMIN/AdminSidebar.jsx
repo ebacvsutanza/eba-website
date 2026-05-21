@@ -94,7 +94,7 @@ const AdminSidebar = ({
 
       <div className="py-1 px-3 flex items-center gap-3 border border-gray-400 rounded-lg relative">
         <img
-          src={`https://capstone-cxej.onrender.com/UPLOADS/${image}`}
+          src={`http://localhost:3000/UPLOADS/${image}`}
           alt="Admin Profile"
           className="w-14 h-14 object-cover rounded-full"
         />
@@ -149,7 +149,7 @@ const AdminSidebar = ({
               {notification.map((notif, index) => (
                 <li
                   key={index}
-                  className="p-3 rounded-lg transition-all hover:bg-gray-200"
+                  className="p-3 rounded-lg transition-all hover:bg-(--accent)/25"
                 >
                   {notif.type === "transaction" ? (
                     <div className="notif">

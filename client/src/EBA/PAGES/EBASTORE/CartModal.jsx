@@ -21,6 +21,9 @@ const CartModal = ({
     "Xtra Large": "XL",
     "Extra Large": "XL",
   };
+  const selectedStock = product.Sizes?.find(
+    (item) => item.Size === size,
+  )?.Quantity;
 
   const [message, setMessage] = useState("");
 
@@ -66,7 +69,7 @@ const CartModal = ({
 
   const addToCart = async () => {
     try {
-      const response = await fetch("https://capstone-cxej.onrender.com/addToCart", {
+      const response = await fetch("http://localhost:3000/addToCart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -95,7 +98,7 @@ const CartModal = ({
   };
   const addToCartItem = async () => {
     try {
-      const response = await fetch("https://capstone-cxej.onrender.com/addToCart", {
+      const response = await fetch("http://localhost:3000/addToCart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -135,7 +138,7 @@ const CartModal = ({
         <div className="w-full h-auto md:h-[90%] md:px-5 flex gap-5 flex-col md:flex-row">
           <aside className="md:w-[300px] h-full md:my-auto bg-gray-200 center-flex rounded-lg">
             <img
-              src={`https://capstone-cxej.onrender.com/ITEMS/${product.image}`}
+              src={`http://localhost:3000/ITEMS/${product.image}`}
               alt={product.item_name}
               className="aspect-square w-full"
             />
@@ -150,6 +153,7 @@ const CartModal = ({
                 </span>
               </h1>
               <p className="text-[#7d7d7d]">{product.variant}</p>
+              <small> Stocks: {size ? selectedStock : "Select size"}</small>
             </div>
 
             <div>
@@ -207,9 +211,9 @@ const CartModal = ({
                   Check out the AR Try-on application in the campus kiosk to see
                   your estimated size
                 </p>
-                <p className="flex items-center gap-2 text-(--secondary-text)">
+                <a href='/' className="flex items-center gap-2 text-(--secondary-text)">
                   See how <FontAwesomeIcon icon={faChevronRight} />
-                </p>
+                </a>
               </footer>
             )}
           </main>

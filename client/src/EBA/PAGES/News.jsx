@@ -16,7 +16,7 @@ const News = () => {
 
   const fetchTotalPages = async () => {
     try {
-      const res = await axios.get("https://capstone-cxej.onrender.com/bulletin/count");
+      const res = await axios.get("http://localhost:3000/bulletin/count");
       setTotalPages(Math.ceil(res.data.total / rowsPerPage));
     } catch (err) {
       console.error(err);
@@ -29,7 +29,7 @@ const News = () => {
   const [bulletin, setBulletin] = useState([]);
   const fetchBulletin = async (page = currentPage) => {
     const response = await axios.get(
-      `https://capstone-cxej.onrender.com/bulletin?&page=${page}`,
+      `http://localhost:3000/bulletin?&page=${page}`,
     );
     setBulletin(response.data);
   };
@@ -57,7 +57,7 @@ const News = () => {
               No News and Announcement
             </p>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
               {bulletin.map((bulletin, index) => (
                 <div
                   key={index}

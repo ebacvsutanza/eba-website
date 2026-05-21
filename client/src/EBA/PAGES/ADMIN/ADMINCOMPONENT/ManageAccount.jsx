@@ -36,7 +36,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
   // ------------------------ Fetch Total Pages ------------------------
   const fetchTotalPages = async () => {
     try {
-      const res = await axios.get("https://capstone-cxej.onrender.com/manageadmin/count");
+      const res = await axios.get("http://localhost:3000/manageadmin/count");
       setTotalPages(Math.ceil(res.data.total / rowsPerPage));
     } catch (err) {
       console.error(err);
@@ -47,7 +47,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
   const fetchManageAccount = async (page = currentPage) => {
     try {
       const res = await axios.get(
-        `https://capstone-cxej.onrender.com/manageadmin?page=${page}&limit=${rowsPerPage}`
+        `http://localhost:3000/manageadmin?page=${page}&limit=${rowsPerPage}`
       );
       setManageAdmin(res.data);
     } catch (err) {
@@ -162,9 +162,9 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
     try {
       let res;
       if (mode === "add") {
-        res = await axios.post("https://capstone-cxej.onrender.com/manageadmin", form);
+        res = await axios.post("http://localhost:3000/manageadmin", form);
       } else {
-        res = await axios.put(`https://capstone-cxej.onrender.com/manageadmin/${editingAdmin.id}`, form);
+        res = await axios.put(`http://localhost:3000/manageadmin/${editingAdmin.id}`, form);
       }
 
       if (res.data.Status === "Success") {
@@ -188,7 +188,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
   // ------------------------ Handle Delete ------------------------
   const handleRemove = async (id) => {
     try {
-      await axios.delete(`https://capstone-cxej.onrender.com/manageadmin/${id}`);
+      await axios.delete(`http://localhost:3000/manageadmin/${id}`);
       setMessage("Admin deleted successfully");
       fetchManageAccount(currentPage);
       setTimeout(() => setMessage(""), 2000);
@@ -260,7 +260,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
                 >
                   <div>
                     <img
-                      src={`https://capstone-cxej.onrender.com/UPLOADS/${admin.image}`}
+                      src={`http://localhost:3000/UPLOADS/${admin.image}`}
                       alt=""
                       className="w-14 h-14 object-contain mx-auto rounded"
                     />
@@ -320,7 +320,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
 
       {showModal && (
         <div className="h-screen fixed inset-0 bg-black/50 flex items-center justify-end z-50">
-          <div className="bg-white p-6 rounded w-3/4 lg:w-1/3 h-screen space-y-5">
+          <div className="bg-white text-[#2E2E2E] p-6 rounded w-3/4 lg:w-1/3 h-screen space-y-5">
             <div className="mb-10 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-(--secondary-text)">
                 {mode === "add" ? "Add Account" : "Edit Account"}
@@ -417,7 +417,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
 
       {showConfirm && (
         <div className="h-screen fixed inset-0 bg-black/50 center-flex z-50">
-          <div className="bg-white p-5 rounded-lg lg:w-1/3 overflow-auto flex justify-between flex-col gap-10">
+          <div className="bg-white text-[#2E2E2E] p-5 rounded-lg lg:w-1/3 overflow-auto flex justify-between flex-col gap-10">
             <div className="space-y-3">
               <h1 className="font-bold text-lg text-(--error)">
                 {msg} account

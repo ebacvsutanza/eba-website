@@ -35,13 +35,13 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
   }, []);
 
   const fetchAnnouncements = async () => {
-    const res = await axios.get("https://capstone-cxej.onrender.com/bulletin");
+    const res = await axios.get("http://localhost:3000/bulletin");
     setAnnouncements(res.data);
   };
 
   /* ---------------- CREATE ---------------- */
   const createAnnouncement = async () => {
-    await axios.post("https://capstone-cxej.onrender.com/announcement", {
+    await axios.post("http://localhost:3000/announcement", {
       title: title,
       details: details,
       facultyname: facultyName,
@@ -57,7 +57,7 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
   const updateAnnouncement = async () => {
     if (!selectedEvent) return;
 
-    await axios.put(`https://capstone-cxej.onrender.com/announcement/${selectedEvent.id}`, {
+    await axios.put(`http://localhost:3000/announcement/${selectedEvent.id}`, {
       Title: title,
       Details: details,
       FacultyName: facultyName,
@@ -71,7 +71,7 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
 
   /* ---------------- DELETE ---------------- */
   const deleteAnnouncement = async (id) => {
-    await axios.delete(`https://capstone-cxej.onrender.com/announcement/${id}`);
+    await axios.delete(`http://localhost:3000/announcement/${id}`);
     fetchAnnouncements();
     flashMessage("Event deleted successfully");
     setShowModal(false);
@@ -224,10 +224,14 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
 
       {showModal && (
         <div className="h-screen fixed inset-0 bg-black/50 flex items-center justify-end z-50">
-          <div className="bg-white p-6 rounded w-3/4 lg:w-1/3 h-screen space-y-5">
+          <div className="bg-white text-[#2E2E2E] p-6 rounded w-3/4 lg:w-1/3 h-screen space-y-5">
             <div className="mb-10 flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-(--secondary-text)">
-                {role === 'Admin' ? 'View Event' : mode === "add" ? "Add Event" : "Edit Event"}
+              <h2 className="text-2xl font-bold">
+                {role === "Admin"
+                  ? "View Event"
+                  : mode === "add"
+                    ? "Add Event"
+                    : "Edit Event"}
               </h2>
 
               <button className="cursor-pointer" onClick={resetForm}>
@@ -278,7 +282,9 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
               <div className="text-(--error) text-center">{formMessage}</div>
             )}
 
-            <div className={`justify-between gap-3 pt-3 ${role !== 'Admin' ? 'flex' : 'hidden'}`}>
+            <div
+              className={`justify-between gap-3 pt-3 ${role !== "Admin" ? "flex" : "hidden"}`}
+            >
               {(mode === "edit" || mode === "delete") && (
                 <button
                   className="px-4 py-2 bg-(--error) flex-1 text-white rounded-lg cursor-pointer"
@@ -301,7 +307,7 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
 
       {showConfirm && (
         <div className="h-screen p-3 fixed inset-0 bg-black/50 center-flex z-50">
-          <div className="w-full bg-white p-5 rounded-lg lg:w-1/3 overflow-auto flex justify-between flex-col gap-10">
+          <div className="w-full bg-white text-[#2E2E2E] p-5 rounded-lg lg:w-1/3 overflow-auto flex justify-between flex-col gap-10">
             <div className="space-y-3">
               <h1 className="font-bold text-lg text-(--error)">
                 {msg} Events & Announcement

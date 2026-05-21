@@ -18,7 +18,7 @@ export default function Catalog() {
   const [carts, setCart] = useState([]);
   const fetchCart = () => {
     axios
-      .get("https://capstone-cxej.onrender.com/cartItem", {
+      .get("http://localhost:3000/cartItem", {
         headers: {
           Authorization: token,
         },
@@ -55,9 +55,9 @@ export default function Catalog() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const fetchProduct = async () => {
-    const res1 = await axios.get("https://capstone-cxej.onrender.com/storeinventory");
+    const res1 = await axios.get("http://localhost:3000/storeinventory");
     setProducts(res1.data);
-    const res2 = await axios.get("https://capstone-cxej.onrender.com/categories");
+    const res2 = await axios.get("http://localhost:3000/categories");
     setCategories(res2.data);
   }
 
@@ -174,6 +174,10 @@ export default function Catalog() {
           <div className="my-3 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredProducts.map((product, index) => {
               const isActive = activeIndex === index;
+              const totalQuantity = product.Sizes.reduce(
+                (sum, size) => sum + size.Quantity,
+                0,
+              );
 
               return (
                 <div
@@ -190,22 +194,25 @@ export default function Catalog() {
                 >
                   <div className="aspect-square rounded-xl bg-gray-200 overflow-hidden flex items-center justify-center">
                     <img
-                      src={`https://capstone-cxej.onrender.com/ITEMS/${product.image}`}
+                      src={`http://localhost:3000/ITEMS/${product.image}`}
                       alt={product.item_name}
                       className="w-full h-full object-cover"
                     />
                   </div>
 
                   <div className="h-[130px] py-2 relative flex flex-col justify-between">
-                    <h3 className="font-bold text-lg mb-5 line-clamp-2">
-                      {product.item_name}
-                    </h3>
+                    <div className="space-y-2">
+                      <h3 className="font-bold text-lg mb-5 line-clamp-2">
+                        {product.item_name}
+                      </h3>
+                      <small>Stocks: {totalQuantity}</small>
+                    </div>
 
                     <div className="flex items-center justify-between">
                       <p className="mr-18">Starts at PHP {product.price}</p>
 
                       <button
-                        onClick={(e) => handleOpenModal(e, product)}
+                        onClick={(e) => handleOpenModal(e, product, totalQuantity)}
                         className={`
                           bg-(--primary-btn) px-5 py-1 rounded-full absolute md:bottom-0 right-0 cursor-pointer
                           ${isActive ? "visible" : "invisible"}

@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 import StoreNavbar from "./StoreNavbar";
-
 
 const Store = () => {
   const navigate = useNavigate();
@@ -11,7 +10,7 @@ const Store = () => {
   const [carts, setCart] = useState([]);
   const fetchCart = () => {
     axios
-      .get("https://capstone-cxej.onrender.com/cartItem", {
+      .get("http://localhost:3000/cartItem", {
         headers: {
           Authorization: token,
         },
@@ -30,19 +29,15 @@ const Store = () => {
   const slides = [
     {
       id: 1,
-      image: 'unif.jpg'
+      image: "unif.jpg",
     },
     {
       id: 2,
-      image: 'maleunif.png'
+      image: "maleunif.png",
     },
     {
       id: 3,
-      image: 'femaleunif.jpg'
-    },
-    {
-      id: 4,
-      image: 'cvsuback.jpg'
+      image: "female_uniform.png",
     },
   ];
   useEffect(() => {
@@ -55,28 +50,70 @@ const Store = () => {
   const goToSlide = (index) => {
     setCurrentSlide(index);
   };
-  
 
   const token = localStorage.getItem("token");
   useEffect(() => {
     if (!token) {
-			alert("Please Login First");
-      window.location.href = '/userlogin';
+      alert("Please Login First");
+      window.location.href = "/userlogin";
       return;
     }
-  
+
     fetchProduct();
   }, [token]);
-  
-  
+
   const [products, setProducts] = useState([]);
   const fetchProduct = async () => {
-    const res1 = await axios.get("https://capstone-cxej.onrender.com/top-selling-product");
-    setProducts(res1.data);
+    try {
+      const res1 = await axios.get("http://localhost:3000/top-selling-product");
+      // If top-selling products are less than 5, fetch only student uniform products from inventory as fallback
+      if (res1.data.length < 5) {
+        const resAll = await axios.get(
+          "http://localhost:3000/storeinventory?category=Student%20Uniform",
+        );
+        // Filter to get only Student Uniform items, then 1 Male and 1 Female
+        const studentUniforms = resAll.data.filter(
+          (item) => item.category === "Student Uniform",
+        );
+        const seenVariants = new Set();
+        const filtered = studentUniforms.filter((item) => {
+          if (!seenVariants.has(item.variant)) {
+            seenVariants.add(item.variant);
+            return true;
+          }
+          return false;
+        });
+        setProducts(filtered);
+      } else {
+        setProducts(res1.data);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      // Fallback to student uniform products from inventory if top-selling fails
+      try {
+        const resAll = await axios.get(
+          "http://localhost:3000/inventory?category=Student%20Uniform",
+        );
+        // Filter to get only Student Uniform items, then 1 Male and 1 Female
+        const studentUniforms = resAll.data.filter(
+          (item) => item.category === "Student Uniform",
+        );
+        const seenVariants = new Set();
+        const filtered = studentUniforms.filter((item) => {
+          if (!seenVariants.has(item.variant)) {
+            seenVariants.add(item.variant);
+            return true;
+          }
+          return false;
+        });
+        setProducts(filtered);
+      } catch (err) {
+        console.error("Error fetching student uniform products:", err);
+      }
+    }
   };
 
-	
-	return (
+  return (
     <div className="lg:px-[1.3in]">
       <StoreNavbar carts={carts} fetchCart={fetchCart} />
 
@@ -90,12 +127,12 @@ const Store = () => {
               }`}
             >
               <div
-                className={`w-full h-full flex flex-col items-center justify-center text-white`}
+                className={`w-full h-full flex flex-col items-center justify-center text-white bg-gray-200`}
               >
                 <img
                   src={slide.image}
                   alt="Carousel Image"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               </div>
             </div>
@@ -127,33 +164,44 @@ const Store = () => {
         </div>
 
         <div className="mb-10 mt-3 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 md:gap-5">
-          {products.map((product, index) => (
-            <div
-              key={index}
-              onClick={() =>
-                navigate("/catalog", {
-                  state: { selectedCategory: product.category },
-                })
-              }
-              className="p-3 rounded-lg border-2 border-transparent hover:border-(--primary-btn) transition-all"
-            >
-              <div className="img-block">
-                <img
-                  src={`https://capstone-cxej.onrender.com/ITEMS/${product.image}`}
-                  alt="Item Image"
-                  className="aspect-square p-5 border border-gray-400 rounded-lg"
-                />
+          {products.map((product, index) => {
+            const totalQuantity = product.Sizes.reduce(
+              (sum, size) => sum + Number(size.Quantity),
+              0
+            );
+
+            return (
+              <div
+                key={index}
+                onClick={() =>
+                  navigate("/catalog", {
+                    state: { selectedCategory: product.category },
+                  })
+                }
+                className="p-3 rounded-lg border-2 border-transparent hover:border-(--primary-btn) transition-all"
+              >
+                <div className="img-block">
+                  <img
+                    src={`http://localhost:3000/ITEMS/${product.image}`}
+                    alt="Item Image"
+                    className="aspect-square p-5 border border-gray-400 rounded-lg"
+                  />
+                </div>
+                <div className="h-[150px] p-3 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold">{product.item_name}</h3>
+                    <small>Stocks: {totalQuantity}</small>
+                  </div>
+                  
+                  <p>Starts at PHP {product.price}</p>
+                </div>
               </div>
-              <div className="h-[150px] p-3 flex flex-col justify-between">
-                <h3 className="text-lg font-semibold">{product.item_name}</h3>
-                <p>Starts at PHP {product.price}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </div>
   );
-}
+};
 
-export default Store
+export default Store;

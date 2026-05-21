@@ -6,7 +6,10 @@ import { HiDotsVertical } from "react-icons/hi";
 import { FaCheck } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronLeft,
+  faChevronRight,
+} from "@fortawesome/free-solid-svg-icons";
 import { VscLayoutSidebarRight } from "react-icons/vsc";
 
 const Transaction = ({ activeAdmin, openSidebar, role }) => {
@@ -17,7 +20,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
 
   const fetchTotalPages = async () => {
     try {
-      const res = await axios.get("https://capstone-cxej.onrender.com/transaction/count");
+      const res = await axios.get("http://localhost:3000/transaction/count");
       setTotalPages(Math.ceil(res.data.total / rowsPerPage));
     } catch (err) {
       console.error(err);
@@ -28,13 +31,12 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
     fetchTotalPages();
   }, []);
 
-
   const [transactions, setTransactions] = useState([]);
   const [statusSorted, setStatusSorted] = useState(false);
 
   const fetchTransactions = async (order = sortOrder, page = currentPage) => {
     const response = await axios.get(
-      `https://capstone-cxej.onrender.com/transaction?order=${order}&page=${page}`,
+      `http://localhost:3000/transaction?order=${order}&page=${page}`,
     );
     setTransactions(response.data);
     setStatusSorted(false);
@@ -46,14 +48,24 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
   };
 
   const [selected, setSelected] = useState([]);
-  const allSelected = transactions.length > 0 && selected.length === transactions.length;
+  const selectableTransactions = transactions.filter(
+    (transaction) =>
+      transaction.status !== "Confirmed" && transaction.status !== "Cancelled",
+  );
+  const allSelected =
+    selectableTransactions.length > 0 &&
+    selected.length === selectableTransactions.length &&
+    selectableTransactions.every((t) => selected.includes(t.id));
   const toggleSelectAll = () => {
-    if (selected.length === transactions.length) {
+    if (
+      selectableTransactions.length > 0 &&
+      selected.length === selectableTransactions.length
+    ) {
       setSelected([]);
     } else {
-      setSelected(transactions.map((transaction) => transaction.ID));
+      setSelected(selectableTransactions.map((transaction) => transaction.id));
     }
-  };  
+  };
   const toggleSelect = (id) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
@@ -106,19 +118,18 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
       }
     }
 
-    resetForm()
+    resetForm();
   };
   const bulkConfirmOrders = async (ids) => {
-    return axios.post("https://capstone-cxej.onrender.com/bulk-confirm", {
+    return axios.post("http://localhost:3000/bulk-confirm", {
       orderIds: ids,
     });
   };
   const bulkCancelOrders = async (ids) => {
-    return axios.post("https://capstone-cxej.onrender.com/bulk-cancel", {
+    return axios.post("http://localhost:3000/bulk-cancel", {
       orderIds: ids,
     });
   };
-
 
   const [activeTransaction, setActiveTransaction] = useState(null);
   const handleStatus = (transaction) => {
@@ -131,7 +142,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
   const confirmOrder = async (transaction) => {
     setConfirming(true);
     try {
-      const response = await axios.post("https://capstone-cxej.onrender.com/confirm-order", {
+      const response = await axios.post("http://localhost:3000/confirm-order", {
         id: transaction.id,
         orderId: transaction.orderid,
         name: transaction.customer_name,
@@ -144,7 +155,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
       setTransactions(statusSorted ? sortStatusList(updated) : updated);
       setActiveTransaction(null);
       flashMessage("Transaction confirmed successfully");
-      fetchTransactions()
+      fetchTransactions();
     } catch (error) {
       console.error(error);
       alert(
@@ -158,7 +169,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
   const cancelOrder = async (transaction) => {
     setCancelling(true);
     try {
-      const response = await axios.post("https://capstone-cxej.onrender.com/cancel-order", {
+      const response = await axios.post("http://localhost:3000/cancel-order", {
         id: transaction.id,
         orderId: transaction.orderid,
         itemName: transaction.item_name,
@@ -174,7 +185,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
       setTransactions(statusSorted ? sortStatusList(updated) : updated);
       setActiveTransaction(null);
       flashMessage("Transaction cancelled successfully");
-      fetchTransactions()
+      fetchTransactions();
     } catch (error) {
       console.error(error);
       alert(
@@ -209,10 +220,10 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
   useEffect(() => {
     fetchTransactions(sortOrder, currentPage);
   }, [currentPage, sortOrder]);
-  
+
   const [mode, setMode] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
-  const [msg, setMsg] = useState('')
+  const [msg, setMsg] = useState("");
   const [row, setRow] = useState(false);
   const handleConfirm = (action, transaction) => {
     setShowConfirm(true);
@@ -220,16 +231,16 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
 
     if (action === true) {
       setMsg("Confirm");
-      setMode('confirm')
+      setMode("confirm");
     } else {
       setMsg("Cancel");
-      setMode('cancel')
+      setMode("cancel");
     }
   };
   const resetForm = () => {
     setActiveTransaction(false);
     setShowConfirm(false);
-  }
+  };
 
   const [message, setMessage] = useState("");
   const flashMessage = (text) => {
@@ -343,6 +354,10 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                       type="checkbox"
                       checked={selected.includes(transaction.id)}
                       onChange={() => toggleSelect(transaction.id)}
+                      disabled={
+                        transaction.status === "Cancelled" ||
+                        transaction.status === "Confirmed"
+                      }
                       className="cursor-pointer"
                     />
                     <div>{transaction.orderid}</div>
@@ -351,7 +366,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                       <>
                         <div>
                           <img
-                            src={`https://capstone-cxej.onrender.com/ITEMS/${transaction.image}`}
+                            src={`http://localhost:3000/ITEMS/${transaction.image}`}
                             alt=""
                             className="w-14 h-14 object-contain mx-auto rounded"
                           />
@@ -384,14 +399,14 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                     <div className="relative">
                       <button
                         onClick={() => handleStatus(transaction)}
-                        disabled={role === "Admin"}
+                        disabled={role === "Admin" || transaction.status === "Cancelled" || transaction.status === "Confirmed"}
                         className="p-2 cursor-pointer"
                       >
                         <HiDotsVertical size={18} />
                       </button>
 
                       {activeTransaction === transaction.id && (
-                        <div className="p-2 absolute bottom-0 right-[70%] bg-white border border-gray-200 shadow-lg rounded-md z-50 w-45">
+                        <div className="p-2 absolute bottom-0 right-[70%] bg-(--primary-bg) shadow-lg rounded-md z-50 w-45">
                           <button
                             onClick={() => handleConfirm(true, transaction)}
                             disabled={
@@ -399,7 +414,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                               transaction.status === "Confirmed" ||
                               cancelling
                             }
-                            className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded cursor-pointer flex items-center gap-2"
+                            className="w-full text-left px-3 py-2 rounded cursor-pointer flex items-center gap-2"
                           >
                             <FaCheck />
                             Confirm
@@ -412,7 +427,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                               transaction.status === "Confirmed" ||
                               confirming
                             }
-                            className="w-full text-left px-3 py-2 hover:bg-gray-100 text-(--error) cursor-pointer flex items-center gap-2"
+                            className="w-full text-left px-3 py-2 text-(--error) cursor-pointer flex items-center gap-2"
                           >
                             <FaTrash />
                             Cancel

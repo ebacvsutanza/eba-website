@@ -20,7 +20,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
 
   const fetchTotalPages = async () => {
     try {
-      const res = await axios.get("https://capstone-cxej.onrender.com/inventory/count");
+      const res = await axios.get("http://localhost:3000/inventory/count");
       setTotalPages(Math.ceil(res.data.total / rowsPerPage));
     } catch (err) {
       console.error(err);
@@ -35,10 +35,10 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
   const [categories, setCategories] = useState([]);
   const fetchInventories = async (page = currentPage) => {
     const response = await axios.get(
-      `https://capstone-cxej.onrender.com/inventory?page=${page}`,
+      `http://localhost:3000/inventory?page=${page}`,
     );
     setInventories(response.data);
-    const categoryResponse = await axios.get("https://capstone-cxej.onrender.com/categories");
+    const categoryResponse = await axios.get("http://localhost:3000/categories");
     setCategories(categoryResponse.data);
   };
 
@@ -110,11 +110,11 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
 
     try {
       if (mode === "add") {
-        await axios.post("https://capstone-cxej.onrender.com/inventory", formdata);
+        await axios.post("http://localhost:3000/inventory", formdata);
         setMessage("Item added successfully");
       } else {
         await axios.put(
-          `https://capstone-cxej.onrender.com/inventory/${editingInventory.id}`,
+          `http://localhost:3000/inventory/${editingInventory.id}`,
           formdata,
         );
         setMessage("Item edited successfully");
@@ -167,7 +167,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
   };
 
   const handleRemove = async (id) => {
-    await axios.delete(`https://capstone-cxej.onrender.com/inventory/${id}`);
+    await axios.delete(`http://localhost:3000/inventory/${id}`);
     setInventories(inventories.filter((inventory) => inventory.id !== id));
 
     setMessage("Item removed successfully");
@@ -279,7 +279,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                 >
                   <div>
                     <img
-                      src={`https://capstone-cxej.onrender.com/ITEMS/${inventory.image}`}
+                      src={`http://localhost:3000/ITEMS/${inventory.image}`}
                       alt=""
                       className="w-14 h-14 object-contain mx-auto rounded"
                     />
@@ -304,10 +304,10 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                     </button>
 
                     {activeInventory === inventory.id && (
-                      <div className="p-2 absolute bottom-0 right-[70%] bg-white border border-gray-200 shadow-lg rounded-md z-50 w-45">
+                      <div className="p-2 absolute bottom-0 right-[70%] bg-(--primary-bg) shadow-lg rounded-md z-50 w-45">
                         <button
                           onClick={() => handleEdit(inventory)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded cursor-pointer flex items-center gap-2"
+                          className="w-full text-left px-3 py-2 rounded cursor-pointer flex items-center gap-2"
                         >
                           <FontAwesomeIcon icon={faPenToSquare} />
                           Edit
@@ -315,7 +315,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
 
                         <button
                           onClick={() => handleRemoveItem(inventory.id)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-100 text-(--error) cursor-pointer flex items-center gap-2"
+                          className="w-full text-left px-3 py-2 text-(--error) cursor-pointer flex items-center gap-2"
                         >
                           <FontAwesomeIcon icon={faTrash} />
                           Remove
@@ -360,7 +360,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
 
       {showModal && (
         <div className="h-screen fixed inset-0 bg-black/50 flex items-center justify-end z-50">
-          <div className="bg-white p-6 rounded w-3/4 lg:w-1/3 h-screen space-y-5">
+          <div className="bg-white text-[#2E2E2E] p-6 rounded w-3/4 lg:w-1/3 h-screen space-y-5">
             <div className="mb-10 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-(--secondary-text)">
                 {mode === "add" ? "Add Inventory" : "Edit Inventory"}
@@ -393,7 +393,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                 </option>
                 {categories
                   .filter((category) => {
-                    if (mode === 'edit') {
+                    if (mode === "edit") {
                       if (selection === "Module") {
                         return ["Module", "Capstone Manual"].includes(
                           category.category,
@@ -510,7 +510,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
 
       {showConfirm && (
         <div className="h-screen p-3 fixed inset-0 bg-black/50 center-flex z-50">
-          <div className="w-full bg-white p-5 rounded-lg lg:w-1/3 overflow-auto flex justify-between flex-col gap-10">
+          <div className="w-full bg-white text-[#2E2E2E] p-5 rounded-lg lg:w-1/3 overflow-auto flex justify-between flex-col gap-10">
             <div className="space-y-3">
               <h1 className="font-bold text-lg text-(--error)">{msg} item</h1>
               <p>Are you sure you want to {mode} this item?</p>

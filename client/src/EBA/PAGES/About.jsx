@@ -10,12 +10,14 @@ const About = () => {
 	};
 
 	return (
-    <div className="about mt-20">
-      <Navbar
-        toggleCheckStatus={toggleCheckStatus}
-        openStatus={openStatus}
-        setOpenStatus={setOpenStatus}
-      />
+    <div className="about min-h-screen mt-20 flex flex-col justify-between">
+      <div className="fixed top-0 left-0">
+        <Navbar
+          toggleCheckStatus={toggleCheckStatus}
+          openStatus={openStatus}
+          setOpenStatus={setOpenStatus}
+        />
+      </div>
       <div className="container">
         <div className="cvsu">
           <h1 className="text-3xl lg:text-4xl font-heading">

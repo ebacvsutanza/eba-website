@@ -25,7 +25,7 @@ const UserSignin = () => {
 			}
 
 			// Proceed with authentication
-			const res = await axios.post('https://capstone-cxej.onrender.com/auth/google', {
+			const res = await axios.post('http://localhost:3000/auth/google', {
 				token: credentialResponse.credential,
 			});
 

@@ -2,13 +2,12 @@ const db = require("./db");
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const nodemailer = require("nodemailer");
 const multer = require("multer");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
-const { Resend } = require("resend");
+const nodemailer = require("nodemailer");
 const sgMail = require('@sendgrid/mail');
 
 // Set API key from environment variable
@@ -20,11 +19,11 @@ const app = express();
 
 app.use(express.json());
 app.use(cors(
-  {
-    origin: "https://capstone-eba.vercel.app",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  }
+  // {
+  //   origin: "https://capstone-eba.vercel.app",
+  //   methods: ["GET", "POST", "PUT", "DELETE"],
+  //   credentials: true,
+  // }
 ));
 app.use(bodyParser.json());
 app.use(express.static("public"));
@@ -34,12 +33,11 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-const { processPhotoRequest, validateEmail } = require('./arSendCopyImageMailer');
+const { processPhotoRequest } = require('./arSendCopyImageMailer');
+
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.json({ limit: '50mb' }));
 
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const uploadStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -65,6 +63,14 @@ const itemStorage = multer.diskStorage({
 });
 const upload = multer({ storage: uploadStorage });
 const itemupload = multer({ storage: itemStorage });
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "ebacvsutanza@gmail.com",
+    pass: "vogn dzxy xwof uztp",
+  },
+});
 
 
 // Google OAuth configuration
@@ -235,7 +241,7 @@ app.get("/storeinventory", async (req, res) => {
 
     const { rows } = await db.query(sql);
 
-    const SIZE_ORDER = ["Xtra Small", "Small", "Medium", "Large", "Xtra Large"];
+    const SIZE_ORDER = ["XS", "S", "M", "L", "XL"];    
     const products = {};
 
     rows.forEach((row) => {
@@ -260,9 +266,7 @@ app.get("/storeinventory", async (req, res) => {
 
     Object.values(products).forEach((product) => {
       product.Sizes.sort((a, b) => {
-        const aIndex = SIZE_ORDER.indexOf(a.Size);
-        const bIndex = SIZE_ORDER.indexOf(b.Size);
-        return aIndex - bIndex;
+        return SIZE_ORDER.indexOf(a.Size) - SIZE_ORDER.indexOf(b.Size);
       });
     });
 
@@ -319,79 +323,94 @@ app.post("/addToCart", upload.single("transaction"), (req, res) => {
     Amount,
   } = req.body;
 
-  try {
-    let checkQuery = `
-      SELECT * FROM item_cart 
-      WHERE user_id = $1 AND category = $2 AND item_name = $3 AND variant = $4 AND size = $5
-    `;
+  const quantityToAdd = parseInt(Quantity, 10);
 
-    let checkParams = [UserID, Category, ItemName, Variant, Size];
+  let checkQuery = `
+    SELECT * FROM item_cart
+    WHERE user_id = $1
+      AND category = $2
+      AND item_name = $3
+      AND variant = $4
+      AND size = $5
+  `;
 
-    db.query(checkQuery, checkParams, (err, results) => {
-      if (err) {
-        console.error("Error checking item:", err);
-        return res.status(500).json({ Message: "Database error" });
-      }
+  let checkParams = [UserID, Category, ItemName, Variant, Size];
 
-      if (results.length > 0) {
-        let existingItem = results[0];
-        let newQuantity = existingItem.quantity + parseInt(Quantity, 10);
+  db.query(checkQuery, checkParams, (err, results) => {
+    if (err) {
+      console.error("Error checking item:", err);
+      return res.status(500).json({ Message: "Database error" });
+    }
 
-        let updateQuery = `
-          UPDATE item_cart 
-          SET quantity = $1 
-          WHERE user_id = $2 AND category = $3 AND item_name = $4 AND variant = $5 AND size = $6
-        `;
+    // FIX HERE
+    if (results.rows.length > 0) {
+      const existingItem = results.rows[0];
+      const newQuantity = existingItem.quantity + quantityToAdd;
 
-        let updateParams = [
-          newQuantity,
-          UserID,
-          Category,
-          ItemName,
-          Variant,
-          Size,
-        ];
+      let updateQuery = `
+        UPDATE item_cart
+        SET quantity = $1
+        WHERE user_id = $2
+          AND category = $3
+          AND item_name = $4
+          AND variant = $5
+          AND size = $6
+      `;
 
-        db.query(updateQuery, updateParams, (err, result) => {
-          if (err) {
-            console.error("Error updating quantity:", err);
-            return res.status(500).json({ Message: "Failed to update cart" });
-          }
+      let updateParams = [
+        newQuantity,
+        UserID,
+        Category,
+        ItemName,
+        Variant,
+        Size,
+      ];
 
-          return res.json({ Status: "Updated", UpdatedQuantity: newQuantity });
+      db.query(updateQuery, updateParams, (err, result) => {
+        if (err) {
+          console.error("Error updating quantity:", err);
+          return res.status(500).json({
+            Message: "Failed to update cart",
+          });
+        }
+
+        return res.json({
+          Status: "Updated",
+          UpdatedQuantity: newQuantity,
         });
-      } else {
-        let insertQuery = `
-          INSERT INTO item_cart 
-          (user_id, category, image, item_name, variant, size, quantity, amount) 
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        `;
+      });
+    } else {
+      let insertQuery = `
+        INSERT INTO item_cart
+        (user_id, category, image, item_name, variant, size, quantity, amount)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `;
 
-        let values = [
-          UserID,
-          Category,
-          transaction,
-          ItemName,
-          Variant || "",
-          Size || "",
-          Quantity,
-          Amount,
-        ];
+      let values = [
+        UserID,
+        Category,
+        transaction,
+        ItemName,
+        Variant,
+        Size,
+        quantityToAdd,
+        Amount,
+      ];
 
-        db.query(insertQuery, values, (err, result) => {
-          if (err) {
-            console.error("Error inserting new item:", err);
-            return res.status(500).json({ Message: "Error inserting data" });
-          }
+      db.query(insertQuery, values, (err, result) => {
+        if (err) {
+          console.error("Error inserting new item:", err);
+          return res.status(500).json({
+            Message: "Error inserting data",
+          });
+        }
 
-          return res.json({ Status: "Inserted" });
+        return res.json({
+          Status: "Inserted",
         });
-      }
-    });
-  } catch (error) {
-    console.error("Error processing form data:", error);
-    res.status(500).send("Internal server error");
-  }
+      });
+    }
+  });
 });
 
 // Admin Dashboard
@@ -740,40 +759,55 @@ app.post("/checkout", async (req, res) => {
     const user = cartItems[0];
 
     // Send email using SendGrid
-    const msg = {
+    const mailOptions = {
+      from: "ebacvsutanza@gmail.com",
       to: user.email_address,
-      from: "ebacvsutanza@gmail.com", // Must be verified in SendGrid
       subject: "Order Details",
       html: `
-        <header style='height: 150px; background: #c1ff72; display: flex; flex-direction: column; gap: 10px;'>
-          <img src="https://res.cloudinary.com/dfmnlcvbe/image/upload/v1744102780/logo_qy0g8a.png" style='width: 80px; height: 80px;'/>
-          <h2>External Business and<br>Affairs</h2>
-        </header>
+          <header style='height: 150px; background: #c1ff72; display: flex; flex-direction: column; gap: 10px;'>
+              <img src="https://res.cloudinary.com/dfmnlcvbe/image/upload/v1744102780/logo_qy0g8a.png" style='width: 80px; height: 80px;'/>
+              <h2>External Business and<br>Affairs</h2>
+          </header>
 
-        <h3>Thank you for your order!</h3>
-        <p>${user.full_name}</p>
-        <p>Your order was received! We're working to get it processed and ready to claim.</p>
+          <br>
 
-        <div>
-          <p>Order Number: #${orderID}</p>
-          <p>Order Date: ${formattedDate}</p>
-        </div>
+          <h3>Thank you for your order!</h3>
+          <p>${user.full_name}</p>
+          <p>Your order was received! We're working to get it processed and ready to claim.</p>
 
-        <table style="border: 1px solid gray; border-collapse: collapse; width: 100%;">
-          <tr>
-            <th style="border: 1px solid gray; padding: 8px;">PRODUCT</th>
-            <th style="border: 1px solid gray; padding: 8px;">PRICE</th>
-          </tr>
-          ${itemRowsHTML}
-          <tr>
-            <td></td>
-            <td><strong>Total: ₱${totalAmount}</strong></td>
-          </tr>
-        </table>
+          <br>
+
+          <div style='display: flex; align-items: center;'>
+              <div style="margin-right: 30px;">
+                  <p>Order Number:</p>
+                  <span>#${orderID}</span>
+              </div>
+              <div>
+                  <p>Order Date:</p>
+                  <span>${formattedDate}</span>
+              </div>
+          </div>
+
+          <br>
+
+          <table style="border: 1px solid gray; border-collapse: collapse; width: 100%; text-align: left;">
+              <tr>
+                  <th style="border: 1px solid gray; padding: 8px; text-align: center;">PRODUCT</th>
+                  <th style="border: 1px solid gray; padding: 8px; text-align: center;">PRICE</th>
+              </tr>
+              ${itemRowsHTML}
+              <tr>
+                  <td style="border: 1px solid gray; padding: 8px; text-align: center;"></td>
+                  <td style="border: 1px solid gray; padding: 8px; text-align: center;"><strong>Total: P${totalAmount}</strong></td>
+              </tr>
+          </table>
+
+          <p>Thank you for your purchase!</p>
+          <p>Cavite State University - Tanza Campus</p>
       `,
     };
 
-    await sgMail.send(msg);
+    await transporter.sendMail(mailOptions);
 
     // Clear the cart
     await client.query("DELETE FROM item_cart WHERE user_id = $1", [userId]);
@@ -813,25 +847,22 @@ app.post("/requestCancelOrder", async (req, res) => {
       { expiresIn: "1h" },
     );
 
-    const cancelLink = `https://capstone-cxej.onrender.com/verifyCancelOrder/${token}`;
+    const cancelLink = `http://localhost:3000/verifyCancelOrder/${token}`;
 
     // Compose the email
-    const msg = {
-      to: email,
+    const mailOptions = {
       from: "ebacvsutanza@gmail.com",
+      to: email,
       subject: "Order Cancellation Verification",
       html: `
-        <p>We received a request to cancel your order number 
-        <strong>${orderId}, ${item} ${variant ? `- ${variant}` : ""}</strong></p>
-
-        <p>If this was you, please confirm by clicking the link below:</p>
-
-        <a href="${cancelLink}">Confirm Cancellation</a>
-      `,
+              <p>We received a request to cancel your order number <strong>${orderId}, ${item} - ${variant}</strong></p>
+              <p>If this was you, please confirm by clicking the link below:</p>
+              <a href="${cancelLink}">Confirm Cancellation</a>
+          `,
     };
 
     // Send the email
-    await sgMail.send(msg);
+    await transporter.sendMail(mailOptions);
 
     console.log("SendGrid email sent to:", email);
     res.json({ message: "Verification email sent" });
@@ -856,7 +887,7 @@ app.get("/verifyCancelOrder/:token", async (req, res) => {
     await db.query(updateQuery, [orderId, email]);
 
     // ✅ Redirect to your frontend Thank You page
-    res.redirect("https://capstone-eba.vercel.app/verifycancelorder");
+    res.redirect("https://localhost:3000/verifycancelorder");
   } catch (err) {
     console.error("Verification failed:", err);
     res.status(400).send("Invalid or expired token.");
@@ -1493,7 +1524,7 @@ app.post("/bulk-confirm", async (req, res) => {
              <p>We appreciate your purchase!</p>`,
         };
 
-        await sgMail.send(msg);
+        await transporter.sendMail(msg);
       } catch (emailError) {
         console.error(
           `Email failed for order ${txn.orderid}:`,
@@ -1564,7 +1595,7 @@ app.post("/bulk-cancel", async (req, res) => {
              <p>We appreciate your purchase!</p>`,
         };
 
-        await sgMail.send(msg);
+        await transporter.sendMail(msg);
       } catch (emailError) {
         console.error(
           `Email failed for cancelled order ${txn.orderid}:`,
@@ -1640,7 +1671,7 @@ app.post("/confirm-order", async (req, res) => {
              <p>We appreciate your purchase!</p>`,
     };
 
-    await sgMail.send(msg);
+    await transporter.sendMail(msg);
 
     res
       .status(200)
@@ -1696,7 +1727,7 @@ app.post("/cancel-order", async (req, res) => {
              <p>We appreciate your purchase!</p>`,
     };
 
-    await sgMail.send(msg);
+    await transporter.sendMail(msg);
 
     res
       .status(200)
@@ -1862,10 +1893,20 @@ app.put("/inventory/:id", itemupload.single("inventory"), (req, res) => {
   const { id } = req.params;
   const { category, itemName, variant, size, quantity, price } = req.body;
 
-  if (!category || !itemName || !variant || !size || !quantity || !price) {
-    return res
-      .status(400)
-      .json({ message: "All fields except image are required." });
+  if (!category || !itemName || !quantity || !price) {
+    return res.status(400).json({
+      message: "Category, item name, quantity and price are required.",
+    });
+  }
+
+  // Only require variant & size for uniforms
+  if (
+    !["Module", "Capstone Manual"].includes(category) &&
+    (!variant || !size)
+  ) {
+    return res.status(400).json({
+      message: "Variant and size are required for this category.",
+    });
   }
 
   const numericQuantity = parseInt(quantity, 10);
@@ -2405,58 +2446,16 @@ app.post("/login", async (req, res) => {
 });
 
 
-app.post("/api/validate-email", async (req, res) => {
-  const { email } = req.body;
-  const result = await validateEmail(email);
+app.post('/send-captured-screen-image-of-virtual-try-on', async (req, res) => {
+    // req.body contains the fields from Unity's WWWForm
+    const { email, image } = req.body;
+    
+    console.log("Request for email:", email); // This helps you debug "No recipients defined"
 
-  if (!result.valid) {
-    return res.status(400).json({ success: false, message: result.reason });
-  }
-  return res.json({ success: true, email: result.email });
-});
+    if (!email) {
+        return res.status(400).send("Error: No email provided.");
+    }
 
-app.post("/api/unity-capture", async (req, res) => {
-  const { email, image } = req.body;
-
-  // Guard: both fields required
-  if (!email || !image) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "Both email and image data are required.",
-      });
-  }
-
-  // Validate domain (@cvsu.edu.ph) + DNS MX
-  const emailCheck = await validateEmail(email);
-  if (!emailCheck.valid) {
-    return res.status(400).json({ success: false, message: emailCheck.reason });
-  }
-
-  // Process and send
-  const message = await processPhotoRequest(emailCheck.email, image);
-  const isSuccess = message.startsWith("Success");
-
-  return res
-    .status(isSuccess ? 200 : 500)
-    .json({ success: isSuccess, message });
-});
-
-app.post("/send-captured-screen-image-of-virtual-try-on", async (req, res) => {
-  const { email, image } = req.body;
-
-  console.log("Request for email:", email);
-
-  if (!email) {
-    return res.status(400).send("Error: No email provided.");
-  }
-
-  const emailCheck = await validateEmail(email);
-  if (!emailCheck.valid) {
-    return res.status(400).send("Error: " + emailCheck.reason);
-  }
-
-  const message = await processPhotoRequest(emailCheck.email, image);
-  res.send(message);
+    const message = await processPhotoRequest(email, image);
+    res.send(message);
 });

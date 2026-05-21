@@ -49,7 +49,7 @@ const Login = () => {
 		e.preventDefault();
 	
 		try {
-			const response = await axios.post('https://capstone-cxej.onrender.com/adminlogin', values);
+			const response = await axios.post('http://localhost:3000/adminlogin', values);
 			const { token } = response.data;
 			localStorage.setItem('token', token);
 			navigateTo("/adminpanel");

@@ -1,31 +1,31 @@
-import React from 'react';
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import EBA from "./EBA/EBA";
+import News from "./EBA/PAGES/News";
+import AboutEBA from "./EBA/PAGES/About";
+import AboutDeveloper from "./EBA/PAGES/AboutUs";
 
-import EBA from './EBA/EBA';
-import News from './EBA/PAGES/News'
-import AboutEBA from './EBA/PAGES/About';
-import AboutDeveloper from './EBA/PAGES/AboutUs';
+import EBAUserLogin from "./EBA/PAGES/EBASTORE/UserLogin";
+import EBAUserSignup from "./EBA/PAGES/EBASTORE/UserSignup";
+import EBAStore from "./EBA/PAGES/EBASTORE/Store";
+import EBACart from "./EBA/PAGES/EBASTORE/Cart";
+import Catalog from "./EBA/PAGES/EBASTORE/Catalog";
+import SetPassword from "./EBA/PAGES/EBASTORE/SetPassword";
 
+import AdminLogin from "./EBA/PAGES/ADMIN/AdminLogin";
+import Adminpanel from "./EBA/PAGES/ADMIN/AdminPanel";
+import StaffAdminpanel from "./EBA/PAGES/ADMIN/StaffAdminPanel";
 
-import EBAUserLogin from './EBA/PAGES/EBASTORE/UserLogin';
-import EBAUserSignup from './EBA/PAGES/EBASTORE/UserSignup';
-import EBAStore from './EBA/PAGES/EBASTORE/Store';
-import EBACart from './EBA/PAGES/EBASTORE/Cart';
-import Catalog from './EBA/PAGES/EBASTORE/Catalog';
-import SetPassword from './EBA/PAGES/EBASTORE/SetPassword';
-
-import AdminLogin from './EBA/PAGES/ADMIN/AdminLogin';
-import Adminpanel from './EBA/PAGES/ADMIN/AdminPanel';
-import StaffAdminpanel from './EBA/PAGES/ADMIN/StaffAdminPanel';
-
-import './App.css';
-import VerifyCancel from './EBA/VerifyCancel';
+import "./App.css";
+import VerifyCancel from "./EBA/VerifyCancel";
+import Redirect from "./Redirect";
 
 function App() {
-	return (
+  return (
     <div className="text-(--primary-text) font-family text-sm">
       <BrowserRouter>
+        <Redirect />
         <Routes>
           {/* BULLETIN PAGE */}
           <Route path="/" element={<EBA />}></Route>
