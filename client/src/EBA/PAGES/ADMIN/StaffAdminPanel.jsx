@@ -83,7 +83,7 @@ const AdminPanel = () => {
 	
 			const decodedToken = JSON.parse(atob(token.split('.')[1]));
 	
-			const response = await axios.post('http://localhost:3000/adminchangepass', {
+			const response = await axios.post('https://eba-website.onrender.com/adminchangepass', {
 				id: decodedToken.id,
 				password: values.password
 			});
@@ -138,7 +138,7 @@ const AdminPanel = () => {
 
 						<div className="user-profile" onClick={() => setOpenPass(!openPass)}>
 							<p>Hi, {username}</p>
-							<img src={`http://localhost:3000/UPLOADS/${image}`} alt="" />
+							<img src={`https://eba-website.onrender.com/UPLOADS/${image}`} alt="" />
 							<FontAwesomeIcon icon={faChevronDown} />
 						</div>
 

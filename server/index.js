@@ -18,13 +18,13 @@ const salt = 10;
 const app = express();
 
 app.use(express.json());
-app.use(cors(
-  // {
-  //   origin: "https://capstone-eba.vercel.app",
-  //   methods: ["GET", "POST", "PUT", "DELETE"],
-  //   credentials: true,
-  // }
-));
+app.use(
+  cors({
+    origin: "https://eba-website.onrender.com",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  }),
+);
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
@@ -847,7 +847,7 @@ app.post("/requestCancelOrder", async (req, res) => {
       { expiresIn: "1h" },
     );
 
-    const cancelLink = `http://localhost:3000/verifyCancelOrder/${token}`;
+    const cancelLink = `https://eba-website.onrender.com/verifyCancelOrder/${token}`;
 
     // Compose the email
     const mailOptions = {
@@ -887,7 +887,7 @@ app.get("/verifyCancelOrder/:token", async (req, res) => {
     await db.query(updateQuery, [orderId, email]);
 
     // ✅ Redirect to your frontend Thank You page
-    res.redirect("https://localhost:3000/verifycancelorder");
+    res.redirect("https://eba-website.onrender.com/verifycancelorder");
   } catch (err) {
     console.error("Verification failed:", err);
     res.status(400).send("Invalid or expired token.");

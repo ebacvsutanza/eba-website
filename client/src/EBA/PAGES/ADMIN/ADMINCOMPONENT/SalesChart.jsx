@@ -28,7 +28,7 @@ const SalesChart = () => {
   const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:3000/api/sales-data")
+    axios.get("https://eba-website.onrender.com/api/sales-data")
       .then((response) => {
         setChartData({
           labels: response.data.labels,

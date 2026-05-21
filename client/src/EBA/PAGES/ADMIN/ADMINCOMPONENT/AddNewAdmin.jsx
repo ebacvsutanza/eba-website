@@ -33,7 +33,7 @@ const AddNewAdmin = () => {
     }, []);
 	
 	const fetchAdmins = async () => {
-		const response = await axios.get('http://localhost:3000/admin');
+		const response = await axios.get('https://eba-website.onrender.com/admin');
 		setAdmins(response.data);
 	};
 
@@ -80,7 +80,7 @@ const AddNewAdmin = () => {
 		formData.append('Email', email);
 		formData.append('Password', password);
 
-		axios.post('http://localhost:3000/addnewadmin', formData)
+		axios.post('https://eba-website.onrender.com/addnewadmin', formData)
 		.then(res => {
 			if (res.data.Status === "Success") {
 				setMessage("Admin added successfully");
@@ -128,7 +128,7 @@ const AddNewAdmin = () => {
 		formdata.append('Email', formData.email);
 		formdata.append('Password', formData.password);
 
-		axios.put(`http://localhost:3000/addnewadmin/${editingAdmin.ID}`, formdata)
+		axios.put(`https://eba-website.onrender.com/addnewadmin/${editingAdmin.ID}`, formdata)
 		.then(res => {
 			if (res.data.Status === "Success") {
 				setMessage("Admin edited successfully");
@@ -179,7 +179,7 @@ const AddNewAdmin = () => {
     };
 
     const handleRemove = async (id) => {
-		await axios.delete(`http://localhost:3000/addnewadmin/${id}`);
+		await axios.delete(`https://eba-website.onrender.com/addnewadmin/${id}`);
 		setAdmins(admins.filter(admin => admin.id !== id));
 
 		setMessage("Admin deleted successfully");
@@ -214,7 +214,7 @@ const AddNewAdmin = () => {
 					<tbody>
 						{admins.map((admin, index) => (
 							<tr key={index}>
-								<td><img src={`http://localhost:3000/UPLOADS/${admin.Image}`} alt="" /> </td>
+								<td><img src={`https://eba-website.onrender.com/UPLOADS/${admin.Image}`} alt="" /> </td>
 								<td>{admin.Username}</td>
 								<td>{admin.Role}</td>
 								<td>{admin.Email_Address}</td>

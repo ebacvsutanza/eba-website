@@ -16,7 +16,7 @@ const News = () => {
 
   const fetchTotalPages = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/bulletin/count");
+      const res = await axios.get("https://eba-website.onrender.com/bulletin/count");
       setTotalPages(Math.ceil(res.data.total / rowsPerPage));
     } catch (err) {
       console.error(err);
@@ -29,7 +29,7 @@ const News = () => {
   const [bulletin, setBulletin] = useState([]);
   const fetchBulletin = async (page = currentPage) => {
     const response = await axios.get(
-      `http://localhost:3000/bulletin?&page=${page}`,
+      `https://eba-website.onrender.com/bulletin?&page=${page}`,
     );
     setBulletin(response.data);
   };

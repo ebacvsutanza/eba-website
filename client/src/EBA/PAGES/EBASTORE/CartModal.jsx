@@ -69,7 +69,7 @@ const CartModal = ({
 
   const addToCart = async () => {
     try {
-      const response = await fetch("http://localhost:3000/addToCart", {
+      const response = await fetch("https://eba-website.onrender.com/addToCart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -98,7 +98,7 @@ const CartModal = ({
   };
   const addToCartItem = async () => {
     try {
-      const response = await fetch("http://localhost:3000/addToCart", {
+      const response = await fetch("https://eba-website.onrender.com/addToCart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -138,7 +138,7 @@ const CartModal = ({
         <div className="w-full h-auto md:h-[90%] md:px-5 flex gap-5 flex-col md:flex-row">
           <aside className="md:w-[300px] h-full md:my-auto bg-gray-200 center-flex rounded-lg">
             <img
-              src={`http://localhost:3000/ITEMS/${product.image}`}
+              src={`https://eba-website.onrender.com/ITEMS/${product.image}`}
               alt={product.item_name}
               className="aspect-square w-full"
             />

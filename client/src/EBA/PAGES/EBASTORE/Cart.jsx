@@ -41,7 +41,7 @@ const Cart = () => {
 
   const fetchCart = () => {
     axios
-      .get("http://localhost:3000/cartItem", {
+      .get("https://eba-website.onrender.com/cartItem", {
         headers: {
           Authorization: token,
         },
@@ -78,7 +78,7 @@ const Cart = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:3000/checkout", {
+      const response = await axios.post("https://eba-website.onrender.com/checkout", {
         userId,
       });
 
@@ -104,7 +104,7 @@ const Cart = () => {
   };
 
   const handleRemove = async (id) => {
-    await axios.delete(`http://localhost:3000/cart/${id}`);
+    await axios.delete(`https://eba-website.onrender.com/cart/${id}`);
     setCart(carts.filter((cart) => cart.id !== id));
 
     setMessage("Cart item deleted successfully");
@@ -117,7 +117,7 @@ const Cart = () => {
 
   const updateCartQuantity = async (cartId, newQuantity) => {
     try {
-      await axios.put(`http://localhost:3000/cart/${cartId}`, {
+      await axios.put(`https://eba-website.onrender.com/cart/${cartId}`, {
         Quantity: newQuantity,
       });
       fetchCart(); // refresh cart after update
@@ -184,7 +184,7 @@ const Cart = () => {
                     >
                       <div className="h-full aspect-square bg-white rounded-lg p-2 center-flex">
                         <img
-                          src={`http://localhost:3000/ITEMS/${cart.image}`}
+                          src={`https://eba-website.onrender.com/ITEMS/${cart.image}`}
                           alt="Item Image"
                           className="w-3/4 m-auto object-contain"
                         />

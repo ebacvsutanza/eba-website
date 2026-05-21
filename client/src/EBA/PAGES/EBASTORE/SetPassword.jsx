@@ -30,7 +30,7 @@ const SetPassword = () => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.post(
-                'http://localhost:3000/set-password',
+                'https://eba-website.onrender.com/set-password',
                 { password },
                 {
                     headers: {

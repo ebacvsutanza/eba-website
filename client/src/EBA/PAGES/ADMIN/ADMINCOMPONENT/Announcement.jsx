@@ -35,13 +35,13 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
   }, []);
 
   const fetchAnnouncements = async () => {
-    const res = await axios.get("http://localhost:3000/bulletin");
+    const res = await axios.get("https://eba-website.onrender.com/bulletin");
     setAnnouncements(res.data);
   };
 
   /* ---------------- CREATE ---------------- */
   const createAnnouncement = async () => {
-    await axios.post("http://localhost:3000/announcement", {
+    await axios.post("https://eba-website.onrender.com/announcement", {
       title: title,
       details: details,
       facultyname: facultyName,
@@ -57,7 +57,7 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
   const updateAnnouncement = async () => {
     if (!selectedEvent) return;
 
-    await axios.put(`http://localhost:3000/announcement/${selectedEvent.id}`, {
+    await axios.put(`https://eba-website.onrender.com/announcement/${selectedEvent.id}`, {
       Title: title,
       Details: details,
       FacultyName: facultyName,
@@ -71,7 +71,7 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
 
   /* ---------------- DELETE ---------------- */
   const deleteAnnouncement = async (id) => {
-    await axios.delete(`http://localhost:3000/announcement/${id}`);
+    await axios.delete(`https://eba-website.onrender.com/announcement/${id}`);
     fetchAnnouncements();
     flashMessage("Event deleted successfully");
     setShowModal(false);

@@ -18,7 +18,7 @@ export default function Catalog() {
   const [carts, setCart] = useState([]);
   const fetchCart = () => {
     axios
-      .get("http://localhost:3000/cartItem", {
+      .get("https://eba-website.onrender.com/cartItem", {
         headers: {
           Authorization: token,
         },
@@ -55,9 +55,9 @@ export default function Catalog() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const fetchProduct = async () => {
-    const res1 = await axios.get("http://localhost:3000/storeinventory");
+    const res1 = await axios.get("https://eba-website.onrender.com/storeinventory");
     setProducts(res1.data);
-    const res2 = await axios.get("http://localhost:3000/categories");
+    const res2 = await axios.get("https://eba-website.onrender.com/categories");
     setCategories(res2.data);
   }
 
@@ -194,7 +194,7 @@ export default function Catalog() {
                 >
                   <div className="aspect-square rounded-xl bg-gray-200 overflow-hidden flex items-center justify-center">
                     <img
-                      src={`http://localhost:3000/ITEMS/${product.image}`}
+                      src={`https://eba-website.onrender.com/ITEMS/${product.image}`}
                       alt={product.item_name}
                       className="w-full h-full object-cover"
                     />

@@ -36,7 +36,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
   // ------------------------ Fetch Total Pages ------------------------
   const fetchTotalPages = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/manageadmin/count");
+      const res = await axios.get("https://eba-website.onrender.com/manageadmin/count");
       setTotalPages(Math.ceil(res.data.total / rowsPerPage));
     } catch (err) {
       console.error(err);
@@ -47,7 +47,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
   const fetchManageAccount = async (page = currentPage) => {
     try {
       const res = await axios.get(
-        `http://localhost:3000/manageadmin?page=${page}&limit=${rowsPerPage}`
+        `https://eba-website.onrender.com/manageadmin?page=${page}&limit=${rowsPerPage}`
       );
       setManageAdmin(res.data);
     } catch (err) {
@@ -162,9 +162,9 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
     try {
       let res;
       if (mode === "add") {
-        res = await axios.post("http://localhost:3000/manageadmin", form);
+        res = await axios.post("https://eba-website.onrender.com/manageadmin", form);
       } else {
-        res = await axios.put(`http://localhost:3000/manageadmin/${editingAdmin.id}`, form);
+        res = await axios.put(`https://eba-website.onrender.com/manageadmin/${editingAdmin.id}`, form);
       }
 
       if (res.data.Status === "Success") {
@@ -188,7 +188,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
   // ------------------------ Handle Delete ------------------------
   const handleRemove = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/manageadmin/${id}`);
+      await axios.delete(`https://eba-website.onrender.com/manageadmin/${id}`);
       setMessage("Admin deleted successfully");
       fetchManageAccount(currentPage);
       setTimeout(() => setMessage(""), 2000);
@@ -260,7 +260,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
                 >
                   <div>
                     <img
-                      src={`http://localhost:3000/UPLOADS/${admin.image}`}
+                      src={`https://eba-website.onrender.com/UPLOADS/${admin.image}`}
                       alt=""
                       className="w-14 h-14 object-contain mx-auto rounded"
                     />

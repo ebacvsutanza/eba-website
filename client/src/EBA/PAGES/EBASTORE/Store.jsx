@@ -10,7 +10,7 @@ const Store = () => {
   const [carts, setCart] = useState([]);
   const fetchCart = () => {
     axios
-      .get("http://localhost:3000/cartItem", {
+      .get("https://eba-website.onrender.com/cartItem", {
         headers: {
           Authorization: token,
         },
@@ -65,11 +65,11 @@ const Store = () => {
   const [products, setProducts] = useState([]);
   const fetchProduct = async () => {
     try {
-      const res1 = await axios.get("http://localhost:3000/top-selling-product");
+      const res1 = await axios.get("https://eba-website.onrender.com/top-selling-product");
       // If top-selling products are less than 5, fetch only student uniform products from inventory as fallback
       if (res1.data.length < 5) {
         const resAll = await axios.get(
-          "http://localhost:3000/storeinventory?category=Student%20Uniform",
+          "https://eba-website.onrender.com/storeinventory?category=Student%20Uniform",
         );
         // Filter to get only Student Uniform items, then 1 Male and 1 Female
         const studentUniforms = resAll.data.filter(
@@ -92,7 +92,7 @@ const Store = () => {
       // Fallback to student uniform products from inventory if top-selling fails
       try {
         const resAll = await axios.get(
-          "http://localhost:3000/inventory?category=Student%20Uniform",
+          "https://eba-website.onrender.com/inventory?category=Student%20Uniform",
         );
         // Filter to get only Student Uniform items, then 1 Male and 1 Female
         const studentUniforms = resAll.data.filter(
@@ -182,7 +182,7 @@ const Store = () => {
               >
                 <div className="img-block">
                   <img
-                    src={`http://localhost:3000/ITEMS/${product.image}`}
+                    src={`https://eba-website.onrender.com/ITEMS/${product.image}`}
                     alt="Item Image"
                     className="aspect-square p-5 border border-gray-400 rounded-lg"
                   />

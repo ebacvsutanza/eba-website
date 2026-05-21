@@ -32,7 +32,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
 
     const delayDebounce = setTimeout(() => {
       axios
-        .get(`http://localhost:3000/searchcustomer?q=${query}`)
+        .get(`https://eba-website.onrender.com/searchcustomer?q=${query}`)
         .then((res) => setResults(res.data || []))
         .catch((err) => console.error(err));
     }, 300);
@@ -48,7 +48,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
     });
 
     axios
-      .post("http://localhost:3000/requestCancelOrder", {
+      .post("https://eba-website.onrender.com/requestCancelOrder", {
         email,
         orderId,
         item,

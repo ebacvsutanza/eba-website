@@ -15,7 +15,7 @@ const Date = () => {
 
 	const fetchAnnouncements = async () => {
 		try {
-			const response = await axios.get('http://localhost:3000/bulletin');
+			const response = await axios.get('https://eba-website.onrender.com/bulletin');
 			setAnnouncements(response.data);
 		} catch (error) {
 			console.error('Error fetching announcements:', error);
