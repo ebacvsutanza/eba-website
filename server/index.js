@@ -141,7 +141,7 @@ app.get("/api/test-users", async (req, res) => {
   const users = await db.query("SELECT * FROM admin_account");
   res.json(users.rows);
 });
-
+console.log("CLIENT ID:", process.env.GOOGLE_CLIENT_ID);
 // Test endpoint for JWT
 app.post("/api/test-jwt", (req, res) => {
   try {
