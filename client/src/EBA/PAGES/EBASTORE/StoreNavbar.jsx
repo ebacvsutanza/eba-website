@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping } from "@fortawesome/free-solid-svg-icons";
+import { BiChevronLeft } from "react-icons/bi";
 
 export default function StoreNavbar({ fetchCart, carts }) {
   const token = localStorage.getItem("token");
@@ -25,17 +26,16 @@ export default function StoreNavbar({ fetchCart, carts }) {
   return (
     <header className="px-5">
       <nav className="w-full py-3 flex justify-between items-center">
-        <button
-          onClick={handleNavigation}
-          className="center-flex gap-5 cursor-pointer"
-        >
+        <div className="center-flex gap-5">
+          <button onClick={handleNavigation} className="cursor-pointer">
+            <BiChevronLeft className="text-3xl" />
+          </button>
           <img src="logo.png" alt="" className="w-15 h-15" />
           <div className="text-left font-bold hidden md:block">
             <h3>Cavite State University - Tanza</h3>
             <p className="text-(--secondary-text)">EBA Store</p>
           </div>
-        </button>
-
+        </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => (window.location.href = "/catalog")}

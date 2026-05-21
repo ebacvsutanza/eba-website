@@ -194,7 +194,7 @@ export default function Catalog() {
                 >
                   <div className="aspect-square rounded-xl bg-gray-200 overflow-hidden flex items-center justify-center">
                     <img
-                      src={`https://eba-website.onrender.com/ITEMS/${product.image}`}
+                      src={product.image}
                       alt={product.item_name}
                       className="w-full h-full object-cover"
                     />
@@ -212,7 +212,9 @@ export default function Catalog() {
                       <p className="mr-18">Starts at PHP {product.price}</p>
 
                       <button
-                        onClick={(e) => handleOpenModal(e, product, totalQuantity)}
+                        onClick={(e) =>
+                          handleOpenModal(e, product, totalQuantity)
+                        }
                         className={`
                           bg-(--primary-btn) px-5 py-1 rounded-full absolute md:bottom-0 right-0 cursor-pointer
                           ${isActive ? "visible" : "invisible"}
