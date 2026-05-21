@@ -79,6 +79,15 @@ if (!process.env.GOOGLE_CLIENT_ID) {
   process.exit(1);
 }
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/userlogin",
+  }),
+  (req, res) => {
+    res.redirect("https://ebacvsu-website.vercel.app");
+  }
+);
 
 // Middleware to verify JWT token
 const verifyToken =
