@@ -9,6 +9,8 @@ const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const nodemailer = require("nodemailer");
 const sgMail = require('@sendgrid/mail');
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = ("../config/cloudinary.js");
 
 // Set API key from environment variable
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -39,27 +41,22 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.json({ limit: '50mb' }));
 
 
-const uploadStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/UPLOADS");
-  },
-  filename: (req, file, cb) => {
-    cb(
-      null,
-      file.fieldname + "_" + Date.now() + path.extname(file.originalname),
-    );
-  },
+const uploadStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => ({
+    folder: "UPLOADS",
+    public_id: file.fieldname + "_" + Date.now(),
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+  }),
 });
-const itemStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/ITEMS");
-  },
-  filename: (req, file, cb) => {
-    cb(
-      null,
-      file.fieldname + "_" + Date.now() + path.extname(file.originalname),
-    );
-  },
+
+const itemStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => ({
+    folder: "ITEMS",
+    public_id: file.fieldname + "_" + Date.now(),
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+  }),
 });
 const upload = multer({ storage: uploadStorage });
 const itemupload = multer({ storage: itemStorage });
