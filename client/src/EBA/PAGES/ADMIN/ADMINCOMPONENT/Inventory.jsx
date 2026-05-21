@@ -279,7 +279,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                 >
                   <div>
                     <img
-                      src={`https://eba-website.onrender.com/ITEMS/${inventory.image}`}
+                      src={inventory.image}
                       alt=""
                       className="w-14 h-14 object-contain mx-auto rounded"
                     />

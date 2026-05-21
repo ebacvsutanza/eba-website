@@ -260,7 +260,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
                 >
                   <div>
                     <img
-                      src={`https://eba-website.onrender.com/UPLOADS/${admin.image}`}
+                      src={admin.image}
                       alt=""
                       className="w-14 h-14 object-contain mx-auto rounded"
                     />

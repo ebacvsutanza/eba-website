@@ -191,199 +191,222 @@ const AddNewAdmin = () => {
     };
 
 	return (
-		<div className="admin-content">
-			<h1>Manage Accounts</h1>
+    <div className="admin-content">
+      <h1>Manage Accounts</h1>
 
-			<div className="add-new-admin main-content">
-				<div className="top">
-					<h2>Admin Accounts</h2>
-					<button onClick={() => setAddingAdmin((prev) => !prev)}><FontAwesomeIcon icon={faUserPlus} /></button>
-				</div>
+      <div className="add-new-admin main-content">
+        <div className="top">
+          <h2>Admin Accounts</h2>
+          <button onClick={() => setAddingAdmin((prev) => !prev)}>
+            <FontAwesomeIcon icon={faUserPlus} />
+          </button>
+        </div>
 
-				<table>
-					<thead>
-						<tr>
-							<th>Image</th>
-							<th>Username</th>
-							<th>Role</th>
-							<th>Email Address</th>
-							<th>Action</th>
-						</tr>
-					</thead>
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Email Address</th>
+              <th>Action</th>
+            </tr>
+          </thead>
 
-					<tbody>
-						{admins.map((admin, index) => (
-							<tr key={index}>
-								<td><img src={`https://eba-website.onrender.com/UPLOADS/${admin.Image}`} alt="" /> </td>
-								<td>{admin.Username}</td>
-								<td>{admin.Role}</td>
-								<td>{admin.Email_Address}</td>
-								<td className='btn'>
-									<button onClick={() => handleEdit(admin)}>Edit</button>
-									<button onClick={() => handleRemoveClick(admin.ID)}>Remove</button>
-								</td>
-							</tr>
-						))}	
-					</tbody>
-				</table>
-				
-				{confirmation && (
-					<div className="modal-container">
-						<div className="confirmation">
-							<p>Are you sure you want to {msg} admin?</p>
-							<div className="btn">
-								<button onClick={handleConfirm}>Yes</button>
-								<button onClick={handleCancel}>No</button>
-							</div>
-						</div>
-					</div>
-				)}
+          <tbody>
+            {admins.map((admin, index) => (
+              <tr key={index}>
+                <td>
+                  <img src={admin.Image} alt="" />{" "}
+                </td>
+                <td>{admin.Username}</td>
+                <td>{admin.Role}</td>
+                <td>{admin.Email_Address}</td>
+                <td className="btn">
+                  <button onClick={() => handleEdit(admin)}>Edit</button>
+                  <button onClick={() => handleRemoveClick(admin.ID)}>
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-				{message && <div className='messages msg'>{message}</div>}
+        {confirmation && (
+          <div className="modal-container">
+            <div className="confirmation">
+              <p>Are you sure you want to {msg} admin?</p>
+              <div className="btn">
+                <button onClick={handleConfirm}>Yes</button>
+                <button onClick={handleCancel}>No</button>
+              </div>
+            </div>
+          </div>
+        )}
 
-				{addingAdmin && (
-					<div className="modal-container">
-						<div className="add-new-admin-modal modal">
-							<div className="title">
-								<FontAwesomeIcon icon={faChevronLeft} className='icon' onClick={() => setAddingAdmin((prev) => !prev)} />
-								<h3>Add Admin</h3>
-							</div>
+        {message && <div className="messages msg">{message}</div>}
 
-							<form onSubmit={handleAddClick}>
-								<div className="input-block">
-									<label>Image:</label>
-									<input 
-										type="file" 
-										onChange={(e) => setImage(e.target.files[0])}
-										required
-									/>
-								</div>
-								<div className="input-block">
-									<label htmlFor="username">Username:</label>
-									<input
-										type="text"
-										value={username}
-										onChange={(e) => setUsername(e.target.value)}
-										placeholder='Enter Username'
-										required 
-									/>
-								</div>
-								<div className="input-block">
-									<label htmlFor="role">Role:</label>
-									<select
-										value={role}
-										onChange={(e) => setRole(e.target.value)}
-										required 
-									>
-										<option value="" disabled>Select Role</option>
-										<option value="Admin">Admin</option>
-										<option value="EBA">EBA</option>
-										<option value="DEAN">DEAN</option>
-									</select>
-								</div>
-								<div className="input-block">
-									<label htmlFor="email">Email Address:</label>
-									<input
-										type="email"
-										value={email}
-										onChange={(e) => setEmail(e.target.value)}
-										placeholder='Enter Email Address'
-										required
-									/>
-								</div>
-								<div className="input-block">
-									<label htmlFor="password">Password:</label>
-									<input
-										type="password"
-										value={password}
-										onChange={(e) => setPassword(e.target.value)}
-										placeholder='Enter Password'
-										required 
-									/>
-								</div>
+        {addingAdmin && (
+          <div className="modal-container">
+            <div className="add-new-admin-modal modal">
+              <div className="title">
+                <FontAwesomeIcon
+                  icon={faChevronLeft}
+                  className="icon"
+                  onClick={() => setAddingAdmin((prev) => !prev)}
+                />
+                <h3>Add Admin</h3>
+              </div>
 
-								{formMessage && <div className='form-message'>{formMessage}</div>}
-								
-								<button type='submit'>Add</button>
-							</form>
-						</div>
-					</div>
-				)}
+              <form onSubmit={handleAddClick}>
+                <div className="input-block">
+                  <label>Image:</label>
+                  <input
+                    type="file"
+                    onChange={(e) => setImage(e.target.files[0])}
+                    required
+                  />
+                </div>
+                <div className="input-block">
+                  <label htmlFor="username">Username:</label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter Username"
+                    required
+                  />
+                </div>
+                <div className="input-block">
+                  <label htmlFor="role">Role:</label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>
+                      Select Role
+                    </option>
+                    <option value="Admin">Admin</option>
+                    <option value="EBA">EBA</option>
+                    <option value="DEAN">DEAN</option>
+                  </select>
+                </div>
+                <div className="input-block">
+                  <label htmlFor="email">Email Address:</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter Email Address"
+                    required
+                  />
+                </div>
+                <div className="input-block">
+                  <label htmlFor="password">Password:</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter Password"
+                    required
+                  />
+                </div>
 
-				{showEditForm && editingAdmin && (
-					<div className="modal-container">
-						<div className="add-new-admin-modal modal">
-							<div className="title">
-								<FontAwesomeIcon icon={faChevronLeft} className='icon' onClick={() => setEditingAdmin(null)}/>
-								<h3>Edit Admin</h3>
-							</div>
+                {formMessage && (
+                  <div className="form-message">{formMessage}</div>
+                )}
 
-							<form>
-								<div className="input-block">
-									<label>Image:</label>
-									<input 
-										type="file" 
-										onChange={(e) => setImage(e.target.files[0])}
-										required
-									/>
-								</div>
-								<div className="input-block">
-									<label>Username:</label>
-									<input
-										type="text"
-										name='username'
-										value={formData.username}
-										onChange={handleChange}
-										placeholder='Enter Username'
-										required 
-									/>
-								</div>
-								<div className="input-block">
-									<label>Role:</label>
-									<select
-										name='role'
-										value={formData.role}
-										onChange={handleChange}
-										required 
-									>
-										<option value="" disabled>Select Role</option>
-										<option value="Admin">Admin</option>
-										<option value="EBA">EBA</option>
-										<option value="DEAN">DEAN</option>
-									</select>
-								</div>
-								<div className="input-block">
-									<label>Email Address:</label>
-									<input
-										type="email"
-										name='email'
-										value={formData.email}
-										onChange={handleChange}
-										placeholder='Enter Email Address'
-										required 
-									/>
-								</div>
-								<div className="input-block">
-									<label>Password:</label>
-									<input
-										type="password"
-										name='password'
-										onChange={handleChange}
-										placeholder='Enter Password'
-									/>
-								</div>
+                <button type="submit">Add</button>
+              </form>
+            </div>
+          </div>
+        )}
 
+        {showEditForm && editingAdmin && (
+          <div className="modal-container">
+            <div className="add-new-admin-modal modal">
+              <div className="title">
+                <FontAwesomeIcon
+                  icon={faChevronLeft}
+                  className="icon"
+                  onClick={() => setEditingAdmin(null)}
+                />
+                <h3>Edit Admin</h3>
+              </div>
 
-								{formMessage && <div className='form-message'>{formMessage}</div>}
-								
-								<button type='button' onClick={handleEditClick}>Edit</button>
-							</form>
-						</div>
-					</div>
-				)}
-			</div>
-		</div>
-	);
+              <form>
+                <div className="input-block">
+                  <label>Image:</label>
+                  <input
+                    type="file"
+                    onChange={(e) => setImage(e.target.files[0])}
+                    required
+                  />
+                </div>
+                <div className="input-block">
+                  <label>Username:</label>
+                  <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    placeholder="Enter Username"
+                    required
+                  />
+                </div>
+                <div className="input-block">
+                  <label>Role:</label>
+                  <select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="" disabled>
+                      Select Role
+                    </option>
+                    <option value="Admin">Admin</option>
+                    <option value="EBA">EBA</option>
+                    <option value="DEAN">DEAN</option>
+                  </select>
+                </div>
+                <div className="input-block">
+                  <label>Email Address:</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Enter Email Address"
+                    required
+                  />
+                </div>
+                <div className="input-block">
+                  <label>Password:</label>
+                  <input
+                    type="password"
+                    name="password"
+                    onChange={handleChange}
+                    placeholder="Enter Password"
+                  />
+                </div>
+
+                {formMessage && (
+                  <div className="form-message">{formMessage}</div>
+                )}
+
+                <button type="button" onClick={handleEditClick}>
+                  Edit
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default AddNewAdmin;

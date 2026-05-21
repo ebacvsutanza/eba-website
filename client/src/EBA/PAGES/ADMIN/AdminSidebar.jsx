@@ -94,7 +94,7 @@ const AdminSidebar = ({
 
       <div className="py-1 px-3 flex items-center gap-3 border border-gray-400 rounded-lg relative">
         <img
-          src={`https://eba-website.onrender.com/UPLOADS/${image}`}
+          src={image}
           alt="Admin Profile"
           className="w-14 h-14 object-cover rounded-full"
         />

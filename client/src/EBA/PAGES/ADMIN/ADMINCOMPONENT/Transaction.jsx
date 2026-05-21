@@ -366,7 +366,7 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                       <>
                         <div>
                           <img
-                            src={`https://eba-website.onrender.com/ITEMS/${transaction.image}`}
+                            src={transaction.image}
                             alt=""
                             className="w-14 h-14 object-contain mx-auto rounded"
                           />
@@ -399,7 +399,11 @@ const Transaction = ({ activeAdmin, openSidebar, role }) => {
                     <div className="relative">
                       <button
                         onClick={() => handleStatus(transaction)}
-                        disabled={role === "Admin" || transaction.status === "Cancelled" || transaction.status === "Confirmed"}
+                        disabled={
+                          role === "Admin" ||
+                          transaction.status === "Cancelled" ||
+                          transaction.status === "Confirmed"
+                        }
                         className="p-2 cursor-pointer"
                       >
                         <HiDotsVertical size={18} />

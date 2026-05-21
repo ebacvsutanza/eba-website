@@ -182,17 +182,19 @@ const Store = () => {
               >
                 <div className="img-block">
                   <img
-                    src={`https://eba-website.onrender.com/ITEMS/${product.image}`}
+                    src={product.image}
                     alt="Item Image"
                     className="aspect-square p-5 border border-gray-400 rounded-lg"
                   />
                 </div>
                 <div className="h-[150px] p-3 flex flex-col justify-between">
                   <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">{product.item_name}</h3>
+                    <h3 className="text-lg font-semibold">
+                      {product.item_name}
+                    </h3>
                     <small>Stocks: {totalQuantity}</small>
                   </div>
-                  
+
                   <p>Starts at PHP {product.price}</p>
                 </div>
               </div>

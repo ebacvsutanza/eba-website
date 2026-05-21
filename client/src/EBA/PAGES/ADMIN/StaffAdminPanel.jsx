@@ -111,83 +111,101 @@ const AdminPanel = () => {
 	}
 
 	return (
-		<div className={isDarkMode ? 'adminpanel dark-mode' : 'adminpanel light-mode'}>
-			<div className="navbar">
-				<nav>
-					<button className="toggle-btn" onClick={() => setIsOpen(!isOpen)}>
-						<FontAwesomeIcon icon={isOpen ? faX : faBars} className='icon' />
-					</button>
+    <div
+      className={isDarkMode ? "adminpanel dark-mode" : "adminpanel light-mode"}
+    >
+      <div className="navbar">
+        <nav>
+          <button className="toggle-btn" onClick={() => setIsOpen(!isOpen)}>
+            <FontAwesomeIcon icon={isOpen ? faX : faBars} className="icon" />
+          </button>
 
-					<div className="logo">
-						<img src='/logo.png' alt="" />
-						<h4>EBA Admin Panel</h4>
-					</div>
+          <div className="logo">
+            <img src="/logo.png" alt="" />
+            <h4>EBA Admin Panel</h4>
+          </div>
 
-					<div className="buttons">
-						<button>
-							<FontAwesomeIcon icon={faEnvelope} className='icon' />
-						</button>
+          <div className="buttons">
+            <button>
+              <FontAwesomeIcon icon={faEnvelope} className="icon" />
+            </button>
 
-						<button>
-							<FontAwesomeIcon icon={faBell} className='icon'/>
-						</button>
+            <button>
+              <FontAwesomeIcon icon={faBell} className="icon" />
+            </button>
 
-						<button onClick={() => setIsDarkMode(!isDarkMode)} className='toggle-theme'>
-							<FontAwesomeIcon icon={isDarkMode ? faSun : faMoon} className='icon' />
-						</button>
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="toggle-theme"
+            >
+              <FontAwesomeIcon
+                icon={isDarkMode ? faSun : faMoon}
+                className="icon"
+              />
+            </button>
 
-						<div className="user-profile" onClick={() => setOpenPass(!openPass)}>
-							<p>Hi, {username}</p>
-							<img src={`https://eba-website.onrender.com/UPLOADS/${image}`} alt="" />
-							<FontAwesomeIcon icon={faChevronDown} />
-						</div>
+            <div
+              className="user-profile"
+              onClick={() => setOpenPass(!openPass)}
+            >
+              <p>Hi, {username}</p>
+              <img src={image} alt="" />
+              <FontAwesomeIcon icon={faChevronDown} />
+            </div>
 
-						{openPass && (
-							<form onSubmit={handleEditClick} className="input-container changepass">
-								{inputs.map((input) => (
-									<InputForm 
-										key={input.id} 
-										{...input} 
-										value={values[input.name]}
-										onChange={onChange} 
-									/>
-								))}
+            {openPass && (
+              <form
+                onSubmit={handleEditClick}
+                className="input-container changepass"
+              >
+                {inputs.map((input) => (
+                  <InputForm
+                    key={input.id}
+                    {...input}
+                    value={values[input.name]}
+                    onChange={onChange}
+                  />
+                ))}
 
-								<button type='submit'>Change Password</button>
-							</form>
-						)}
-					</div>
-				</nav>
-			</div>
+                <button type="submit">Change Password</button>
+              </form>
+            )}
+          </div>
+        </nav>
+      </div>
 
-			<div className="container">
-				<Sidebars onMenuClick={handleMenuClick} isOpen={isOpen} handleLogout={handleLogout}/>
-				
-				{confirmation && (
-					<div className="modal-container">
-						<div className="confirmation">
-							<p>Are you sure you want to change password?</p>
-							<div className="btn">
-								<button onClick={handleConfirm}>Yes</button>
-								<button onClick={handleCancel}>No</button>
-							</div>
-						</div>
-					</div>
-				)}
+      <div className="container">
+        <Sidebars
+          onMenuClick={handleMenuClick}
+          isOpen={isOpen}
+          handleLogout={handleLogout}
+        />
 
-				<div className='content'>
-					{activeAdmin === 'Dashboard' && <Dashboard />}
-					{activeAdmin === 'Transaction' && <Transaction />}
-					{activeAdmin === 'Announcement' && <Announcement />}
-					{activeAdmin === 'Inventory' && <Inventory />}
-					{activeAdmin === 'Calendar' && <Date />}
-					{activeAdmin === 'AddNewAdmin' && <AddNewAdmin />}
-					{activeAdmin === 'AddDesign' && <AddDesign />}
-					{activeAdmin === 'Pages' && <Pages />}
-				</div>
-			</div>
-		</div>
-	)
+        {confirmation && (
+          <div className="modal-container">
+            <div className="confirmation">
+              <p>Are you sure you want to change password?</p>
+              <div className="btn">
+                <button onClick={handleConfirm}>Yes</button>
+                <button onClick={handleCancel}>No</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="content">
+          {activeAdmin === "Dashboard" && <Dashboard />}
+          {activeAdmin === "Transaction" && <Transaction />}
+          {activeAdmin === "Announcement" && <Announcement />}
+          {activeAdmin === "Inventory" && <Inventory />}
+          {activeAdmin === "Calendar" && <Date />}
+          {activeAdmin === "AddNewAdmin" && <AddNewAdmin />}
+          {activeAdmin === "AddDesign" && <AddDesign />}
+          {activeAdmin === "Pages" && <Pages />}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default AdminPanel

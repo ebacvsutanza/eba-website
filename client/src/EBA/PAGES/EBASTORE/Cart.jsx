@@ -184,7 +184,7 @@ const Cart = () => {
                     >
                       <div className="h-full aspect-square bg-white rounded-lg p-2 center-flex">
                         <img
-                          src={`https://eba-website.onrender.com/ITEMS/${cart.image}`}
+                          src={cart.image}
                           alt="Item Image"
                           className="w-3/4 m-auto object-contain"
                         />

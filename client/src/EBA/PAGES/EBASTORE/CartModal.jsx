@@ -138,7 +138,7 @@ const CartModal = ({
         <div className="w-full h-auto md:h-[90%] md:px-5 flex gap-5 flex-col md:flex-row">
           <aside className="md:w-[300px] h-full md:my-auto bg-gray-200 center-flex rounded-lg">
             <img
-              src={`https://eba-website.onrender.com/ITEMS/${product.image}`}
+              src={product.image}
               alt={product.item_name}
               className="aspect-square w-full"
             />
@@ -211,7 +211,10 @@ const CartModal = ({
                   Check out the AR Try-on application in the campus kiosk to see
                   your estimated size
                 </p>
-                <a href='/' className="flex items-center gap-2 text-(--secondary-text)">
+                <a
+                  href="/"
+                  className="flex items-center gap-2 text-(--secondary-text)"
+                >
                   See how <FontAwesomeIcon icon={faChevronRight} />
                 </a>
               </footer>
