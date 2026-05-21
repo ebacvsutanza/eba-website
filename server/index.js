@@ -10,7 +10,7 @@ const { OAuth2Client } = require("google-auth-library");
 const nodemailer = require("nodemailer");
 const sgMail = require('@sendgrid/mail');
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = ("../config/cloudinary.js");
+const cloudinary = require("../config/cloudinary");
 
 // Set API key from environment variable
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
