@@ -1821,7 +1821,7 @@ app.post("/inventory", itemupload.single("inventory"), async (req, res) => {
   const client = await db.connect();
 
   try {
-    const image = req.file ? req.file.filename : null;
+    const image = req.file ? req.file.path : null;
     const { category, itemName, variant, size, quantity, price } = req.body;
 
     await client.query("BEGIN");
@@ -1943,7 +1943,7 @@ app.put("/inventory/:id", itemupload.single("inventory"), (req, res) => {
 
   if (req.file) {
     query += `, image = $${values.length + 1}`;
-    values.push(req.file.filename);
+    values.push(req.file ? req.file.path : null);
   }
 
   query += ` WHERE id = $${values.length + 1}`;
@@ -2003,7 +2003,7 @@ app.get("/manageadmin", async (req, res) => {
 // ------------------------ ADD NEW ADMIN ------------------------
 app.post("/manageadmin", upload.single("manageadmin"), async (req, res) => {
   const { Username, Role, Email_Address, Password } = req.body;
-  const image = req.file ? req.file.filename : null;
+  const image = req.file ? req.file.path : null;
 
   if (!Username || !Role || !Email_Address || !Password) {
     return res.status(400).json({ Status: "Please fill all required fields" });
@@ -2039,7 +2039,7 @@ app.post("/manageadmin", upload.single("manageadmin"), async (req, res) => {
 app.put("/manageadmin/:id", upload.single("manageadmin"), async (req, res) => {
   const { id } = req.params;
   const { Username, Role, Email_Address, Password } = req.body;
-  const image = req.file ? req.file.filename : null;
+  const image = req.file ? req.file.path : null;
 
   try {
     // Get current admin
@@ -2119,7 +2119,7 @@ app.delete("/manageadmin/:id", async (req, res) => {
 
 // MANAGE PAGES
 app.post("/addexclusive", itemupload.single("store"), (req, res) => {
-  const image = req.file.filename;
+  const image = req.file ? req.file.path : null;
   const { ItemName } = req.body;
   const insertQuery =
     "INSERT INTO exclusive (image, item_name) VALUES ( $1, $2)";
@@ -2134,7 +2134,7 @@ app.post("/addexclusive", itemupload.single("store"), (req, res) => {
   });
 });
 app.post("/addcategories", itemupload.single("store"), (req, res) => {
-  const image = req.file.filename;
+  const image = req.file ? req.file.path : null;
   const { ItemName } = req.body;
   const insertQuery =
     "INSERT INTO categories (image, item_name) VALUES ( $1, $2)";
@@ -2149,7 +2149,7 @@ app.post("/addcategories", itemupload.single("store"), (req, res) => {
   });
 });
 app.post("/addstore", itemupload.single("store"), (req, res) => {
-  const image = req.file.filename;
+  const image = req.file ? req.file.path : null;
   const { ItemName, Price } = req.body;
   const insertQuery =
     "INSERT INTO store (image, item_name, price) VALUES ( $1, $2, $3)";
@@ -2169,7 +2169,7 @@ app.put("/exclusive/:id", itemupload.single("store"), (req, res) => {
 
   let image = null;
   if (req.file) {
-    image = req.file.filename;
+    image = req.file.path;
   }
   const { itemName } = req.body;
 
@@ -2198,7 +2198,7 @@ app.put("/categories/:id", itemupload.single("store"), (req, res) => {
 
   let image = null;
   if (req.file) {
-    image = req.file.filename;
+    image = req.file.path;
   }
   const { itemName } = req.body;
 
@@ -2227,7 +2227,7 @@ app.put("/store/:id", itemupload.single("store"), (req, res) => {
 
   let image = null;
   if (req.file) {
-    image = req.file.filename;
+    image = req.file ? req.file.path : null;
   }
   const { itemName, price } = req.body;
 
