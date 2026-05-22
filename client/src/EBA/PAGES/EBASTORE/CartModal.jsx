@@ -7,6 +7,7 @@ const CartModal = ({
   setOpenModal,
   setOpenToast,
   product,
+  totalQuantity,
   userId,
   fullName,
   emailAddress,
@@ -161,7 +162,7 @@ const CartModal = ({
                     ? selectedStock
                     : "Select size"
                   : product.quantity}
-                {product.quantity}1
+                  {totalQuantity}
               </small>
             </div>
 
