@@ -7,7 +7,6 @@ const CartModal = ({
   setOpenModal,
   setOpenToast,
   product,
-  totalQuantity,
   userId,
   fullName,
   emailAddress,
@@ -125,6 +124,9 @@ const CartModal = ({
     }
   };
 
+  const totalQuantity =
+    product.Sizes?.reduce((sum, size) => sum + size.Quantity, 0) || 0;
+
   return (
     <div className="w-full h-full py-3 bg-black/20 fixed top-0 left-0 center-flex">
       <div className="w-full lg:w-3/4 xl:w-3/5 max-h-3/5 h-full p-3 bg-(--primary-bg) rounded-xl overflow-y-auto">
@@ -154,7 +156,6 @@ const CartModal = ({
                 </span>
               </h1>
               <p className="text-[#7d7d7d]">{product.variant}</p>
-              {totalQuantity}
               <small>
                 Stocks:{" "}
                 {product.variant
