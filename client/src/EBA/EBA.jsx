@@ -44,6 +44,7 @@ const EBA = () => {
 
   const handleTest = async () => {
     console.log("Button clicked");
+    alert("Button clicked");
 
     try {
       console.log("Sending request...");
@@ -56,7 +57,7 @@ const EBA = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            to: "YOUR_EMAIL@gmail.com",
+            to: "marcandrei.nisperos@cvsu.edu.ph",
             subject: "SendGrid Test",
             message: "Hello from frontend",
           }),
