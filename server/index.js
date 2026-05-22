@@ -10,7 +10,7 @@ const { OAuth2Client } = require("google-auth-library");
 const nodemailer = require("nodemailer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("./config/cloudinary");
-const { sendEmail } = require("./email");
+const { sendEmail } = require("./config/email");
 
 const salt = 10;
 const app = express();
