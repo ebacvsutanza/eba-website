@@ -157,7 +157,7 @@ const CartModal = ({
               <small>
                 {" "}
                 Stocks:{" "}
-                {product.variant
+                {!product.variant
                   ? size
                     ? selectedStock
                     : "Select size"
