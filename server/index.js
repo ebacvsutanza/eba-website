@@ -100,23 +100,23 @@ const verifyToken =
   };
 
 // test connection to database
-app.get("/api/test-users", async (req, res) => {
-  const users = await pool.query("SELECT * FROM users");
-  res.json(users.rows);
-});
-// test email sending
-app.get("/test-email", async (req, res) => {
+// app.get("/api/test-users", async (req, res) => {
+//   const users = await pool.query("SELECT * FROM users");
+//   res.json(users.rows);
+// });
+// // test email sending
+// app.get("/test-email", async (req, res) => {
 
-  await sendEmail(
-    "ebacvsutanza@gmail.com",
-    "Brevo Test",
-    "<h1>Hello from Render + Brevo</h1>"
-  );
+//   await sendEmail(
+//     "ebacvsutanza@gmail.com",
+//     "Brevo Test",
+//     "<h1>Hello from Render + Brevo</h1>"
+//   );
 
-  res.json({
-    success: true,
-  });
-});
+//   res.json({
+//     success: true,
+//   });
+// });
 
 // Test endpoint for JWT
 app.post("/api/test-jwt", (req, res) => {
@@ -770,55 +770,54 @@ app.post("/checkout", async (req, res) => {
     const user = cartItems[0];
 
     // Send email using SendGrid
-    const mailOptions = {
-      from: "ebacvsutanza@gmail.com",
-      to: user.email_address,
-      subject: "Order Details",
-      html: `
-          <header style='height: 150px; background: #c1ff72; display: flex; flex-direction: column; gap: 10px;'>
-              <img src="https://res.cloudinary.com/dfmnlcvbe/image/upload/v1744102780/logo_qy0g8a.png" style='width: 80px; height: 80px;'/>
-              <h2>External Business and<br>Affairs</h2>
-          </header>
+    await sendEmail(
+      user.email_address,
+      "Order Details",
+      `
+    <header style='height: 150px; background: #c1ff72; display: flex; flex-direction: column; gap: 10px;'>
+        <img src="https://res.cloudinary.com/dfmnlcvbe/image/upload/v1744102780/logo_qy0g8a.png" style='width: 80px; height: 80px;'/>
+        <h2>External Business and<br>Affairs</h2>
+    </header>
 
-          <br>
+    <br>
 
-          <h3>Thank you for your order!</h3>
-          <p>${user.full_name}</p>
-          <p>Your order was received! We're working to get it processed and ready to claim.</p>
+    <h3>Thank you for your order!</h3>
+    <p>${user.full_name}</p>
+    <p>Your order was received! We're working to get it processed and ready to claim.</p>
 
-          <br>
+    <br>
 
-          <div style='display: flex; align-items: center;'>
-              <div style="margin-right: 30px;">
-                  <p>Order Number:</p>
-                  <span>#${orderID}</span>
-              </div>
-              <div>
-                  <p>Order Date:</p>
-                  <span>${formattedDate}</span>
-              </div>
-          </div>
+    <div style='display: flex; align-items: center;'>
+        <div style="margin-right: 30px;">
+            <p>Order Number:</p>
+            <span>#${orderID}</span>
+        </div>
+        <div>
+            <p>Order Date:</p>
+            <span>${formattedDate}</span>
+        </div>
+    </div>
 
-          <br>
+    <br>
 
-          <table style="border: 1px solid gray; border-collapse: collapse; width: 100%; text-align: left;">
-              <tr>
-                  <th style="border: 1px solid gray; padding: 8px; text-align: center;">PRODUCT</th>
-                  <th style="border: 1px solid gray; padding: 8px; text-align: center;">PRICE</th>
-              </tr>
-              ${itemRowsHTML}
-              <tr>
-                  <td style="border: 1px solid gray; padding: 8px; text-align: center;"></td>
-                  <td style="border: 1px solid gray; padding: 8px; text-align: center;"><strong>Total: P${totalAmount}</strong></td>
-              </tr>
-          </table>
+    <table style="border: 1px solid gray; border-collapse: collapse; width: 100%; text-align: left;">
+        <tr>
+            <th style="border: 1px solid gray; padding: 8px; text-align: center;">PRODUCT</th>
+            <th style="border: 1px solid gray; padding: 8px; text-align: center;">PRICE</th>
+        </tr>
+        ${itemRowsHTML}
+        <tr>
+            <td style="border: 1px solid gray; padding: 8px; text-align: center;"></td>
+            <td style="border: 1px solid gray; padding: 8px; text-align: center;">
+              <strong>Total: P${totalAmount}</strong>
+            </td>
+        </tr>
+    </table>
 
-          <p>Thank you for your purchase!</p>
-          <p>Cavite State University - Tanza Campus</p>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    <p>Thank you for your purchase!</p>
+    <p>Cavite State University - Tanza Campus</p>
+  `,
+    );
 
     // Clear the cart
     await client.query("DELETE FROM item_cart WHERE user_id = $1", [userId]);
@@ -861,19 +860,20 @@ app.post("/requestCancelOrder", async (req, res) => {
     const cancelLink = `https://eba-website.onrender.com/verifyCancelOrder/${token}`;
 
     // Compose the email
-    const mailOptions = {
-      from: "ebacvsutanza@gmail.com",
-      to: email,
-      subject: "Order Cancellation Verification",
-      html: `
-              <p>We received a request to cancel your order number <strong>${orderId}, ${item} - ${variant}</strong></p>
-              <p>If this was you, please confirm by clicking the link below:</p>
-              <a href="${cancelLink}">Confirm Cancellation</a>
-          `,
-    };
+    await sendEmail(
+      email,
+      "Order Cancellation Verification",
+      `
+    <p>We received a request to cancel your order number
+    <strong>${orderId}, ${item} - ${variant}</strong></p>
 
-    // Send the email
-    await transporter.sendMail(mailOptions);
+    <p>If this was you, please confirm by clicking the link below:</p>
+
+    <a href="${cancelLink}">
+      Confirm Cancellation
+    </a>
+  `,
+    );
 
     console.log("SendGrid email sent to:", email);
     res.json({ message: "Verification email sent" });
@@ -1472,7 +1472,7 @@ app.post("/bulk-confirm", async (req, res) => {
     // 1️⃣ Get pending transactions
     const txnResult = await client.query(
       `SELECT * FROM transaction
-       WHERE id IN (${placeholders}) 
+       WHERE id IN (${placeholders})
        AND status = 'Pending'`,
       orderIds,
     );
@@ -1486,8 +1486,8 @@ app.post("/bulk-confirm", async (req, res) => {
     for (const txn of txnResult.rows) {
       const inventoryResult = await client.query(
         `SELECT quantity FROM inventory
-         WHERE item_name = $1 
-         AND variant = $2 
+         WHERE item_name = $1
+         AND variant = $2
          AND size = $3
          FOR UPDATE`,
         [txn.item_name, txn.variant, txn.size],
@@ -1505,8 +1505,8 @@ app.post("/bulk-confirm", async (req, res) => {
       await client.query(
         `UPDATE inventory
          SET quantity = quantity - $1
-         WHERE item_name = $2 
-         AND variant = $3 
+         WHERE item_name = $2
+         AND variant = $3
          AND size = $4`,
         [txn.quantity, txn.item_name, txn.variant, txn.size],
       );
@@ -1522,20 +1522,24 @@ app.post("/bulk-confirm", async (req, res) => {
 
     await client.query("COMMIT");
 
-    // 4️⃣ Send confirmation emails (AFTER COMMIT)
+    // 4️⃣ Send emails AFTER commit (Brevo)
     for (const txn of txnResult.rows) {
       try {
-        const msg = {
-          to: txn.email_address,
-          from: "ebacvsutanza@gmail.com",
-          subject: "Your Order Has Been Confirmed",
-          text: `Hello ${txn.customer_name}! Your order number ${txn.orderid}, ${txn.variant} ${txn.item_name} ${txn.variant ? "-" : ""} ${txn.size} has been confirmed. We appreciate your purchase!`,
-          html: `<p>Hello <strong>${txn.customer_name}</strong>!</p>
-             <p>Your order <strong>#${txn.orderid}</strong>, ${txn.variant} ${txn.item_name} ${txn.variant ? "-" : ""} ${txn.size} has been confirmed.</p>
-             <p>We appreciate your purchase!</p>`,
-        };
+        const html = `
+          <p>Hello <strong>${txn.customer_name}</strong>!</p>
+          <p>Your order <strong>#${txn.orderid}</strong> has been confirmed.</p>
+          <p>Item: ${txn.item_name}</p>
+          <p>Variant: ${txn.variant || "-"}</p>
+          <p>Size: ${txn.size || "-"}</p>
+          <br/>
+          <p>We appreciate your purchase!</p>
+        `;
 
-        await transporter.sendMail(msg);
+        await sendEmail(
+          txn.email_address,
+          "Your Order Has Been Confirmed",
+          html,
+        );
       } catch (emailError) {
         console.error(
           `Email failed for order ${txn.orderid}:`,
@@ -1596,17 +1600,21 @@ app.post("/bulk-cancel", async (req, res) => {
     // 3️⃣ Send cancellation emails AFTER commit
     for (const txn of txnResult.rows) {
       try {
-        const msg = {
-          to: txn.email_address,
-          from: "ebacvsutanza@gmail.com",
-          subject: "Your Order Has Been Cancelled",
-          text: `Hello ${txn.customer_name}! Your order number ${txn.orderid}, ${txn.variant} ${txn.item_name} ${txn.variant ? "-" : ""} ${txn.size} has been cancelled. We appreciate your purchase!`,
-          html: `<p>Hello <strong>${txn.customer_name}</strong>!</p>
-             <p>Your order <strong>#${txn.orderid}</strong>, ${txn.variant} ${txn.item_name} ${txn.variant ? "-" : ""} ${txn.size} has been cancelled.</p>
-             <p>We appreciate your purchase!</p>`,
-        };
+        await sendEmail(
+          txn.email_address,
+          "Your Order Has Been Cancelled",
+          `
+    <p>Hello <strong>${txn.customer_name}</strong>!</p>
 
-        await transporter.sendMail(msg);
+    <p>
+      Your order <strong>#${txn.orderid}</strong>,
+      ${txn.item_name} ${txn.variant ? "- " + txn.variant : ""} ${txn.size}
+      has been cancelled.
+    </p>
+
+    <p>We appreciate your purchase!</p>
+  `,
+        );
       } catch (emailError) {
         console.error(
           `Email failed for cancelled order ${txn.orderid}:`,
@@ -1672,17 +1680,21 @@ app.post("/confirm-order", async (req, res) => {
     ]);
 
     // Send confirmation email using SendGrid
-    const msg = {
-      to: customerEmail,
-      from: "ebacvsutanza@gmail.com", // Must be verified in SendGrid
-      subject: "Your Order Has Been Confirmed",
-      text: `Hello ${name}! Your order number ${orderId}, ${variant} ${item_name} ${variant ? "-" : ''} ${size} has been confirmed. We appreciate your purchase!`,
-      html: `<p>Hello <strong>${name}</strong>!</p>
-             <p>Your order <strong>#${orderId}</strong>, ${variant} ${item_name} ${variant ? "-" : ''} ${size} has been confirmed.</p>
-             <p>We appreciate your purchase!</p>`,
-    };
+    await sendEmail(
+      customerEmail,
+      "Your Order Has Been Confirmed",
+      `
+    <p>Hello <strong>${name}</strong>!</p>
 
-    await transporter.sendMail(msg);
+    <p>
+      Your order <strong>#${orderId}</strong>,
+      ${item_name} ${variant ? "- " + variant : ""} ${size}
+      has been confirmed.
+    </p>
+
+    <p>We appreciate your purchase!</p>
+  `,
+    );
 
     res
       .status(200)
@@ -1728,17 +1740,21 @@ app.post("/cancel-order", async (req, res) => {
     // );
 
     // Send cancellation email using SendGrid
-    const msg = {
-      to: customerEmail,
-      from: "ebacvsutanza@gmail.com", // Must be verified in SendGrid
-      subject: "Your Order Has Been Cancelled",
-      text: `Hello ${name}! Your order number ${orderId}, ${variant} ${itemName} ${variant ? "-" : ""} ${size} has been cancelled. We appreciate your purchase!`,
-      html: `<p>Hello <strong>${name}</strong>!</p>
-             <p>Your order <strong>#${orderId}</strong>, ${variant} ${itemName} ${variant ? "-" : ""} ${size} has been cancelled.</p>
-             <p>We appreciate your purchase!</p>`,
-    };
+    await sendEmail(
+      customerEmail,
+      "Your Order Has Been Cancelled",
+      `
+        <p>Hello <strong>${name}</strong>!</p>
 
-    await transporter.sendMail(msg);
+        <p>
+          Your order <strong>#${orderId}</strong>,
+          ${itemName} ${variant ? "- " + variant : ""} ${size}
+          has been cancelled.
+        </p>
+
+        <p>We appreciate your purchase!</p>
+      `,
+    );
 
     res
       .status(200)
