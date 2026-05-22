@@ -6,7 +6,7 @@ async function sendEmail(to, subject, html) {
       "https://api.brevo.com/v3/smtp/email",
       {
         sender: {
-          name: "CVSU App",
+          name: "EBA CvSU - Tanza",
           email: process.env.EMAIL_FROM,
         },
 

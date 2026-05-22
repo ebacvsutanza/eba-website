@@ -161,7 +161,7 @@ const CartModal = ({
                     ? selectedStock
                     : "Select size"
                   : product.quantity}
-                {product.quantity}
+                {product.quantity}1
               </small>
             </div>
 

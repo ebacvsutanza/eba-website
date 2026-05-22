@@ -898,7 +898,7 @@ app.get("/verifyCancelOrder/:token", async (req, res) => {
     await db.query(updateQuery, [orderId, email]);
 
     // ✅ Redirect to your frontend Thank You page
-    res.redirect("https://eba-website.onrender.com/verifycancelorder");
+    res.redirect("https://ebacvsu-website.vercel.app/verifycancelorder");
   } catch (err) {
     console.error("Verification failed:", err);
     res.status(400).send("Invalid or expired token.");
