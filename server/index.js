@@ -106,10 +106,11 @@ app.get("/api/test-users", async (req, res) => {
 });
 // test email sending
 app.get("/test-email", async (req, res) => {
+
   await sendEmail(
-    "YOUR_EMAIL@gmail.com",
+    "ebacvsutanza@gmail.com",
     "Brevo Test",
-    "<h1>Hello from Brevo + Render</h1>",
+    "<h1>Hello from Render + Brevo</h1>"
   );
 
   res.json({
