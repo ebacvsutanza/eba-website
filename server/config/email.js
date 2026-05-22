@@ -1,12 +1,12 @@
 // email.js
 
-import Brevo from "@getbrevo/brevo";
+const Brevo = require("@getbrevo/brevo");
 
 const apiInstance = new Brevo.TransactionalEmailsApi();
 
 apiInstance.authentications["apiKey"].apiKey = process.env.BREVO_API_KEY;
 
-export async function sendEmail(to, subject, html) {
+async function sendEmail(to, subject, html) {
   try {
     const result = await apiInstance.sendTransacEmail({
       sender: {
@@ -26,3 +26,5 @@ export async function sendEmail(to, subject, html) {
     console.error(error);
   }
 }
+
+module.exports = { sendEmail };
