@@ -1,10 +1,13 @@
 // email.js
 
-const Brevo = require("@getbrevo/brevo");
+const brevo = require("@getbrevo/brevo");
 
-const apiInstance = new Brevo.TransactionalEmailsApi();
+const apiInstance = new brevo.TransactionalEmailsApi();
 
-apiInstance.authentications["apiKey"].apiKey = process.env.BREVO_API_KEY;
+apiInstance.setApiKey(
+  brevo.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY,
+);
 
 async function sendEmail(to, subject, html) {
   try {
@@ -21,6 +24,7 @@ async function sendEmail(to, subject, html) {
       htmlContent: html,
     });
 
+    console.log("Email sent");
     console.log(result);
   } catch (error) {
     console.error(error);
