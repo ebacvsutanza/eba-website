@@ -155,14 +155,12 @@ const CartModal = ({
               </h1>
               <p className="text-[#7d7d7d]">{product.variant}</p>
               <small>
-                {" "}
-                Stocks:{" "}
-                {!product.variant
+                Stocks:
+                {product.variant
                   ? size
                     ? selectedStock
                     : "Select size"
-                  : product.quantity}
-                  {totalQuantity}
+                  : totalQuantity}
               </small>
             </div>
 
