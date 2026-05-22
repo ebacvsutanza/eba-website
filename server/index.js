@@ -109,7 +109,7 @@ app.get("/api/test-users", async (req, res) => {
 app.post("/send-email", async (req, res) => {
   try {
     const msg = {
-      to: "receiver@gmail.com",
+      to: "marcandrei.nisperos@cvsu.edu.ph",
       from: "ebacvsutanza@gmail.com",
       subject: "Test Email",
       text: "Hello from SendGrid",
