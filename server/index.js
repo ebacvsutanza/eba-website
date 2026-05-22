@@ -10,7 +10,7 @@ const { OAuth2Client } = require("google-auth-library");
 const nodemailer = require("nodemailer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("./config/cloudinary");
-const sgMail = require("./config/sendgrid");
+const sendEmail = require("./config/email.js");
 
 
 const salt = 10;
@@ -106,26 +106,16 @@ app.get("/api/test-users", async (req, res) => {
   res.json(users.rows);
 });
 // test email sending
-app.post("/send-email", async (req, res) => {
-  try {
-    const msg = {
-      to: "marcandrei.nisperos@cvsu.edu.ph",
-      from: "ebacvsutanza@gmail.com",
-      subject: "Test Email",
-      text: "Hello from SendGrid",
-      html: "<h1>Hello from SendGrid</h1>",
-    };
+app.get("/test-email", async (req, res) => {
+  await sendEmail(
+    "YOUR_EMAIL@gmail.com",
+    "Brevo Test",
+    "<h1>Hello from Brevo + Render</h1>",
+  );
 
-    await sgMail.send(msg);
-
-    res.json({ message: "Email sent successfully" });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      message: "Failed to send email",
-    });
-  }
+  res.json({
+    success: true,
+  });
 });
 
 // Test endpoint for JWT

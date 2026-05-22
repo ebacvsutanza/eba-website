@@ -106,7 +106,7 @@ const EBA = () => {
                 without the need to wear the clothing physically. See how it
                 would fit before you buy.
               </p>
-              <button onclick={handleTest}>
+              <button type="button" onclick={handleTest}>
                 Try It Now
               </button>
             </div>
