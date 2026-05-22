@@ -11,9 +11,7 @@ const nodemailer = require("nodemailer");
 const sgMail = require('@sendgrid/mail');
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("./config/cloudinary");
-
-// Set API key from environment variable
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const sgMail = require("./config/sendgrid");
 
 
 const salt = 10;
@@ -107,6 +105,28 @@ const verifyToken =
 app.get("/api/test-users", async (req, res) => {
   const users = await pool.query("SELECT * FROM users");
   res.json(users.rows);
+});
+// test email sending
+app.post("/send-email", async (req, res) => {
+  try {
+    const msg = {
+      to: "receiver@gmail.com",
+      from: "ebacvsutanza@gmail.com",
+      subject: "Test Email",
+      text: "Hello from SendGrid",
+      html: "<h1>Hello from SendGrid</h1>",
+    };
+
+    await sgMail.send(msg);
+
+    res.json({ message: "Email sent successfully" });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Failed to send email",
+    });
+  }
 });
 
 // Test endpoint for JWT

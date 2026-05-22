@@ -42,6 +42,38 @@ const EBA = () => {
   
   const [openIndex, setOpenIndex] = useState(null);
 
+const handleTest = async () => {
+  try {
+    const response = await fetch(
+      "https://eba-website.onrender.com/send-email",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: "YOUR_EMAIL@gmail.com",
+          subject: "SendGrid Test",
+          message: "Hello from React frontend!",
+        }),
+      },
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log("Email sent:", data);
+      alert("Email sent successfully!");
+    } else {
+      console.log("Failed:", data);
+      alert("Failed to send email");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Something went wrong");
+  }
+};
+
 	return (
     <div>
       <Navbar
@@ -68,6 +100,9 @@ const EBA = () => {
                 without the need to wear the clothing physically. See how it
                 would fit before you buy.
               </p>
+              <button onclick={handleTest}>
+                Try It Now
+              </button>
             </div>
           </div>
           <div className="hero-image hidden lg:flex">
