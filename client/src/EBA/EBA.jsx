@@ -42,37 +42,42 @@ const EBA = () => {
   
   const [openIndex, setOpenIndex] = useState(null);
 
-const handleTest = async () => {
-  try {
-    const response = await fetch(
-      "https://eba-website.onrender.com/send-email",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+  const handleTest = async () => {
+    console.log("Button clicked");
+
+    try {
+      console.log("Sending request...");
+
+      const response = await fetch(
+        "https://eba-website.onrender.com/send-email",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            to: "YOUR_EMAIL@gmail.com",
+            subject: "SendGrid Test",
+            message: "Hello from frontend",
+          }),
         },
-        body: JSON.stringify({
-          to: "YOUR_EMAIL@gmail.com",
-          subject: "SendGrid Test",
-          message: "Hello from React frontend!",
-        }),
-      },
-    );
+      );
 
-    const data = await response.json();
+      console.log("Response received");
 
-    if (response.ok) {
-      console.log("Email sent:", data);
-      alert("Email sent successfully!");
-    } else {
-      console.log("Failed:", data);
-      alert("Failed to send email");
+      const data = await response.json();
+
+      console.log(data);
+
+      if (response.ok) {
+        alert("Email sent");
+      } else {
+        alert("Failed");
+      }
+    } catch (error) {
+      console.error("ERROR:", error);
     }
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Something went wrong");
-  }
-};
+  };
 
 	return (
     <div>
