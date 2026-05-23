@@ -85,14 +85,17 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
   };
 
   const [formMessage, setFormMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+
     const isMissingFields =
       !formData.category ||
       !formData.itemName ||
       (form && !formData.variant) ||
       (form && !formData.size) ||
       !formData.quantity ||
-      !formData.price;
+      !formData.price;  
 
     if ((mode === "add" && !image) || isMissingFields) {
       setFormMessage(
@@ -110,7 +113,11 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
 
     try {
       if (mode === "add") {
-        await axios.post("https://eba-website.onrender.com/inventory", formdata);
+        setIsSubmitting(true);
+        await axios.post(
+          "https://eba-website.onrender.com/inventory",
+          formdata,
+        );
         setMessage("Item added successfully");
       } else {
         await axios.put(
@@ -127,6 +134,8 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
       resetForm();
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -531,6 +540,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                 No, cancel
               </button>
               <button
+                disabled={isSubmitting}
                 className="flex-1 bg-(--error) text-white py-2 rounded-lg shadow cursor-pointer"
                 onClick={() =>
                   mode === "add" || mode === "edit"
@@ -538,7 +548,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
                     : handleRemove(remove)
                 }
               >
-                Yes, {mode}
+                {isSubmitting ? "Processing..." : `Yes, ${mode}`}
               </button>
             </div>
           </div>

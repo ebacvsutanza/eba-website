@@ -144,7 +144,9 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
 
 
   // ------------------------ Handle Submit (Add/Edit) ------------------------
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     // Validate required fields
     if (!formData.Username || !formData.Role || !formData.Email_Address || (mode === "add" && !formData.Password)) {
       setFormMessage("Please fill all required fields");
@@ -162,13 +164,26 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
     try {
       let res;
       if (mode === "add") {
-        res = await axios.post("https://eba-website.onrender.com/manageadmin", form);
+        setIsSubmitting(true);
+        res = await axios.post(
+          "https://eba-website.onrender.com/manageadmin",
+          form,
+        );
       } else {
-        res = await axios.put(`https://eba-website.onrender.com/manageadmin/${editingAdmin.id}`, form);
+        setIsSubmitting(true);
+        res = await axios.put(
+          `https://eba-website.onrender.com/manageadmin/${editingAdmin.id}`,
+          form,
+        );
       }
 
       if (res.data.Status === "Success") {
-        setMessage(mode === "add" ? "Admin added successfully" : "Admin updated successfully");
+        setIsSubmitting(false);
+        setMessage(
+          mode === "add"
+            ? "Admin added successfully"
+            : "Admin updated successfully",
+        );
         fetchManageAccount(currentPage);
         resetForm();
       } else {
@@ -182,6 +197,8 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
       console.error(err);
       setFormMessage("Server error, please try again");
       setTimeout(() => setFormMessage(""), 2000);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -433,6 +450,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
                 No, cancel
               </button>
               <button
+                disabled={isSubmitting}
                 className="flex-1 bg-(--error) text-white py-2 rounded-lg shadow cursor-pointer"
                 onClick={() =>
                   mode === "add" || mode === "edit"
@@ -440,7 +458,7 @@ const ManageAccount = ({ activeAdmin, openSidebar }) => {
                     : handleRemove(remove)
                 }
               >
-                Yes, {mode}
+                {isSubmitting ? "Processing..." : `Yes, ${mode}`}
               </button>
             </div>
           </div>

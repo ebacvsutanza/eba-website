@@ -40,42 +40,68 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
   };
 
   /* ---------------- CREATE ---------------- */
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const createAnnouncement = async () => {
-    await axios.post("https://eba-website.onrender.com/announcement", {
-      title: title,
-      details: details,
-      facultyname: facultyName,
-      announcementdate: startDate.toISOString(),
-    });
+    if (isSubmitting) return;
 
-    resetForm();
-    fetchAnnouncements();
-    flashMessage("Event added successfully");
+    try {
+      setIsSubmitting(true);
+      await axios.post("https://eba-website.onrender.com/announcement", {
+        title: title,
+        details: details,
+        facultyname: facultyName,
+        announcementdate: startDate.toISOString(),
+      });
+  
+      resetForm();
+      fetchAnnouncements();
+      flashMessage("Event added successfully");
+    } catch (error) {
+      alert(error.response ? error.response.data.message : "An error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   /* ---------------- UPDATE ---------------- */
   const updateAnnouncement = async () => {
+    if (isSubmitting) return;
     if (!selectedEvent) return;
 
-    await axios.put(`https://eba-website.onrender.com/announcement/${selectedEvent.id}`, {
-      Title: title,
-      Details: details,
-      FacultyName: facultyName,
-      announcementDate: startDate.toISOString(),
-    });
-
-    resetForm();
-    fetchAnnouncements();
-    flashMessage("Event updated successfully");
+    try {
+      setIsSubmitting(true);
+      await axios.put(`https://eba-website.onrender.com/announcement/${selectedEvent.id}`, {
+        Title: title,
+        Details: details,
+        FacultyName: facultyName,
+        announcementDate: startDate.toISOString(),
+      });
+  
+      resetForm();
+      fetchAnnouncements();
+      flashMessage("Event updated successfully");
+    } catch (error) {
+      alert(error.response ? error.response.data.message : "An error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   /* ---------------- DELETE ---------------- */
   const deleteAnnouncement = async (id) => {
-    await axios.delete(`https://eba-website.onrender.com/announcement/${id}`);
-    fetchAnnouncements();
-    flashMessage("Event deleted successfully");
-    setShowModal(false);
-    resetForm()
+    if (isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+      await axios.delete(`https://eba-website.onrender.com/announcement/${id}`);
+      fetchAnnouncements();
+      flashMessage("Event deleted successfully");
+      setShowModal(false);
+    } catch (error) {
+      alert(error.response ? error.response.data.message : "An error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   /* ---------------- HELPERS ---------------- */
@@ -323,6 +349,7 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
                 No, cancel
               </button>
               <button
+                disabled={isSubmitting}
                 className="flex-1 bg-(--error) text-white py-2 rounded-lg shadow cursor-pointer"
                 onClick={() =>
                   (mode === "add" && createAnnouncement()) ||
@@ -330,7 +357,7 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
                   (mode === "delete" && deleteAnnouncement(selected))
                 }
               >
-                Yes, {mode}
+                {isSubmitting ? "Processing..." : `Yes, ${mode}`}
               </button>
             </div>
           </div>

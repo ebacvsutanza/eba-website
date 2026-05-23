@@ -252,7 +252,7 @@ app.get("/storeinventory", async (req, res) => {
 
     const { rows } = await db.query(sql);
 
-    const SIZE_ORDER = ["XS", "S", "M", "L", "XL"];    
+    const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"];    
     const products = {};
 
     rows.forEach((row) => {
