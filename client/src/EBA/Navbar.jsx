@@ -50,6 +50,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
 
     axios
       .post("https://eba-website.onrender.com/requestCancelOrder", {
+        id,
         email,
         orderId,
         item,
@@ -255,6 +256,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
                           </span>
                         </div>
                         <button
+                          disabled={cancellingOrderId === transaction.ID}
                           onClick={() => {
                             setCancellingOrderId(transaction.ID);
                             handleCancelOrder(
