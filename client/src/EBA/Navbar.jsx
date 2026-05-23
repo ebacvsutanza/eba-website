@@ -40,8 +40,9 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
     return () => clearTimeout(delayDebounce);
   }, [query]);
 
-  const handleCancelOrder = (orderId, customer, email, item, variant) => {
+  const handleCancelOrder = (id, orderId, customer, email, item, variant) => {
     setCancelData({
+      Id: id,
       OrderID: orderId,
       Customer_Name: customer,
       Email_Address: email,
@@ -257,6 +258,7 @@ const Navbar = ({ toggleCheckStatus, openStatus, setOpenStatus }) => {
                           onClick={() => {
                             setCancellingOrderId(transaction.ID);
                             handleCancelOrder(
+                              transaction.ID,
                               transaction.OrderID,
                               transaction.Customer_Name,
                               transaction.Email_Address,

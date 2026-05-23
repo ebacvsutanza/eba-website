@@ -837,13 +837,12 @@ app.post("/checkout", async (req, res) => {
 
 
 app.post("/requestCancelOrder", async (req, res) => {
-  const { email, orderId, item, variant } = req.body;
-
+  const { email, id, orderId, item, variant } = req.body;
   
   try {
     const checkOrder = await db.query(
-      "SELECT * FROM transaction WHERE orderid = $1 AND email_address = $2",
-      [orderId, email],
+      "SELECT * FROM transaction WHERE id = $1 AND email_address = $2",
+      [id, email],
     );
   
     if (checkOrder.rowCount === 0) {
@@ -852,7 +851,7 @@ app.post("/requestCancelOrder", async (req, res) => {
 
     // Generate a verification token
     const token = jwt.sign(
-      { email, orderId, item, variant },
+      { email, id, orderId, item, variant },
       process.env.JWT_SECRET,
       { expiresIn: "1h" },
     );
@@ -887,17 +886,17 @@ app.get("/verifyCancelOrder/:token", async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const { email, orderId } = decoded;
+    const { email, id } = decoded;
 
-    const updateQuery = `
+    await db.query(
+      `
       UPDATE transaction
       SET status = 'Cancelled'
-      WHERE orderid = $1 AND email_address = $2
-    `;
+      WHERE id = $1 AND email_address = $2
+      `,
+      [id, email],
+    );
 
-    await db.query(updateQuery, [orderId, email]);
-
-    // ✅ Redirect to your frontend Thank You page
     res.redirect("https://ebacvsu-website.vercel.app/verifycancelorder");
   } catch (err) {
     console.error("Verification failed:", err);
