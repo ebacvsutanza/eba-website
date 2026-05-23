@@ -94,6 +94,7 @@ const Announcement = ({ activeAdmin, openSidebar, role }) => {
     try {
       setIsSubmitting(true);
       await axios.delete(`https://eba-website.onrender.com/announcement/${id}`);
+      resetForm();
       fetchAnnouncements();
       flashMessage("Event deleted successfully");
       setShowModal(false);

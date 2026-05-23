@@ -120,6 +120,7 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
         );
         setMessage("Item added successfully");
       } else {
+        setIsSubmitting(true);
         await axios.put(
           `https://eba-website.onrender.com/inventory/${editingInventory.id}`,
           formdata,
@@ -176,16 +177,25 @@ const Inventory = ({ activeAdmin, openSidebar, role }) => {
   };
 
   const handleRemove = async (id) => {
-    await axios.delete(`https://eba-website.onrender.com/inventory/${id}`);
-    setInventories(inventories.filter((inventory) => inventory.id !== id));
-
-    setMessage("Item removed successfully");
-    setTimeout(() => {
-      setMessage("");
-    }, 2000);
-
-    fetchInventories();
-    resetForm();
+    if (isSubmitting) return;
+    
+    try {
+      setIsSubmitting(true);
+      await axios.delete(`https://eba-website.onrender.com/inventory/${id}`);
+      setInventories(inventories.filter((inventory) => inventory.id !== id));
+  
+      setMessage("Item removed successfully");
+      setTimeout(() => {
+        setMessage("");
+      }, 2000);
+  
+      fetchInventories();
+      resetForm();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
