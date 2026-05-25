@@ -32,7 +32,7 @@ app.listen(PORT, () => {
 });
 
 // ar try on post method
-const processPhotoRequest = require('./arSendCopyImageMailer');
+const processPhotoRequest = require('arSendCopyImageMailer');
 app.use(express.urlencoded({ limit: '150mb', extended: true }));
 app.use(express.json({ limit: '150mb' }));
 
