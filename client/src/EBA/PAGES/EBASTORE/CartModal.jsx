@@ -13,13 +13,15 @@ const CartModal = ({
 }) => {
   const [size, setSize] = useState("");
   const sizeLabelMap = {
-    "Xtra Small": "XS",
     "Extra Small": "XS",
     "Small": "S",
     "Medium": "M",
     "Large": "L",
-    "Xtra Large": "XL",
     "Extra Large": "XL",
+    "2 Extra Large": "2XL",
+    "3 Extra Large": "3XL",
+    "4 Extra Large": "4XL",
+    "5 Extra Large": "5XL",
   };
   const selectedStock = product.Sizes?.find(
     (item) => item.Size === size,
