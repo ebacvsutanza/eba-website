@@ -31,10 +31,10 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-const { processPhotoRequest } = require('./arSendCopyImageMailer');
-
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use(express.json({ limit: '50mb' }));
+// ar try on post method
+const processPhotoRequest = require('arSendCopyImageMailer');
+app.use(express.urlencoded({ limit: '150mb', extended: true }));
+app.use(express.json({ limit: '150mb' }));
 
 
 const uploadStorage = new CloudinaryStorage({
@@ -2472,16 +2472,44 @@ app.post("/login", async (req, res) => {
 });
 
 
+// ar try on post method
 app.post('/send-captured-screen-image-of-virtual-try-on', async (req, res) => {
-    // req.body contains the fields from Unity's WWWForm
-    const { email, image } = req.body;
-    
-    console.log("Request for email:", email); // This helps you debug "No recipients defined"
 
-    if (!email) {
-        return res.status(400).send("Error: No email provided.");
+    try {
+
+        const { email, image } = req.body;
+
+        console.log(
+            `\nStatus:\x1b[32m 200\x1b[0m Received live request for: \x1b[36m${email}\x1b[0m`
+        );
+
+        if (!email || !image) {
+
+            console.error(
+                "Status:\x1b[31m 400\x1b[0m Error: Missing target data context inputs."
+            );
+
+            return res.status(400).send("Error: Missing data entries.");
+        }
+
+        const message = await processPhotoRequest(email, image);
+
+        if (message.error) {
+            return res.status(message.status).send(message.message);
+        }
+
+        console.log(
+            `Status:\x1b[32m 200\x1b[0m Successfully processed and sent Email to \x1b[36m${email}\x1b[0m`
+        );
+
+        return res.status(200).send(message.message);
+
+    } catch (error) {
+
+        console.error("Critical Runtime Routing Bug:", error);
+
+        return res
+            .status(500)
+            .send("Internal Application Routing Engine Exception.");
     }
-
-    const message = await processPhotoRequest(email, image);
-    res.send(message);
 });
