@@ -68,12 +68,13 @@ export default function Catalog() {
     if (location.state?.selectedCategory) {
       setSelectedCategory(location.state.selectedCategory);
     }
-  }, [location.state]);  const [searchTerm, setSearchTerm] = useState("");
+  }, [location.state]);  
+  const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("Newest");
   const filteredProducts = products
     .filter(
       (product) =>
-        product.category === selectedCategory &&
+        product.category === selectedCategory ||
         product.item_name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
