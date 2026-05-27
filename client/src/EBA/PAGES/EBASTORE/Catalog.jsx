@@ -74,7 +74,7 @@ export default function Catalog() {
   const filteredProducts = products
     .filter(
       (product) =>
-        product.category === selectedCategory ||
+        product.category === selectedCategory &&
         product.item_name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
