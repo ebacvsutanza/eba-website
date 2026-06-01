@@ -1,5 +1,9 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faChevronRight, faShoppingCart } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faChevronLeft,
+  faChevronRight,
+  faShoppingCart,
+} from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 
 const CartModal = ({
@@ -14,9 +18,9 @@ const CartModal = ({
   const [size, setSize] = useState("");
   const sizeLabelMap = {
     "Extra Small": "XS",
-    "Small": "S",
-    "Medium": "M",
-    "Large": "L",
+    Small: "S",
+    Medium: "M",
+    Large: "L",
     "Extra Large": "XL",
     "2 Extra Large": "2XL",
     "3 Extra Large": "3XL",
@@ -71,22 +75,25 @@ const CartModal = ({
 
   const addToCart = async () => {
     try {
-      const response = await fetch("https://eba-website.onrender.com/addToCart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          transaction: product.image,
-          UserID: userId,
-          Category: product.category,
-          ItemName: product.item_name,
-          Variant: product.variant,
-          Size: size,
-          Quantity: 1,
-          CustomerName: fullName,
-          EmailAddress: emailAddress,
-          Amount: product.price,
-        }),
-      });
+      const response = await fetch(
+        "https://eba-website.onrender.com/addToCart",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            transaction: product.image,
+            UserID: userId,
+            Category: product.category,
+            ItemName: product.item_name,
+            Variant: product.variant,
+            Size: size,
+            Quantity: 1,
+            CustomerName: fullName,
+            EmailAddress: emailAddress,
+            Amount: product.price,
+          }),
+        },
+      );
 
       if (response.ok) {
         setSize("");
@@ -100,20 +107,23 @@ const CartModal = ({
   };
   const addToCartItem = async () => {
     try {
-      const response = await fetch("https://eba-website.onrender.com/addToCart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          transaction: product.image,
-          UserID: userId,
-          Category: product.category,
-          ItemName: product.item_name,
-          Quantity: 1,
-          CustomerName: fullName,
-          EmailAddress: emailAddress,
-          Amount: product.price,
-        }),
-      });
+      const response = await fetch(
+        "https://eba-website.onrender.com/addToCart",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            transaction: product.image,
+            UserID: userId,
+            Category: product.category,
+            ItemName: product.item_name,
+            Quantity: 1,
+            CustomerName: fullName,
+            EmailAddress: emailAddress,
+            Amount: product.price,
+          }),
+        },
+      );
 
       if (response.ok) {
         setSize("");
@@ -199,7 +209,7 @@ const CartModal = ({
                 <button
                   className="py-2 center-flex gap-1 flex-1 rounded-lg border border-(--accent) cursor-pointer"
                   onClick={handleAddToCart}
-                  disabled={product.quantity === 0}
+                  disabled={totalQuantity === 0}
                 >
                   <FontAwesomeIcon
                     icon={faShoppingCart}
@@ -211,7 +221,7 @@ const CartModal = ({
                 <button
                   className="flex-1 rounded-lg text-white bg-(--primary-btn) cursor-pointer"
                   onClick={handleBuyNow}
-                  disabled={product.quantity === 0}
+                  disabled={totalQuantity === 0}
                 >
                   Buy Now
                 </button>
