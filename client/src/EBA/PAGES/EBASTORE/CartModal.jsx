@@ -207,7 +207,7 @@ const CartModal = ({
 
               <div className="my-5 flex gap-3">
                 <button
-                  className="py-2 center-flex gap-1 flex-1 rounded-lg border border-(--accent) cursor-pointer"
+                  className="py-2 center-flex gap-1 flex-1 rounded-lg border border-(--accent) cursor-pointer disabled:opacity-50"
                   onClick={handleAddToCart}
                   disabled={totalQuantity === 0}
                 >
@@ -219,7 +219,7 @@ const CartModal = ({
                   Add to Cart
                 </button>
                 <button
-                  className="flex-1 rounded-lg text-white bg-(--primary-btn) cursor-pointer"
+                  className="flex-1 rounded-lg text-white bg-(--primary-btn) cursor-pointer disabled:opacity-50"
                   onClick={handleBuyNow}
                   disabled={totalQuantity === 0}
                 >
