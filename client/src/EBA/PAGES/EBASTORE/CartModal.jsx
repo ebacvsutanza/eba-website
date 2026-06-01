@@ -199,6 +199,7 @@ const CartModal = ({
                 <button
                   className="py-2 center-flex gap-1 flex-1 rounded-lg border border-(--accent) cursor-pointer"
                   onClick={handleAddToCart}
+                  disabled={product.quantity === 0}
                 >
                   <FontAwesomeIcon
                     icon={faShoppingCart}
@@ -210,6 +211,7 @@ const CartModal = ({
                 <button
                   className="flex-1 rounded-lg text-white bg-(--primary-btn) cursor-pointer"
                   onClick={handleBuyNow}
+                  disabled={product.quantity === 0}
                 >
                   Buy Now
                 </button>
